@@ -71,8 +71,30 @@ export class AiSlotElement extends HTMLElement {
     if (this.editor) this.appendChild(this.editor);
   }
 
-  /** editable 的默认编辑条，Task 13 实现。 */
-  protected mountEditor(): void {}
+  /** editable 的默认编辑条；样式通过 .ai-slot-editor 完全开放给用户自定义。 */
+  protected mountEditor(): void {
+    const form = document.createElement("form");
+    form.className = "ai-slot-editor";
+    const input = document.createElement("input");
+    input.name = "prompt";
+    input.maxLength = 500;
+    input.placeholder = "用一句话调整这个区域…";
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.textContent = "应用";
+    const reset = document.createElement("button");
+    reset.type = "button";
+    reset.textContent = "恢复默认";
+    form.append(input, submit, reset);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const value = input.value.trim();
+      if (value) void this.load(value);
+    });
+    reset.addEventListener("click", () => this.restore());
+    this.editor = form;
+    this.appendChild(form);
+  }
 }
 
 if (typeof customElements !== "undefined" && !customElements.get("ai-slot")) {

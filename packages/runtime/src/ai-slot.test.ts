@@ -114,3 +114,71 @@ describe("<ai-slot> 生命周期", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2); // 断开后停止轮询
   });
 });
+
+describe("<ai-slot editable> 用户提示词流程", () => {
+  beforeEach(() => {
+    configureAiSlot({ registry });
+    document.body.innerHTML = "";
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function mountEditable(): AiSlotElement {
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("editable", "");
+    el.innerHTML = "<h1>兜底标题</h1>";
+    document.body.appendChild(el);
+    return el;
+  }
+
+  it("挂载编辑条：输入框 + 应用 + 恢复默认", async () => {
+    mockFetch(() => Promise.resolve({ ok: false, status: 503 }));
+    const el = mountEditable();
+    await flush();
+    const form = el.querySelector("form.ai-slot-editor");
+    expect(form).not.toBeNull();
+    expect(form?.querySelector("input[name=prompt]")).not.toBeNull();
+    const buttons = [...(form?.querySelectorAll("button") ?? [])].map((b) => b.textContent);
+    expect(buttons).toContain("应用");
+    expect(buttons).toContain("恢复默认");
+  });
+
+  it("提交提示词走 POST 路径并更新该槽位", async () => {
+    const fetchSpy = vi.fn((_url: unknown, _init?: RequestInit) =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "用户定制" } })),
+      }),
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = mountEditable();
+    await flush();
+    const input = el.querySelector<HTMLInputElement>("input[name=prompt]");
+    input!.value = "再短一点";
+    el.querySelector("form.ai-slot-editor")!.dispatchEvent(new Event("submit", { cancelable: true }));
+    await flush();
+    const postCall = fetchSpy.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === "POST");
+    expect(postCall).toBeDefined();
+    expect(JSON.parse((postCall![1] as RequestInit).body as string)).toEqual({ prompt: "再短一点" });
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("用户定制");
+    expect(el.querySelector("form.ai-slot-editor")).not.toBeNull(); // 编辑条仍在
+  });
+
+  it("恢复默认回到兜底内容", async () => {
+    mockFetch(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "AI 标题" } })),
+      }),
+    );
+    const el = mountEditable();
+    await flush();
+    expect(el.querySelector(".hero-banner")).not.toBeNull();
+    const reset = [...el.querySelectorAll("button")].find((b) => b.textContent === "恢复默认");
+    reset!.click();
+    expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
+    expect(el.querySelector("form.ai-slot-editor")).not.toBeNull();
+  });
+});
