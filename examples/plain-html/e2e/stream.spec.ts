@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("SSE 流式：stream 槽位最终渲染完整内容（骨架→终树传输）", async ({ page }) => {
-  // 断言传输层确实走了 SSE：拦截请求检查 Accept 头与响应 content-type
+  // 断言传输层确实走了 SSE：拦截请求检查 Accept 头
   const sseRequest = page.waitForRequest((req) =>
     req.url().includes("/ai-render/hero") && req.headers()["accept"]?.includes("text/event-stream"),
   );

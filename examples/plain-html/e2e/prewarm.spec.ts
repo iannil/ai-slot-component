@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
@@ -11,20 +11,22 @@ test("预生成缓存：LLM 不可用时 hero 仍渲染预生成内容", async (
   // ① CI 预生成
   await run("node", ["prewarm.mjs"], { cwd: exampleDir });
   // ② 部署后 LLM 全挂
-  const server = (await import("node:child_process")).spawn(
+  const server = spawn(
     "node",
     ["server.mjs"],
     { cwd: exampleDir, env: { ...process.env, AI_LLM: "down", PORT: "4174" } },
   );
   try {
-    // 等服务就绪
+    // 等服务就绪；50 次轮询耗尽视为启动失败
+    let ready = false;
     for (let i = 0; i < 50; i++) {
       try {
         const res = await fetch("http://localhost:4174/");
-        if (res.ok) break;
+        if (res.ok) { ready = true; break; }
       } catch { /* 未就绪 */ }
       await new Promise((r) => setTimeout(r, 200));
     }
+    if (!ready) throw new Error("server 未能就绪");
     await page.goto("http://localhost:4174/");
     const slot = page.locator('ai-slot[name="hero"]');
     await expect(slot.locator(".hero-title")).toHaveText("AI 增强后的标题 v0");

@@ -15,7 +15,10 @@ export interface AiSlotProps {
   refreshInterval?: number;
 }
 
-/** React 版 <ai-slot>：任何失败静默保留 fallback，语义与 Web Component 一致。 */
+/**
+ * React 版 <ai-slot>：任何失败静默保留 fallback，语义与 Web Component 一致。
+ * `registry` 应为模块级常量或经 useMemo 稳定化——内联字面量会因引用变化触发重复加载。
+ */
 export function AiSlot(props: AiSlotProps): ReactElement {
   const [tree, setTree] = useState<ComponentNode | null>(null);
   const [prompt, setPrompt] = useState("");

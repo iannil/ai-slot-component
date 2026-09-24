@@ -30,11 +30,12 @@ export class MemoryCacheStore {
     return JSON.stringify(Object.fromEntries(this.map));
   }
 
-  /** 反序列化；剔除调用时已彻底过期的条目。非法 JSON 抛 SyntaxError。 */
+  /** 反序列化；剔除调用时已彻底过期或形状非法（缺时间戳）的条目。非法 JSON 抛错（SyntaxError/TypeError）。 */
   static load(json: string, now: number): MemoryCacheStore {
     const raw = JSON.parse(json) as Record<string, CacheEntry<unknown>>;
     const store = new MemoryCacheStore();
     for (const [key, entry] of Object.entries(raw)) {
+      if (typeof entry?.staleUntil !== "number" || typeof entry?.expiresAt !== "number") continue;
       if (now < entry.staleUntil) {
         store.map.set(key, entry);
       }

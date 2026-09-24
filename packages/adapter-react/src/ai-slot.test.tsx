@@ -69,6 +69,10 @@ describe("<AiSlot> React 组件", () => {
     });
     await flush();
     const input = container.querySelector<HTMLInputElement>("input[name=prompt]")!;
+    // 编辑条 DOM 契约：长度上限、占位提示、恢复默认按钮
+    expect(input.maxLength).toBe(500);
+    expect(input.placeholder).toBe("用一句话调整这个区域…");
+    expect([...container.querySelectorAll("button")].some((b) => b.type === "button" && b.textContent === "恢复默认")).toBe(true);
     await act(async () => {
       // React 受控 input：用 native setter 触发 change
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;

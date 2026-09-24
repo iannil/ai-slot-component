@@ -26,6 +26,17 @@ describe("MemoryCacheStore 序列化", () => {
   it("load 非法 JSON 抛错", () => {
     expect(() => MemoryCacheStore.load("不是 json", 0)).toThrow();
   });
+
+  it("load 显式形状校验：缺时间戳/非对象条目剔除不抛错，形状合法的条目保留", () => {
+    // 缺 staleUntil/expiresAt、以及值不是对象：剔除，不抛错
+    for (const json of ['{"a":{"value":1}}', '{"a":1}', '{"a":{"value":1,"staleUntil":100}}']) {
+      const store = MemoryCacheStore.load(json, 0);
+      expect(lookup(store, "a", 0)).toBeUndefined();
+    }
+    // 时间戳形状合法但 value 随意的条目：保留（信任边界内，value 由 OutputValidator 把关）
+    const store = MemoryCacheStore.load('{"a":{"value":"任意形状","expiresAt":50,"staleUntil":100}}', 0);
+    expect(lookup(store, "a", 0)).toEqual({ value: "任意形状", status: "fresh" });
+  });
 });
 
 describe("prewarm", () => {

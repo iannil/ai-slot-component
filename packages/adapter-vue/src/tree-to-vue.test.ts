@@ -1,5 +1,5 @@
 import { renderToString } from "@vue/server-renderer";
-import { defineComponent, h } from "vue";
+import { defineComponent, h, type VNode } from "vue";
 import { describe, expect, it, vi } from "vitest";
 import { treeToVue } from "./tree-to-vue.js";
 
@@ -39,5 +39,25 @@ describe("treeToVue", () => {
     expect(html).toContain("保留");
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("constructor"));
     warn.mockRestore();
+  });
+
+  it("命名槽位以同名 prop 传递（渲染后的 VNode 数组）", async () => {
+    const mediaCard = defineComponent({
+      props: ["title", "media"],
+      setup: (props) => () =>
+        h("section", { class: "card" }, [h("h1", String(props.title ?? "")), ...((props.media as VNode[]) ?? [])]),
+    });
+    const vnode = treeToVue({ ...components, "media-card": mediaCard }, {
+      component: "media-card",
+      props: { title: "卡片" },
+      slots: { media: [{ component: "markdown-block", props: { content: "槽位内容" } }] },
+    });
+    // 组件收到同名 media prop，值为渲染后的 VNode 数组
+    const media = vnode?.props?.media;
+    expect(Array.isArray(media)).toBe(true);
+    expect(media).toHaveLength(1);
+    const html = await renderToString(h("div", [vnode!]));
+    expect(html).toContain("<h1>卡片</h1>");
+    expect(html).toContain("槽位内容");
   });
 });
