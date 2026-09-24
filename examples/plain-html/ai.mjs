@@ -1,4 +1,4 @@
-import { createAiRenderHandler, createInvalidationChannel, MemoryCacheStore } from "@ai-slot/proxy";
+import { createAiRenderHandler, createInvalidationChannel, createOpenAIClient, MemoryCacheStore, withRetry } from "@ai-slot/proxy";
 import { readFile } from "node:fs/promises";
 import { registry } from "./registry.mjs";
 
@@ -50,8 +50,26 @@ export const slots = {
   broken: { slotId: "broken", originalContent: "<h2>兜底：静态内容</h2>", contentVersion: "v1" },
 };
 
+/** 真实 LLM（设置了 OPENAI_API_KEY 时）；否则 null 表示用 mock。 */
+function realLLM() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+  return withRetry(createOpenAIClient({
+    apiKey,
+    baseUrl: process.env.AI_BASE_URL, // 可选：OpenAI 兼容端点
+  }));
+}
+
 /** 装配 handler；cacheFile 存在时水合预生成缓存。 */
-export async function createHandler({ llm = mockLLM, cacheFile } = {}) {
+export async function createHandler({ llm, cacheFile } = {}) {
+  const resolved = llm ?? realLLM() ?? mockLLM;
+  // 真实 LLM 时分档选模型；mock 时由 handler 默认值兜底
+  const models = process.env.OPENAI_API_KEY
+    ? {
+        developer: process.env.AI_MODEL_DEVELOPER ?? "gpt-4o",
+        user: process.env.AI_MODEL_USER ?? "gpt-4o-mini",
+      }
+    : undefined;
   let store;
   if (cacheFile) {
     try {
@@ -63,8 +81,9 @@ export async function createHandler({ llm = mockLLM, cacheFile } = {}) {
   }
   return createAiRenderHandler({
     registry,
-    llm,
+    llm: resolved,
     store,
+    models,
     resolveSlot: (slotId) => slots[slotId] ?? null,
   });
 }
