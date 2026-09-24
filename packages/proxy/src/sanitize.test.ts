@@ -23,6 +23,10 @@ describe("sanitizeUserPrompt", () => {
     expect(sanitizeUserPrompt("a\u0085b")).toBe("ab");
   });
 
+  it("保留连字符等正常标点", () => {
+    expect(sanitizeUserPrompt("short-term title")).toBe("short-term title");
+  });
+
   it("maxLength 可配置", () => {
     expect(sanitizeUserPrompt("12345", 4)).toBeNull();
     expect(sanitizeUserPrompt("1234", 4)).toBe("1234");

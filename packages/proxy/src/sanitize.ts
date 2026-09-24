@@ -6,7 +6,6 @@ export function sanitizeUserPrompt(raw: unknown, maxLength = 500): string | null
   if (typeof raw !== "string") return null;
   const cleaned = raw
     .replace(/[\u0000-\u001F\u007F\u0085]/g, (ch) => (ch === "\u0085" ? "" : " "))
-    .replace(/[-\u001F\u009F]/g, " ")
     .trim();
   if (cleaned.length === 0 || cleaned.length > maxLength) return null;
   return cleaned;
