@@ -1,4 +1,4 @@
-import { createAiRenderHandler, createInvalidationChannel, createOpenAIClient, MemoryCacheStore, withRetry } from "@ai-slot/proxy";
+import { createAiRenderHandler, createInvalidationChannel, createOpenAIClient, MemoryCacheStore } from "@ai-slot/proxy";
 import { readFile } from "node:fs/promises";
 import { registry } from "./registry.mjs";
 
@@ -50,14 +50,14 @@ export const slots = {
   broken: { slotId: "broken", originalContent: "<h2>兜底：静态内容</h2>", contentVersion: "v1" },
 };
 
-/** 真实 LLM（设置了 OPENAI_API_KEY 时）；否则 null 表示用 mock。 */
+/** 真实 LLM（设置了 OPENAI_API_KEY 时）；否则 null 表示用 mock。重试由 handler 内置的 withRetry 统一负责，这里不再叠加。 */
 function realLLM() {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
-  return withRetry(createOpenAIClient({
+  return createOpenAIClient({
     apiKey,
     baseUrl: process.env.AI_BASE_URL, // 可选：OpenAI 兼容端点
-  }));
+  });
 }
 
 /** 装配 handler；cacheFile 存在时水合预生成缓存。 */
