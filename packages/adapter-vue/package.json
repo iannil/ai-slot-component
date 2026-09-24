@@ -1,0 +1,27 @@
+{
+  "name": "@ai-slot/adapter-vue",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vue": ">=3.4"
+  },
+  "dependencies": {
+    "@ai-slot/registry": "workspace:*",
+    "@ai-slot/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@vue/server-renderer": "^3.5.0",
+    "jsdom": "^25.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "vue": "^3.5.0"
+  }
+}
