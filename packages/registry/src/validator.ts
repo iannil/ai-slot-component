@@ -22,9 +22,12 @@ export type ValidationResult = { ok: true } | { ok: false; errors: ValidationErr
 export function validateComponentTree(
   registry: Registry,
   tree: unknown,
-  _options: ValidatorOptions = {},
+  options: ValidatorOptions = {},
 ): ValidationResult {
+  const maxDepth = options.maxDepth ?? 5;
+  const maxNodes = options.maxNodes ?? 50;
   const errors: ValidationError[] = [];
+  let nodeCount = 0;
 
   const fail = (path: string, rule: ValidationError["rule"], message: string): void => {
     errors.push({ path, rule, message });
@@ -32,6 +35,9 @@ export function validateComponentTree(
 
   function visit(node: unknown, path: string, depth: number): void {
     if (errors.length > 0) return;
+    if (depth > maxDepth) return fail(path, "depth", `嵌套深度超过上限 ${maxDepth}`);
+    nodeCount += 1;
+    if (nodeCount > maxNodes) return fail(path, "nodes", `节点总数超过上限 ${maxNodes}`);
     if (typeof node !== "object" || node === null || Array.isArray(node)) {
       return fail(path, "structure", "节点必须是对象");
     }
@@ -39,16 +45,32 @@ export function validateComponentTree(
     if (typeof n.component !== "string") {
       return fail(path, "structure", "节点缺少 component 字段");
     }
-    if (!registry.components[n.component]) {
-      return fail(path, "unknown-component", `组件未注册: ${n.component}`);
-    }
     const def = registry.components[n.component];
+    if (!def) return fail(path, "unknown-component", `组件未注册: ${n.component}`);
     if (n.props !== undefined) {
       validateProps(def.props, def.required, n.props, `${path}.props`);
       if (errors.length > 0) return;
     }
-    if (Array.isArray(n.children)) {
+    if (n.children !== undefined) {
+      if (!def.slots.includes("default")) {
+        return fail(path, "slot", `组件 ${n.component} 不允许 children`);
+      }
+      if (!Array.isArray(n.children)) return fail(path, "structure", "children 必须是数组");
       for (let i = 0; i < n.children.length; i++) visit(n.children[i], `${path}.children[${i}]`, depth + 1);
+    }
+    if (errors.length > 0) return;
+    if (n.slots !== undefined) {
+      if (typeof n.slots !== "object" || n.slots === null || Array.isArray(n.slots)) {
+        return fail(path, "structure", "slots 必须是对象");
+      }
+      for (const [slotName, nodes] of Object.entries(n.slots as Record<string, unknown>)) {
+        if (!def.slots.includes(slotName)) {
+          return fail(path, "slot", `组件 ${n.component} 不支持槽位 ${slotName}`);
+        }
+        if (!Array.isArray(nodes)) return fail(path, "structure", `槽位 ${slotName} 必须是数组`);
+        for (let i = 0; i < nodes.length; i++) visit(nodes[i], `${path}.slots.${slotName}[${i}]`, depth + 1);
+        if (errors.length > 0) return;
+      }
     }
   }
 

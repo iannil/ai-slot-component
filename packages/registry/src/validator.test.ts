@@ -123,3 +123,54 @@ describe("validateComponentTree — props 对抗性校验", () => {
     expect(r).toEqual({ ok: true });
   });
 });
+
+describe("validateComponentTree — 槽位与数量上限", () => {
+  const reg = defineRegistry({
+    components: {
+      layout: { description: "", slots: ["default", "media"] },
+      leaf: { description: "" },
+    },
+  });
+
+  it("拒绝向未声明 default 槽位的组件塞 children", () => {
+    const r = validateComponentTree(reg, { component: "leaf", children: [{ component: "leaf" }] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0].rule).toBe("slot");
+  });
+
+  it("拒绝未声明的命名槽位", () => {
+    const r = validateComponentTree(reg, { component: "layout", slots: { sidebar: [{ component: "leaf" }] } });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0].rule).toBe("slot");
+  });
+
+  it("接受声明过的命名槽位", () => {
+    const r = validateComponentTree(reg, { component: "layout", slots: { media: [{ component: "leaf" }] } });
+    expect(r).toEqual({ ok: true });
+  });
+
+  it("拒绝嵌套炸弹（深度超限）", () => {
+    let tree: unknown = { component: "leaf" };
+    for (let i = 0; i < 10; i++) tree = { component: "layout", children: [tree] };
+    const r = validateComponentTree(reg, tree);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0].rule).toBe("depth");
+  });
+
+  it("拒绝节点炸弹（宽度超限）", () => {
+    const tree = {
+      component: "layout",
+      children: Array.from({ length: 60 }, () => ({ component: "leaf" })),
+    };
+    const r = validateComponentTree(reg, tree);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0].rule).toBe("nodes");
+  });
+
+  it("上限可配置", () => {
+    let tree: unknown = { component: "leaf" };
+    for (let i = 0; i < 3; i++) tree = { component: "layout", children: [tree] };
+    expect(validateComponentTree(reg, tree, { maxDepth: 2 }).ok).toBe(false);
+    expect(validateComponentTree(reg, tree, { maxDepth: 10 })).toEqual({ ok: true });
+  });
+});
