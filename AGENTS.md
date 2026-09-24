@@ -6,11 +6,12 @@
 
 **ai-slot-component**：一个「AI Native 渲染 SDK」项目 —— 让任意前端项目的页面在正式展示前，先经由 AI 进行内容补充与改写；终端用户还可以通过提示词快速修改指定页面的展示。
 
-**当前阶段：仅有设计文档，尚无代码实现。** 仓库中没有 `package.json`、`pyproject.toml`、`Cargo.toml` 等任何配置文件，没有源码、测试、构建或 CI 配置，git 仓库甚至还没有任何提交。唯一的内容是设计文档：
+**当前阶段：v1 已实现并合入 master。** 四个包（registry / proxy / runtime / adapter-dom）+ 纯 HTML 端到端示例均已落地，86 个单元测试 + 3 个 Playwright e2e 全绿。设计文档：
 
-- `docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md` —— 已确认的总体设计（状态：待实现）
+- `docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md` —— 总体设计（含技术选型与接入方式）
+- `docs/superpowers/plans/2026-09-24-ai-native-rendering-sdk.md` —— v1 实现计划（已执行完毕）
 
-任何实现工作都应以该设计文档为准。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。
+任何实现工作都应以该设计文档为准。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟、后续可立项的事项：SSE 流式渲染、WebSocket 失效推送、CI 构建时预生成工具、React/Vue 渲染适配器（`registerRenderer` 接口已预留）。
 
 ## 语言约定
 
@@ -47,7 +48,7 @@
 
 注意：`pnpm typecheck` 依赖各 workspace 包的 dist 类型产物，干净 checkout 后请先 `pnpm build`。
 
-## 测试策略（设计文档中的既定方针）
+## 测试策略（既定方针，v1 已按此落地）
 
 实现时应按此策略建立测试，优先级从高到低：
 
