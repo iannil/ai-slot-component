@@ -31,7 +31,12 @@ export class AiSlotElement extends HTMLElement {
     if (intervalSec > 0) {
       this.timer = setInterval(() => void this.load(), intervalSec * 1000);
     }
-    void this.load();
+    // 首次加载推迟到微任务：customElements.define 会同步升级文档中已存在的
+    // <ai-slot>，此刻引入方的 registerRenderer/configureAiSlot 可能尚未执行，
+    // 同步调用 load() 会因找不到渲染器而静默放弃且不再重试。
+    queueMicrotask(() => {
+      if (this.isConnected) void this.load();
+    });
   }
 
   disconnectedCallback(): void {

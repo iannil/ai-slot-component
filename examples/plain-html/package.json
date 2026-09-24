@@ -1,0 +1,20 @@
+{
+  "name": "example-plain-html",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 无需构建",
+    "typecheck": "echo 无需类型检查",
+    "test": "echo 单元测试见各包；e2e 请用 test:e2e",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@ai-slot/adapter-dom": "workspace:*",
+    "@ai-slot/proxy": "workspace:*",
+    "@ai-slot/registry": "workspace:*",
+    "@ai-slot/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0"
+  }
+}

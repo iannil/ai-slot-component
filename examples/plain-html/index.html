@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>老站接入 ai-slot 示例</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ai-slot/registry": "/vendor/registry/index.js",
+          "@ai-slot/runtime": "/vendor/runtime/index.js",
+          "@ai-slot/adapter-dom": "/vendor/adapter-dom/index.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { configureAiSlot } from "@ai-slot/runtime";
+      import { registerRenderer } from "@ai-slot/runtime";
+      import { createDomRenderer } from "@ai-slot/adapter-dom";
+      import { registry } from "/registry-client.mjs";
+      import { domComponents } from "/components.mjs";
+
+      registerRenderer("dom", createDomRenderer(domComponents));
+      configureAiSlot({ registry });
+    </script>
+  </head>
+  <body>
+    <!-- 老站原有内容，一个字不改，直接包进 ai-slot -->
+    <ai-slot name="hero" src="/ai-render/hero" editable>
+      <h1>我们的产品</h1>
+      <p>一个普通的产品介绍</p>
+    </ai-slot>
+
+    <ai-slot name="broken" src="/ai-render/broken">
+      <h2>兜底：静态内容</h2>
+    </ai-slot>
+  </body>
+</html>
