@@ -218,3 +218,60 @@ describe("<ai-slot editable> 用户提示词流程", () => {
     expect(el.querySelectorAll("form.ai-slot-editor")).toHaveLength(1);
   });
 });
+
+describe("<ai-slot> 并发与时序防护", () => {
+  beforeEach(() => {
+    configureAiSlot({ registry });
+    document.body.innerHTML = "";
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("首次加载推迟到 microtask：appendChild 同步阶段不发起 fetch", async () => {
+    const fetchSpy = vi.fn(() => Promise.resolve({ ok: false, status: 503 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    // connectedCallback 已同步执行完，但 load 被推迟到 microtask
+    expect(fetchSpy).not.toHaveBeenCalled();
+    await flush();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("并发 load：慢的旧响应不覆盖快的新响应", async () => {
+    let resolveSlow!: (v: unknown) => void;
+    const slowResponse = new Promise((r) => { resolveSlow = r; });
+    const fastTree = { component: "hero-banner", props: { title: "新内容" } };
+    const fetchSpy = vi
+      .fn()
+      // 第一次（轮询 GET）挂起
+      .mockImplementationOnce(() => slowResponse)
+      // 第二次（用户 POST）快速返回
+      .mockImplementationOnce(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve(aiResponse(fastTree)) }),
+      );
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("editable", "");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush(); // 第一次 load 已发起（挂起中）
+    // 用户提交，触发第二次 load，快速完成
+    const input = el.querySelector<HTMLInputElement>("input[name=prompt]");
+    input!.value = "改一下";
+    el.querySelector("form.ai-slot-editor")!.dispatchEvent(new Event("submit", { cancelable: true }));
+    await flush();
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("新内容");
+    // 慢响应随后到达：内容是「旧内容」，必须被丢弃
+    resolveSlow({
+      ok: true,
+      json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "旧内容" } })),
+    });
+    await flush();
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("新内容");
+  });
+});

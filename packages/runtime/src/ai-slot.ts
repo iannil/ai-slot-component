@@ -13,12 +13,11 @@ export function configureAiSlot(opts: { registry?: Registry }): void {
  * AI 结果就绪且校验通过后才替换；任何失败静默回退，不白屏、不报错给用户。
  */
 export class AiSlotElement extends HTMLElement {
-  static observedAttributes = ["src", "renderer", "editable", "refresh-interval"];
-
   protected fallbackHTML = "";
   protected editor: HTMLElement | null = null;
   private fallbackCaptured = false;
   private timer: ReturnType<typeof setInterval> | undefined;
+  private loadSeq = 0;
 
   connectedCallback(): void {
     // 同一实例可能反复挂载：只在首次捕获兜底，避免被 AI 内容或编辑条污染
@@ -45,6 +44,7 @@ export class AiSlotElement extends HTMLElement {
 
   /** 拉取并渲染组件树；userPrompt 存在时走 POST 用户路径。失败时静默保留当前内容。 */
   async load(userPrompt?: string): Promise<void> {
+    const seq = ++this.loadSeq;
     const src = this.getAttribute("src");
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
     if (!src || !renderer) return;
@@ -64,6 +64,7 @@ export class AiSlotElement extends HTMLElement {
       if (globalRegistry && !validateComponentTree(globalRegistry, data?.tree).ok) return;
       const el = await renderTree(renderer, data.tree);
       if (!el) return;
+      if (seq !== this.loadSeq) return; // 已有更新的 load 发起，丢弃过期响应
       this.setContent(el);
     } catch {
       // 静默回退兜底内容
