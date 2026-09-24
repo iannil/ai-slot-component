@@ -29,7 +29,10 @@ export const server = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   if (url.pathname.startsWith("/ai-render/")) {
     const webRes = await handler(await toWebRequest(req));
-    res.writeHead(webRes.status, { "content-type": "application/json; charset=utf-8" });
+    // 透传 handler 的 content-type：SSE 协商成功时是 text/event-stream，错误路径仍是 JSON
+    res.writeHead(webRes.status, {
+      "content-type": webRes.headers.get("content-type") ?? "application/json; charset=utf-8",
+    });
     res.end(await webRes.text());
     return;
   }
