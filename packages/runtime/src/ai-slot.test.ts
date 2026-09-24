@@ -296,3 +296,49 @@ describe("<ai-slot> 并发与时序防护", () => {
     expect(el.querySelector(".hero-banner")?.textContent).toBe("新内容");
   });
 });
+
+describe("<ai-slot stream> 流式渲染", () => {
+  beforeEach(() => {
+    configureAiSlot({ registry });
+    document.body.innerHTML = "";
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("骨架先渲染（空文本结构），终树到达后替换", async () => {
+    const skeletonTree = { component: "hero-banner", props: { title: "" } };
+    const finalTree = { component: "hero-banner", props: { title: "最终标题" } };
+    const body =
+      `event: skeleton\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: skeletonTree })}\n\n` +
+      `event: tree\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: finalTree })}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(c) { c.enqueue(new TextEncoder().encode(body)); c.close(); },
+        }),
+      }),
+    ));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("stream", "");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    // 最终渲染为终树内容（骨架帧曾先渲染过，DOM 结构类名一致，终树文本覆盖）
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("最终标题");
+  });
+
+  it("无 stream 属性时不发 SSE Accept（行为不变）", async () => {
+    const fetchSpy = vi.fn(() => Promise.resolve({ ok: false, status: 503 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    expect(fetchSpy).toHaveBeenCalledWith("/ai-render/hero", undefined);
+  });
+});

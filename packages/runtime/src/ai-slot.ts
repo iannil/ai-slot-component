@@ -49,7 +49,19 @@ export class AiSlotElement extends HTMLElement {
     const src = this.getAttribute("src");
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
     if (!src || !renderer) return;
-    const tree = await fetchComponentTree({ src, userPrompt, registry: globalRegistry });
+    const tree = await fetchComponentTree({
+      src,
+      userPrompt,
+      registry: globalRegistry,
+      stream: this.hasAttribute("stream"),
+      onSkeleton: (skeleton) => {
+        if (seq !== this.loadSeq) return;
+        // 骨架帧：先渲染结构（文本占位），终树到达后再替换
+        void renderTree(renderer, skeleton).then((el) => {
+          if (el && seq === this.loadSeq) this.setContent(el);
+        }).catch(() => {});
+      },
+    });
     if (!tree) return;
     try {
       const el = await renderTree(renderer, tree);
