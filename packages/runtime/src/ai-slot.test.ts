@@ -96,6 +96,27 @@ describe("<ai-slot> 生命周期", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("渲染器抛异常时静默回退：保留兜底内容且 load() 不拒绝", async () => {
+    registerRenderer("boom", () => {
+      throw new Error("renderer exploded");
+    });
+    mockFetch(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "AI 标题" } })),
+      }),
+    );
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("renderer", "boom");
+    el.innerHTML = "<h1>兜底标题</h1>";
+    document.body.appendChild(el);
+    await flush(); // 挂载时的首次 load（内部 void 调用）不应产生 unhandled rejection
+    expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
+    await expect(el.load()).resolves.toBeUndefined();
+    expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
+  });
+
   it("refresh-interval 触发轮询重新加载", async () => {
     vi.useFakeTimers();
     const fetchSpy = vi.fn(() => Promise.resolve({ ok: false, status: 503 }));
