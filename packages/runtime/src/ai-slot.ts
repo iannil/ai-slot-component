@@ -1,4 +1,5 @@
-import { validateComponentTree, type AiRenderResponse, type Registry } from "@ai-slot/registry";
+import type { Registry } from "@ai-slot/registry";
+import { fetchComponentTree } from "./fetch-tree.js";
 import { getRenderer, renderTree } from "./renderer.js";
 
 let globalRegistry: Registry | undefined;
@@ -48,27 +49,12 @@ export class AiSlotElement extends HTMLElement {
     const src = this.getAttribute("src");
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
     if (!src || !renderer) return;
-    try {
-      const res = await fetch(
-        src,
-        userPrompt === undefined
-          ? undefined
-          : {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ prompt: userPrompt }),
-            },
-      );
-      if (!res.ok) return;
-      const data = (await res.json()) as AiRenderResponse;
-      if (globalRegistry && !validateComponentTree(globalRegistry, data?.tree).ok) return;
-      const el = await renderTree(renderer, data.tree);
-      if (!el) return;
-      if (seq !== this.loadSeq) return; // 已有更新的 load 发起，丢弃过期响应
-      this.setContent(el);
-    } catch {
-      // 静默回退兜底内容
-    }
+    const tree = await fetchComponentTree({ src, userPrompt, registry: globalRegistry });
+    if (!tree) return;
+    const el = await renderTree(renderer, tree);
+    if (!el) return;
+    if (seq !== this.loadSeq) return; // 已有更新的 load 发起，丢弃过期响应
+    this.setContent(el);
   }
 
   /** 恢复为挂载时的原始兜底内容。 */
