@@ -295,6 +295,26 @@ describe("<ai-slot> 并发与时序防护", () => {
     await flush();
     expect(el.querySelector(".hero-banner")?.textContent).toBe("新内容");
   });
+
+  it("restore() 使在途 load 失效：随后到达的响应被丢弃", async () => {
+    let resolvePending!: (v: unknown) => void;
+    const pending = new Promise((r) => { resolvePending = r; });
+    vi.stubGlobal("fetch", vi.fn(() => pending));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.innerHTML = "<h1>兜底标题</h1>";
+    document.body.appendChild(el);
+    await flush(); // load 已发起（fetch 挂起中）
+    el.restore();
+    // 在途响应随后到达：内容合法，但必须被丢弃，留在兜底
+    resolvePending({
+      ok: true,
+      json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "迟到的 AI 内容" } })),
+    });
+    await flush();
+    expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
+    expect(el.querySelector(".hero-banner")).toBeNull();
+  });
 });
 
 describe("<ai-slot stream> 流式渲染", () => {
@@ -328,6 +348,46 @@ describe("<ai-slot stream> 流式渲染", () => {
     document.body.appendChild(el);
     await flush();
     // 最终渲染为终树内容（骨架帧曾先渲染过，DOM 结构类名一致，终树文本覆盖）
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("最终标题");
+  });
+
+  it("骨架渲染慢于终树时，骨架结果不可覆盖终树", async () => {
+    let resolveSkeleton!: (el: HTMLElement) => void;
+    let calls = 0;
+    // 骨架（第一次渲染）挂起，终树（第二次渲染）立即完成
+    registerRenderer("slow-skeleton", (node) => {
+      calls += 1;
+      const div = document.createElement("div");
+      div.className = node.component;
+      div.textContent = (node.props?.title as string) ?? "";
+      if (calls === 1) return new Promise<HTMLElement>((r) => { resolveSkeleton = r; }).then(() => div);
+      return div;
+    });
+    const skeletonTree = { component: "hero-banner", props: { title: "" } };
+    const finalTree = { component: "hero-banner", props: { title: "最终标题" } };
+    const body =
+      `event: skeleton\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: skeletonTree })}\n\n` +
+      `event: tree\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: finalTree })}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(c) { c.enqueue(new TextEncoder().encode(body)); c.close(); },
+        }),
+      }),
+    ));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("renderer", "slow-skeleton");
+    el.setAttribute("stream", "");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush(); // 骨架渲染挂起中，终树已渲染并 setContent
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("最终标题");
+    // 骨架渲染此刻才完成：不得覆盖终树
+    resolveSkeleton(document.createElement("div"));
+    await flush();
     expect(el.querySelector(".hero-banner")?.textContent).toBe("最终标题");
   });
 
@@ -388,6 +448,32 @@ describe("<ai-slot live> 失效推送", () => {
     push(`event: invalidate\ndata: ${JSON.stringify({ slot: "hero" })}\n\n`);
     await flush();
     expect(el.querySelector(".hero-banner")?.textContent).toBe("第 2 版");
+  });
+
+  it("live-src 覆盖默认订阅地址", async () => {
+    const fetchSpy = vi.fn((url: unknown) => {
+      const u = String(url);
+      if (u.startsWith("/custom/channel")) {
+        return Promise.resolve({ ok: true, body: new ReadableStream({ start() {} }) });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "v" } })),
+      });
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("name", "hero");
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("live", "");
+    el.setAttribute("live-src", "/custom/channel");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/custom/channel?slot=hero",
+      expect.objectContaining({ headers: { accept: "text/event-stream" } }),
+    );
   });
 
   it("无 live 属性时不订阅", async () => {

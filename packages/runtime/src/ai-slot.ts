@@ -51,6 +51,8 @@ export class AiSlotElement extends HTMLElement {
   /** 拉取并渲染组件树；userPrompt 存在时走 POST 用户路径。失败时静默保留当前内容。 */
   async load(userPrompt?: string): Promise<void> {
     const seq = ++this.loadSeq;
+    // 终树已应用后置位：渲染较慢的骨架结果到达时不得覆盖终树
+    let finalApplied = false;
     const src = this.getAttribute("src");
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
     if (!src || !renderer) return;
@@ -60,10 +62,10 @@ export class AiSlotElement extends HTMLElement {
       registry: globalRegistry,
       stream: this.hasAttribute("stream"),
       onSkeleton: (skeleton) => {
-        if (seq !== this.loadSeq) return;
+        if (seq !== this.loadSeq || finalApplied) return;
         // 骨架帧：先渲染结构（文本占位），终树到达后再替换
         void renderTree(renderer, skeleton).then((el) => {
-          if (el && seq === this.loadSeq) this.setContent(el);
+          if (el && !finalApplied && seq === this.loadSeq) this.setContent(el);
         }).catch(() => {});
       },
     });
@@ -72,6 +74,7 @@ export class AiSlotElement extends HTMLElement {
       const el = await renderTree(renderer, tree);
       if (!el) return;
       if (seq !== this.loadSeq) return; // 已有更新的 load 发起，丢弃过期响应
+      finalApplied = true;
       this.setContent(el);
     } catch {
       // 渲染器抛错：静默回退兜底内容
@@ -92,6 +95,7 @@ export class AiSlotElement extends HTMLElement {
 
   /** 恢复为挂载时的原始兜底内容。 */
   restore(): void {
+    this.loadSeq += 1; // 使在途 load 的响应失效：恢复后到达的结果不得覆盖兜底
     this.innerHTML = this.fallbackHTML;
     if (this.editor) this.appendChild(this.editor);
   }

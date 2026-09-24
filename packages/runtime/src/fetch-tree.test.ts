@@ -85,6 +85,55 @@ describe("fetchComponentTree — SSE 流式", () => {
     expect(tree).toEqual(goodBody.tree);
   });
 
+  it("onSkeleton 回调抛错不影响终树返回", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => sseResponse(sseBody)));
+    const tree = await fetchComponentTree({
+      src: "/x",
+      registry,
+      stream: true,
+      onSkeleton: () => { throw new Error("回调爆炸"); },
+    });
+    expect(tree).toEqual(goodBody.tree);
+  });
+
+  it("SSE 帧以 CRLF 分隔/行尾时正常解析", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => sseResponse(sseBody.replaceAll("\n", "\r\n"))));
+    const skeletons: unknown[] = [];
+    const tree = await fetchComponentTree({ src: "/x", registry, stream: true, onSkeleton: (t) => skeletons.push(t) });
+    expect(skeletons).toEqual([{ component: "hero-banner", props: { title: "" } }]);
+    expect(tree).toEqual(goodBody.tree);
+  });
+
+  it("body 流路径：多字节字符跨 chunk 到达时完整解码", async () => {
+    const title = "多字节标题";
+    const body = `event: tree\ndata: ${JSON.stringify({ version: 1, slot: "s", tree: { component: "hero-banner", props: { title } } })}\n\n`;
+    const bytes = new TextEncoder().encode(body);
+    // 切在「多」字（3 字节 UTF-8）的字节中间
+    const cut = new TextEncoder().encode(body.slice(0, body.indexOf("多") + 1)).length - 1;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(c) { c.enqueue(bytes.slice(0, cut)); c.enqueue(bytes.slice(cut)); c.close(); },
+        }),
+      }),
+    ));
+    const tree = await fetchComponentTree({ src: "/x", registry, stream: true });
+    expect(tree).toEqual({ component: "hero-banner", props: { title } });
+  });
+
+  it("响应体非法 JSON / 缺 tree 字段时返回 null", async () => {
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.reject(new SyntaxError("bad json")) }),
+    ));
+    expect(await fetchComponentTree({ src: "/x", registry })).toBeNull();
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ version: 1, slot: "s" }) }),
+    ));
+    expect(await fetchComponentTree({ src: "/x", registry })).toBeNull();
+  });
+
   it("SSE 响应同样经过 registry 校验（终树非法返回 null）", async () => {
     const badBody =
       `event: tree\ndata: ${JSON.stringify({ version: 1, slot: "s", tree: { component: "evil" } })}\n\n`;

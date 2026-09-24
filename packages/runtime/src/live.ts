@@ -22,7 +22,7 @@ export function subscribeInvalidation(opts: SubscribeInvalidationOptions): Inval
 
   void (async () => {
     try {
-      const res = await doFetch(`${opts.src}?slot=${encodeURIComponent(opts.slot)}`, {
+      const res = await doFetch(`${opts.src}${opts.src.includes("?") ? "&" : "?"}slot=${encodeURIComponent(opts.slot)}`, {
         headers: { accept: "text/event-stream" },
         signal: controller.signal,
       });

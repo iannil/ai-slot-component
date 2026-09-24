@@ -23,6 +23,23 @@ describe("subscribeInvalidation", () => {
     expect(fetchSpy).toHaveBeenCalledWith("/ai-invalidate?slot=hero", expect.objectContaining({ headers: { accept: "text/event-stream" } }));
   });
 
+  it("src 自带 query 时用 & 拼接 slot", async () => {
+    const fetchSpy = vi.fn(() => Promise.resolve({ ok: true, body: sseStream([], true) }));
+    vi.stubGlobal("fetch", fetchSpy);
+    subscribeInvalidation({ src: "/ai-invalidate?token=abc", slot: "hero", onInvalidate: () => {} });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fetchSpy).toHaveBeenCalledWith("/ai-invalidate?token=abc&slot=hero", expect.objectContaining({ headers: { accept: "text/event-stream" } }));
+  });
+
+  it("invalidate 帧跨两个 chunk 到达仍触发回调", async () => {
+    const chunks = ["event: inval", `idate\ndata: ${JSON.stringify({ slot: "hero" })}\n\n`];
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, body: sseStream(chunks, true) })));
+    const hits: number[] = [];
+    subscribeInvalidation({ src: "/x", slot: "hero", onInvalidate: () => hits.push(1) });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(hits).toHaveLength(1);
+  });
+
   it("收到本槽位 invalidate 帧时回调", async () => {
     const frame = `event: invalidate\ndata: ${JSON.stringify({ slot: "hero" })}\n\n`;
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, body: sseStream([frame], true) })));

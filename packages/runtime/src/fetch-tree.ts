@@ -43,7 +43,8 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
 
 /** 解析 SSE 帧流：skeleton 帧回调，tree 帧（校验后）作为结果。 */
 async function readSSE(res: Response, opts: FetchTreeOptions): Promise<ComponentNode | null> {
-  const text = await readBody(res);
+  // 容忍 CRLF 分帧/行尾：统一归一为 \n 再解析
+  const text = (await readBody(res)).replace(/\r\n/g, "\n");
   let finalTree: ComponentNode | null = null;
   for (const chunk of text.split("\n\n")) {
     const event = chunk.match(/^event: (.+)$/m)?.[1];
@@ -56,7 +57,13 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
       continue; // 单帧损坏：跳过，不中断
     }
     if (event === "skeleton") {
-      if (data?.tree) opts.onSkeleton?.(data.tree);
+      if (data?.tree) {
+        try {
+          opts.onSkeleton?.(data.tree);
+        } catch {
+          // 回调异常不影响主流程
+        }
+      }
     } else if (event === "tree") {
       finalTree = data?.tree ?? null;
     }
@@ -78,5 +85,6 @@ async function readBody(res: Response): Promise<string> {
     if (done) break;
     text += decoder.decode(value, { stream: true });
   }
+  text += decoder.decode(); // flush：输出残留的未完成多字节序列
   return text;
 }
