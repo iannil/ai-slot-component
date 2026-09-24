@@ -1,4 +1,5 @@
 import {
+  deriveSkeleton,
   validateComponentTree,
   type AiRenderResponse,
   type ComponentNode,
@@ -69,6 +70,22 @@ function json(body: unknown, status: number): Response {
   });
 }
 
+/** SSE 双帧响应：先发骨架（文本占位），再发完整组件树。 */
+function sse(response: AiRenderResponse): Response {
+  const skeleton: AiRenderResponse = {
+    ...response,
+    tree: deriveSkeleton(response.tree),
+    meta: { ...response.meta, phase: "skeleton" },
+  };
+  const body =
+    `event: skeleton\ndata: ${JSON.stringify(skeleton)}\n\n` +
+    `event: tree\ndata: ${JSON.stringify(response)}\n\n`;
+  return new Response(body, {
+    status: 200,
+    headers: { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache" },
+  });
+}
+
 /** 无状态渲染代理：GET 开发者路径（长缓存）/ POST 用户路径（实时 + 限流 + 短 TTL）。 */
 export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Promise<Response> {
   const store = opts.store ?? new MemoryCacheStore();
@@ -84,6 +101,7 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
     const match = new URL(req.url).pathname.match(/\/ai-render\/([\w-]+)\/?$/);
     if (!match) return json({ error: "not_found" }, 404);
     const slotId = match[1];
+    const wantsSSE = req.headers.get("accept")?.includes("text/event-stream") ?? false;
 
     // ① 方法与用户提示词：POST 先做限流与 sanitize（不依赖槽位）
     let userPrompt: string | undefined;
@@ -105,7 +123,7 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
     let hit: CacheLookup<AiRenderResponse> | undefined;
     if (userPrompt !== undefined) {
       hit = lookup<AiRenderResponse>(store, userCacheKey(slotId, userPrompt), now());
-      if (hit?.status === "fresh") return json(hit.value, 200);
+      if (hit?.status === "fresh") return wantsSSE ? sse(hit.value) : json(hit.value, 200);
     }
 
     // ③ 解析槽位
@@ -125,7 +143,7 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
         developerCacheKey(slotId, slot.contentVersion, slot.promptVersion ?? "1"),
         now(),
       );
-      if (hit?.status === "fresh") return json(hit.value, 200);
+      if (hit?.status === "fresh") return wantsSSE ? sse(hit.value) : json(hit.value, 200);
     }
 
     const isUserPath = userPrompt !== undefined;
@@ -138,7 +156,7 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
     const staleMs = opts.staleMs ?? 86_400_000;
 
     const staleOr503 = (): Response => {
-      if (hit) return json(hit.value, 200); // 降级链：stale 缓存兜底
+      if (hit) return wantsSSE ? sse(hit.value) : json(hit.value, 200); // 降级链：stale 缓存兜底
       return json({ error: "ai_unavailable" }, 503);
     };
 
@@ -187,7 +205,7 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
         meta: { reason: isUserPath ? "user-prompt" : "developer-prompt" },
       };
       store.set(key, response, ttlMs, staleMs, now());
-      return json(response, 200);
+      return wantsSSE ? sse(response) : json(response, 200);
     } catch (error) {
       console.warn("[ai-render] LLM 调用失败", error);
       return staleOr503();
