@@ -57,7 +57,8 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
       continue; // 单帧损坏：跳过，不中断
     }
     if (event === "skeleton") {
-      if (data?.tree) {
+      // 骨架帧与终树同样过客户端校验（双保险）；非法骨架按损坏帧跳过
+      if (data?.tree && !(opts.registry && !validateComponentTree(opts.registry, data.tree).ok)) {
         try {
           opts.onSkeleton?.(data.tree);
         } catch {

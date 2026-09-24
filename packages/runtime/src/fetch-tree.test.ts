@@ -141,6 +141,17 @@ describe("fetchComponentTree — SSE 流式", () => {
     expect(await fetchComponentTree({ src: "/x", registry, stream: true, onSkeleton: () => {} })).toBeNull();
   });
 
+  it("skeleton 帧为非法组件（注册表外）时不回调 onSkeleton，终树正常返回", async () => {
+    const body =
+      `event: skeleton\ndata: ${JSON.stringify({ version: 1, slot: "s", tree: { component: "evil" } })}\n\n` +
+      `event: tree\ndata: ${JSON.stringify(goodBody)}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() => sseResponse(body)));
+    const skeletons: unknown[] = [];
+    const tree = await fetchComponentTree({ src: "/x", registry, stream: true, onSkeleton: (t) => skeletons.push(t) });
+    expect(skeletons).toEqual([]);
+    expect(tree).toEqual(goodBody.tree);
+  });
+
   it("stream: true 但代理返回 JSON 时向后兼容", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(goodBody) })));
     expect(await fetchComponentTree({ src: "/x", registry, stream: true })).toEqual(goodBody.tree);

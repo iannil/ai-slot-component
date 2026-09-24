@@ -391,6 +391,54 @@ describe("<ai-slot stream> 流式渲染", () => {
     expect(el.querySelector(".hero-banner")?.textContent).toBe("最终标题");
   });
 
+  it("终树缺失（只有 skeleton 帧）时恢复兜底内容，不留空骨架", async () => {
+    const skeletonTree = { component: "hero-banner", props: { title: "" } };
+    const body = `event: skeleton\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: skeletonTree })}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(c) { c.enqueue(new TextEncoder().encode(body)); c.close(); },
+        }),
+      }),
+    ));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("stream", "");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    // 骨架已渲染又被 restore：显示原始兜底，而非空文本骨架
+    expect(el.querySelector("h1")?.textContent).toBe("兜底");
+    expect(el.querySelector(".hero-banner")).toBeNull();
+  });
+
+  it("终树校验失败（注册表外组件）时恢复兜底内容，不留空骨架", async () => {
+    const skeletonTree = { component: "hero-banner", props: { title: "" } };
+    const badTree = { component: "evil", props: {} };
+    const body =
+      `event: skeleton\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: skeletonTree })}\n\n` +
+      `event: tree\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: badTree })}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(c) { c.enqueue(new TextEncoder().encode(body)); c.close(); },
+        }),
+      }),
+    ));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("stream", "");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    expect(el.querySelector("h1")?.textContent).toBe("兜底");
+    expect(el.querySelector(".hero-banner")).toBeNull();
+  });
+
   it("无 stream 属性时不发 SSE Accept（行为不变）", async () => {
     const fetchSpy = vi.fn(() => Promise.resolve({ ok: false, status: 503 }));
     vi.stubGlobal("fetch", fetchSpy);

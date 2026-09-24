@@ -34,6 +34,8 @@ export function subscribeInvalidation(opts: SubscribeInvalidationOptions): Inval
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
+      // 容忍 CRLF 通道：统一归一为 \n 再分帧
+      buffer = buffer.replace(/\r\n/g, "\n");
         // 按 \n\n 分帧；最后一帧可能不完整，留在 buffer
         const frames = buffer.split("\n\n");
         buffer = frames.pop() ?? "";

@@ -53,6 +53,9 @@ export class AiSlotElement extends HTMLElement {
     const seq = ++this.loadSeq;
     // 终树已应用后置位：渲染较慢的骨架结果到达时不得覆盖终树
     let finalApplied = false;
+    // 骨架帧已受理置位（渲染是异步的，可能晚于终树结果返回）：
+    // 终树失败时需恢复兜底，不能留空骨架
+    let skeletonApplied = false;
     const src = this.getAttribute("src");
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
     if (!src || !renderer) return;
@@ -63,13 +66,19 @@ export class AiSlotElement extends HTMLElement {
       stream: this.hasAttribute("stream"),
       onSkeleton: (skeleton) => {
         if (seq !== this.loadSeq || finalApplied) return;
+        skeletonApplied = true;
         // 骨架帧：先渲染结构（文本占位），终树到达后再替换
         void renderTree(renderer, skeleton).then((el) => {
           if (el && !finalApplied && seq === this.loadSeq) this.setContent(el);
         }).catch(() => {});
       },
     });
-    if (!tree) return;
+    if (!tree) {
+      // 终树缺失/损坏/校验失败：已渲染（或渲染在途）的骨架不能留给人看，恢复兜底。
+      // restore 的 loadSeq 防护同时使在途骨架渲染失效
+      if (skeletonApplied && seq === this.loadSeq) this.restore();
+      return;
+    }
     try {
       const el = await renderTree(renderer, tree);
       if (!el) return;

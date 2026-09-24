@@ -49,6 +49,15 @@ describe("subscribeInvalidation", () => {
     expect(hits).toHaveLength(1);
   });
 
+  it("CRLF 分隔/行尾的 invalidate 帧同样触发回调", async () => {
+    const frame = `event: invalidate\r\ndata: ${JSON.stringify({ slot: "hero" })}\r\n\r\n`;
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, body: sseStream([frame], true) })));
+    const hits: number[] = [];
+    subscribeInvalidation({ src: "/ai-invalidate", slot: "hero", onInvalidate: () => hits.push(1) });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(hits).toHaveLength(1);
+  });
+
   it("非本槽位帧与心跳注释不触发回调", async () => {
     const chunks = [`: ping\n\n`, `event: invalidate\ndata: ${JSON.stringify({ slot: "other" })}\n\n`];
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, body: sseStream(chunks, true) })));
