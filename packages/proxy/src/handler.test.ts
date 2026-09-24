@@ -1,5 +1,5 @@
 import { defineRegistry, type AiRenderResponse } from "@ai-slot/registry";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAiRenderHandler, type SlotSource } from "./handler.js";
 import type { LLMClient } from "./llm-client.js";
 
@@ -47,6 +47,14 @@ function post(prompt: unknown, headers: Record<string, string> = {}) {
     body: JSON.stringify({ prompt }),
   });
 }
+
+// 失败路径会触发真实 console.warn（符合设计），测试中静音以保持输出干净
+beforeEach(() => {
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("createAiRenderHandler — GET 开发者路径", () => {
   it("缓存未命中时调用 LLM、校验并返回组件树，meta.reason 为 developer-prompt", async () => {
@@ -219,5 +227,26 @@ describe("createAiRenderHandler — POST 用户路径", () => {
     await handler(post("Hello   World"));
     await handler(post("  hello world "));
     expect(llm.complete).toHaveBeenCalledTimes(1);
+  });
+
+  it("resolveSlot 故障时，已缓存的用户结果仍返回（缓存前置）", async () => {
+    const llm = makeLLM(JSON.stringify({ tree: goodTree }));
+    let failResolve = false;
+    const handler = createAiRenderHandler({
+      registry,
+      llm,
+      resolveSlot: () => {
+        if (failResolve) throw new Error("kv down");
+        return slot;
+      },
+      now: () => 1000,
+    });
+    const first = await handler(post("hello"));
+    expect(first.status).toBe(200);
+    failResolve = true;
+    const second = await handler(post("hello"));
+    expect(second.status).toBe(200); // fresh 缓存直接返回，不依赖 resolveSlot
+    const third = await handler(post("从未见过的提示词"));
+    expect(third.status).toBe(503); // 无缓存时仍是 503
   });
 });

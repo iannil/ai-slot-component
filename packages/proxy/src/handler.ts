@@ -9,6 +9,7 @@ import {
   developerCacheKey,
   lookup,
   userCacheKey,
+  type CacheLookup,
 } from "./cache.js";
 import type { LLMClient, LLMResponse } from "./llm-client.js";
 import { withRetry } from "./llm-client.js";
@@ -83,15 +84,8 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
     const match = new URL(req.url).pathname.match(/\/ai-render\/([\w-]+)\/?$/);
     if (!match) return json({ error: "not_found" }, 404);
     const slotId = match[1];
-    let slot: SlotSource | null;
-    try {
-      slot = await opts.resolveSlot(slotId);
-    } catch (error) {
-      console.warn("[ai-render] 槽位解析失败", error);
-      return json({ error: "ai_unavailable" }, 503);
-    }
-    if (!slot) return json({ error: "unknown_slot" }, 404);
 
+    // ① 方法与用户提示词：POST 先做限流与 sanitize（不依赖槽位）
     let userPrompt: string | undefined;
     if (req.method === "POST") {
       if (limiter) {
@@ -106,6 +100,34 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
       return json({ error: "method_not_allowed" }, 405);
     }
 
+    // ② 用户路径缓存前置：key 只依赖 slotId + 规范化提示词，
+    //    resolveSlot 故障时已缓存结果仍可用
+    let hit: CacheLookup<AiRenderResponse> | undefined;
+    if (userPrompt !== undefined) {
+      hit = lookup<AiRenderResponse>(store, userCacheKey(slotId, userPrompt), now());
+      if (hit?.status === "fresh") return json(hit.value, 200);
+    }
+
+    // ③ 解析槽位
+    let slot: SlotSource | null;
+    try {
+      slot = await opts.resolveSlot(slotId);
+    } catch (error) {
+      console.warn("[ai-render] 槽位解析失败", error);
+      return hit ? json(hit.value, 200) : json({ error: "ai_unavailable" }, 503);
+    }
+    if (!slot) return json({ error: "unknown_slot" }, 404);
+
+    // ④ 开发者路径缓存（key 依赖 contentVersion，需在 resolveSlot 之后）
+    if (userPrompt === undefined) {
+      hit = lookup<AiRenderResponse>(
+        store,
+        developerCacheKey(slotId, slot.contentVersion, slot.promptVersion ?? "1"),
+        now(),
+      );
+      if (hit?.status === "fresh") return json(hit.value, 200);
+    }
+
     const isUserPath = userPrompt !== undefined;
     // 直接用条件判断而非 isUserPath，让 TS 能把 userPrompt 收窄为 string
     const key =
@@ -114,9 +136,6 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
         : developerCacheKey(slotId, slot.contentVersion, slot.promptVersion ?? "1");
     const ttlMs = isUserPath ? (opts.userTtlMs ?? 600_000) : (opts.developerTtlMs ?? 3_600_000);
     const staleMs = opts.staleMs ?? 86_400_000;
-
-    const hit = lookup<AiRenderResponse>(store, key, now());
-    if (hit?.status === "fresh") return json(hit.value, 200);
 
     const staleOr503 = (): Response => {
       if (hit) return json(hit.value, 200); // 降级链：stale 缓存兜底
