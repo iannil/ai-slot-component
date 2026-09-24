@@ -342,3 +342,62 @@ describe("<ai-slot stream> 流式渲染", () => {
     expect(fetchSpy).toHaveBeenCalledWith("/ai-render/hero", undefined);
   });
 });
+
+describe("<ai-slot live> 失效推送", () => {
+  beforeEach(() => {
+    configureAiSlot({ registry });
+    document.body.innerHTML = "";
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("live 属性建立订阅，收到失效信号后静默重新加载", async () => {
+    const encoder = new TextEncoder();
+    let push!: (chunk: string) => void;
+    const liveBody = new ReadableStream<Uint8Array>({
+      start(c) { push = (chunk) => c.enqueue(encoder.encode(chunk)); },
+    });
+    let loadCount = 0;
+    const fetchSpy = vi.fn((url: unknown) => {
+      const u = String(url);
+      if (u.startsWith("/ai-invalidate")) {
+        return Promise.resolve({ ok: true, body: liveBody });
+      }
+      loadCount += 1;
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: `第 ${loadCount} 版` } })),
+      });
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("name", "hero");
+    el.setAttribute("src", "/ai-render/hero");
+    el.setAttribute("live", "");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    // 订阅 URL 派生：/ai-render/<slot> → /ai-invalidate?slot=<slot>
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/ai-invalidate?slot=hero",
+      expect.objectContaining({ headers: { accept: "text/event-stream" } }),
+    );
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("第 1 版");
+    // 推送失效信号 → 静默重新加载
+    push(`event: invalidate\ndata: ${JSON.stringify({ slot: "hero" })}\n\n`);
+    await flush();
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("第 2 版");
+  });
+
+  it("无 live 属性时不订阅", async () => {
+    const fetchSpy = vi.fn((_url: unknown) => Promise.resolve({ ok: false, status: 503 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.innerHTML = "<h1>兜底</h1>";
+    document.body.appendChild(el);
+    await flush();
+    expect(fetchSpy.mock.calls.some(([u]) => String(u).includes("ai-invalidate"))).toBe(false);
+  });
+});

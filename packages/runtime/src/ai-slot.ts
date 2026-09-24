@@ -1,5 +1,6 @@
 import type { Registry } from "@ai-slot/registry";
 import { fetchComponentTree } from "./fetch-tree.js";
+import { subscribeInvalidation, type InvalidationSubscription } from "./live.js";
 import { getRenderer, renderTree } from "./renderer.js";
 
 let globalRegistry: Registry | undefined;
@@ -18,6 +19,7 @@ export class AiSlotElement extends HTMLElement {
   protected editor: HTMLElement | null = null;
   private fallbackCaptured = false;
   private timer: ReturnType<typeof setInterval> | undefined;
+  private liveSub: InvalidationSubscription | null = null;
   private loadSeq = 0;
 
   connectedCallback(): void {
@@ -36,11 +38,14 @@ export class AiSlotElement extends HTMLElement {
     // 同步调用 load() 会因找不到渲染器而静默放弃且不再重试。
     queueMicrotask(() => {
       if (this.isConnected) void this.load();
+      if (this.isConnected && this.hasAttribute("live")) this.mountLive();
     });
   }
 
   disconnectedCallback(): void {
     clearInterval(this.timer);
+    this.liveSub?.close();
+    this.liveSub = null;
   }
 
   /** 拉取并渲染组件树；userPrompt 存在时走 POST 用户路径。失败时静默保留当前内容。 */
@@ -71,6 +76,18 @@ export class AiSlotElement extends HTMLElement {
     } catch {
       // 渲染器抛错：静默回退兜底内容
     }
+  }
+
+  /** live 属性：订阅失效推送，收到本槽位信号后静默重新加载。 */
+  protected mountLive(): void {
+    const src = this.getAttribute("live-src") ?? this.getAttribute("src")?.replace(/\/ai-render\/.*$/, "/ai-invalidate");
+    const slot = this.getAttribute("name");
+    if (!src || !slot || this.liveSub) return;
+    this.liveSub = subscribeInvalidation({
+      src,
+      slot,
+      onInvalidate: () => void this.load(),
+    });
   }
 
   /** 恢复为挂载时的原始兜底内容。 */
