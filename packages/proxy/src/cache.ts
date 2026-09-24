@@ -24,6 +24,23 @@ export class MemoryCacheStore {
   set<T>(key: string, value: T, ttlMs: number, staleMs: number, now: number): void {
     this.map.set(key, { value, expiresAt: now + ttlMs, staleUntil: now + ttlMs + staleMs });
   }
+
+  /** 序列化为 JSON（绝对毫秒时间戳；CI 与部署时钟需一致）。 */
+  dump(): string {
+    return JSON.stringify(Object.fromEntries(this.map));
+  }
+
+  /** 反序列化；剔除调用时已彻底过期的条目。非法 JSON 抛 SyntaxError。 */
+  static load(json: string, now: number): MemoryCacheStore {
+    const raw = JSON.parse(json) as Record<string, CacheEntry<unknown>>;
+    const store = new MemoryCacheStore();
+    for (const [key, entry] of Object.entries(raw)) {
+      if (now < entry.staleUntil) {
+        store.map.set(key, entry);
+      }
+    }
+    return store;
+  }
 }
 
 export interface CacheLookup<T> {
