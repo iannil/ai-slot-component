@@ -73,4 +73,33 @@ describe("handler SSE 传输", () => {
     expect(res.status).toBe(503);
     expect(res.headers.get("content-type")).toContain("application/json");
   });
+
+  it("resolveSlot 故障 + stale 命中时协商 SSE 同样发双帧", async () => {
+    const llm: LLMClient = { complete: vi.fn().mockResolvedValue({ text: JSON.stringify({ tree: goodTree }) }) };
+    let t = 1000;
+    let slotDown = false;
+    const handler = createAiRenderHandler({
+      registry,
+      llm,
+      resolveSlot: () => {
+        if (slotDown) throw new Error("slot store down");
+        return slot;
+      },
+      now: () => t,
+    });
+    const ssePost = () =>
+      new Request("https://edge.example/ai-render/hero", {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "text/event-stream" },
+        body: JSON.stringify({ prompt: "改写标题" }),
+      });
+    const seeded = await handler(ssePost()); // 写用户路径缓存
+    expect(seeded.status).toBe(200);
+    t += 600_001; // 越过 userTtlMs（默认 10 分钟）进入 stale 窗口
+    slotDown = true;
+    const res = await handler(ssePost());
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+    expect(parseSSE(await res.text())).toHaveLength(2);
+  });
 });

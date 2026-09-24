@@ -132,7 +132,7 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
       slot = await opts.resolveSlot(slotId);
     } catch (error) {
       console.warn("[ai-render] 槽位解析失败", error);
-      return hit ? json(hit.value, 200) : json({ error: "ai_unavailable" }, 503);
+      return hit ? (wantsSSE ? sse(hit.value) : json(hit.value, 200)) : json({ error: "ai_unavailable" }, 503);
     }
     if (!slot) return json({ error: "unknown_slot" }, 404);
 
