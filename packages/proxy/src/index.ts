@@ -1,5 +1,6 @@
 export * from "./cache.js";
 export * from "./handler.js";
+export * from "./invalidate.js";
 export * from "./llm-client.js";
 export * from "./openai-client.js";
 export * from "./prewarm.js";
