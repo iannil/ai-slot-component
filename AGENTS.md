@@ -38,7 +38,12 @@
 
 ## 构建与测试命令
 
-**暂无。** 项目尚未初始化任何工具链，没有可运行的构建、测试或 lint 命令。初始化项目时需要补充本节。
+- 安装依赖：`pnpm install`
+- 构建全部包：`pnpm build`（tsup，ESM 输出到各包 `dist/`）
+- 运行全部测试：`pnpm test`（Vitest；runtime/adapter-dom 用 jsdom 环境）
+- 类型检查：`pnpm typecheck`
+- 单包命令：`pnpm --filter @ai-slot/<包名> test|build|typecheck`
+- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
 
 ## 测试策略（设计文档中的既定方针）
 
