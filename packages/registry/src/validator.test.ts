@@ -174,3 +174,33 @@ describe("validateComponentTree — 槽位与数量上限", () => {
     expect(validateComponentTree(reg, tree, { maxDepth: 10 })).toEqual({ ok: true });
   });
 });
+
+describe("validateComponentTree — 原型链对抗", () => {
+  it("拒绝原型链上的伪造组件名（toString/constructor/hasOwnProperty/__proto__）且不抛异常", () => {
+    for (const name of ["toString", "constructor", "hasOwnProperty", "__proto__"]) {
+      const r = validateComponentTree(registry, { component: name });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.errors[0].rule).toBe("unknown-component");
+    }
+  });
+
+  it("伪造组件名携带 children 时校验器不抛异常（静默回退）", () => {
+    const r = validateComponentTree(registry, { component: "toString", children: [] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0].rule).toBe("unknown-component");
+  });
+
+  it("拒绝原型链上的未声明 prop 键（constructor/toString/__proto__）", () => {
+    const loose = defineRegistry({ components: { b: { description: "", props: { t: "string" } } } });
+    const cases: unknown[] = [
+      { t: "ok", constructor: "x" },
+      { t: "ok", toString: "x" },
+      JSON.parse('{"t":"ok","__proto__":{"x":1}}'),
+    ];
+    for (const props of cases) {
+      const r = validateComponentTree(loose, { component: "b", props });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.errors[0].rule).toBe("props");
+    }
+  });
+});

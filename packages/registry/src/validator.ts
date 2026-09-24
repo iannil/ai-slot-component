@@ -45,8 +45,11 @@ export function validateComponentTree(
     if (typeof n.component !== "string") {
       return fail(path, "structure", "节点缺少 component 字段");
     }
+    // Object.hasOwn：只认自有属性，阻断 "toString"/"constructor" 之类沿原型链命中的伪造组件名
+    if (!Object.hasOwn(registry.components, n.component)) {
+      return fail(path, "unknown-component", `组件未注册: ${n.component}`);
+    }
     const def = registry.components[n.component];
-    if (!def) return fail(path, "unknown-component", `组件未注册: ${n.component}`);
     if (n.props !== undefined) {
       validateProps(def.props, def.required, n.props, `${path}.props`);
       if (errors.length > 0) return;
@@ -88,7 +91,8 @@ export function validateComponentTree(
       if (!(key in props)) return fail(`${path}.${key}`, "props", `缺少必填 prop: ${key}`);
     }
     for (const [key, v] of Object.entries(props)) {
-      const schema = schemas[key];
+      // Object.hasOwn：只认自有属性，阻断 "constructor"/"__proto__" 之类沿原型链命中的未声明 prop
+      const schema = Object.hasOwn(schemas, key) ? schemas[key] : undefined;
       if (!schema) return fail(`${path}.${key}`, "props", `未声明的 prop: ${key}`);
       validateValue(schema, v, `${path}.${key}`);
       if (errors.length > 0) return;
@@ -133,6 +137,10 @@ export function validateComponentTree(
           }
         }
         return;
+      }
+      default: {
+        // 防御未知 schema.type（如原型链污染传入的非 PropSchema 对象）：宁可拒绝也不静默放行
+        return fail(path, "props", "未知的 schema 类型");
       }
     }
   }
