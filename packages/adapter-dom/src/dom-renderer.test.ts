@@ -58,6 +58,20 @@ describe("createDomRenderer", () => {
     warn.mockRestore();
   });
 
+  it("原型链上的键（如 constructor）不被当作已注册组件", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const renderer = createDomRenderer(components);
+    const el = await renderTree(renderer, {
+      component: "hero-banner",
+      props: { title: "ok" },
+      children: [{ component: "constructor" }, { component: "markdown-block", props: { content: "保留" } }],
+    });
+    expect(el?.querySelector(".markdown")?.textContent).toBe("保留");
+    expect(el?.querySelector("undefined")).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("constructor"));
+    warn.mockRestore();
+  });
+
   it("childrenTarget 可指定子元素挂载点", async () => {
     const renderer = createDomRenderer({
       card: {

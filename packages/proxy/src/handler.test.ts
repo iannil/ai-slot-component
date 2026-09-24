@@ -70,6 +70,18 @@ describe("createAiRenderHandler — GET 开发者路径", () => {
     expect(llm.complete).toHaveBeenCalledTimes(1);
   });
 
+  it("LLM 第一次失败时重试一次，第二次成功返回 200", async () => {
+    const llm: LLMClient = {
+      complete: vi
+        .fn()
+        .mockRejectedValueOnce(new Error("boom"))
+        .mockResolvedValueOnce({ text: JSON.stringify({ tree: goodTree }) }),
+    };
+    const res = await makeHandler(llm)(get());
+    expect(res.status).toBe(200);
+    expect(llm.complete).toHaveBeenCalledTimes(2);
+  });
+
   it("LLM 失败且无缓存时返回 503", async () => {
     const llm: LLMClient = { complete: vi.fn().mockRejectedValue(new Error("boom")) };
     const res = await makeHandler(llm)(get());
@@ -104,6 +116,35 @@ describe("createAiRenderHandler — GET 开发者路径", () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as AiRenderResponse;
     expect(body.tree).toEqual(goodTree);
+  });
+
+  it("resolveSlot 抛错时降级为 503，不让 handler reject", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const handler = makeHandler(makeLLM("{}"), {
+      resolveSlot: () => {
+        throw new Error("db down");
+      },
+    });
+    const res = await handler(get());
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "ai_unavailable" });
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("onUsage 抛错不影响成功响应，结果仍写入缓存", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const llm = makeLLM(JSON.stringify({ tree: goodTree }));
+    const onUsage = vi.fn(() => {
+      throw new Error("usage sink down");
+    });
+    const handler = makeHandler(llm, { onUsage });
+    const res = await handler(get());
+    expect(res.status).toBe(200);
+    // 第二次请求命中缓存，说明结果已写入
+    await handler(get());
+    expect(llm.complete).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
   });
 
   it("未知槽位返回 404，未匹配路径返回 404", async () => {

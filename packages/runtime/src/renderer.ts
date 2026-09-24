@@ -15,7 +15,7 @@ export type Renderer = (
 
 const renderers = new Map<string, Renderer>();
 
-/** 注册渲染适配器，如 registerRenderer("dom", createDomRenderer(...))。 */
+/** 注册渲染适配器，如 registerRenderer("dom", createDomRenderer(...))。渲染器必须与导入 runtime 的代码在同一 module graph 中同步注册（custom elements upgrade 是同步的，首个 load 只推迟到一个 microtask）。 */
 export function registerRenderer(name: string, renderer: Renderer): void {
   renderers.set(name, renderer);
 }

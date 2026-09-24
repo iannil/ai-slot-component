@@ -21,6 +21,7 @@ describe("sanitizeUserPrompt", () => {
   it("剥离控制字符", () => {
     expect(sanitizeUserPrompt("a\u0007b")).toBe("a b");
     expect(sanitizeUserPrompt("a\u0085b")).toBe("ab");
+    expect(sanitizeUserPrompt("a\u009Fb")).toBe("ab");
   });
 
   it("保留连字符等正常标点", () => {

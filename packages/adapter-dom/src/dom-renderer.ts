@@ -10,10 +10,10 @@ export interface DomComponentDef {
   childrenTarget?: (el: HTMLElement) => HTMLElement;
 }
 
-/** 内置 DOM 渲染器：按注册表 tag 映射直接建 DOM。未注册组件跳过并警告。 */
+/** 内置 DOM 渲染器：按注册表 tag 映射直接建 DOM。未注册组件跳过并警告。只消费默认槽位 children，命名槽位（ctx.slots）会被忽略。 */
 export function createDomRenderer(components: Record<string, DomComponentDef>): Renderer {
   return (node, ctx) => {
-    const def = components[node.component];
+    const def = Object.hasOwn(components, node.component) ? components[node.component] : undefined;
     if (!def) {
       console.warn(`[ai-slot] 组件未在客户端注册，已跳过: ${node.component}`);
       return null;

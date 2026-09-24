@@ -45,6 +45,8 @@
 - 单包命令：`pnpm --filter @ai-slot/<包名> test|build|typecheck`
 - 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
 
+注意：`pnpm typecheck` 依赖各 workspace 包的 dist 类型产物，干净 checkout 后请先 `pnpm build`。
+
 ## 测试策略（设计文档中的既定方针）
 
 实现时应按此策略建立测试，优先级从高到低：

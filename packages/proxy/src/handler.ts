@@ -11,6 +11,7 @@ import {
   userCacheKey,
 } from "./cache.js";
 import type { LLMClient, LLMResponse } from "./llm-client.js";
+import { withRetry } from "./llm-client.js";
 import { compilePrompt } from "./prompt-compiler.js";
 import { RateLimiter } from "./rate-limit.js";
 import { sanitizeUserPrompt } from "./sanitize.js";
@@ -43,7 +44,7 @@ export interface ProxyOptions {
   userTtlMs?: number;
   /** stale 窗口，默认 1 天 */
   staleMs?: number;
-  /** 用户路径限流，默认 10 次/分钟；传 false 关闭 */
+  /** 用户路径限流，默认 10 次/分钟；传 false 关闭。进程内单实例语义，多实例部署需外部存储（见 rate-limit.ts） */
   rateLimit?: { limit: number; windowMs: number } | false;
   /** 用量日志：每次 LLM 调用成功后回调（供计费与调优） */
   onUsage?: (entry: UsageLogEntry) => void;
@@ -76,11 +77,19 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
       ? null
       : new RateLimiter(opts.rateLimit ?? { limit: 10, windowMs: 60_000 });
 
+  const llm = withRetry(opts.llm);
+
   return async function handler(req: Request): Promise<Response> {
     const match = new URL(req.url).pathname.match(/\/ai-render\/([\w-]+)\/?$/);
     if (!match) return json({ error: "not_found" }, 404);
     const slotId = match[1];
-    const slot = await opts.resolveSlot(slotId);
+    let slot: SlotSource | null;
+    try {
+      slot = await opts.resolveSlot(slotId);
+    } catch (error) {
+      console.warn("[ai-render] 槽位解析失败", error);
+      return json({ error: "ai_unavailable" }, 503);
+    }
     if (!slot) return json({ error: "unknown_slot" }, 404);
 
     let userPrompt: string | undefined;
@@ -126,25 +135,30 @@ export function createAiRenderHandler(opts: ProxyOptions): (req: Request) => Pro
       const model = isUserPath
         ? (opts.models?.user ?? "gpt-4o-mini")
         : (opts.models?.developer ?? "gpt-4o-mini");
-      const llmRes = await opts.llm.complete({
+      const llmRes = await llm.complete({
         model,
         system: compiled.system,
         user: compiled.user,
         maxTokens: opts.maxTokens ?? 2000,
         timeoutMs: 8000,
       });
-      opts.onUsage?.({
-        slotId,
-        model,
-        reason: isUserPath ? "user-prompt" : "developer-prompt",
-        usage: llmRes.usage,
-        at: now(),
-      });
+      try {
+        opts.onUsage?.({
+          slotId,
+          model,
+          reason: isUserPath ? "user-prompt" : "developer-prompt",
+          usage: llmRes.usage,
+          at: now(),
+        });
+      } catch (error) {
+        console.warn("[ai-render] 用量日志回调失败，已忽略", error);
+      }
       const parsed: unknown = JSON.parse(llmRes.text);
       const tree = (parsed as Partial<AiRenderResponse> | null)?.tree;
       const result = validateComponentTree(opts.registry, tree);
       if (!result.ok) {
-        console.warn("[ai-render] 输出校验失败，已丢弃", result.errors);
+        // spec §6：丢弃结果，记录原始输出（截断）供调优提示词
+        console.warn("[ai-render] 输出校验失败，已丢弃", result.errors, llmRes.text.slice(0, 500));
         return staleOr503();
       }
       const response: AiRenderResponse = {
