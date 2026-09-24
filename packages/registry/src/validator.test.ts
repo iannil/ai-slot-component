@@ -204,3 +204,45 @@ describe("validateComponentTree — 原型链对抗", () => {
     }
   });
 });
+
+describe("validateComponentTree — v1.1 护栏", () => {
+  it("字符串 prop 超过全局上限（默认 10000）即拒绝，即使 schema 未声明 maxLength", () => {
+    const reg = defineRegistry({ components: { b: { description: "", props: { t: "string" } } } });
+    expect(validateComponentTree(reg, { component: "b", props: { t: "x".repeat(10_000) } })).toEqual({ ok: true });
+    const r = validateComponentTree(reg, { component: "b", props: { t: "x".repeat(10_001) } });
+    expect(r.ok).toBe(false);
+  });
+
+  it("全局上限与 schema maxLength 取较严者", () => {
+    const reg = defineRegistry({ components: { b: { description: "", props: { t: { type: "string", maxLength: 5 } } } } });
+    expect(validateComponentTree(reg, { component: "b", props: { t: "123456" } }, { maxStringLength: 100 }).ok).toBe(false);
+    expect(validateComponentTree(reg, { component: "b", props: { t: "x".repeat(50) } }, { maxStringLength: 10 }).ok).toBe(false);
+  });
+
+  it("数组 prop 超过全局上限（默认 200）即拒绝", () => {
+    const reg = defineRegistry({ components: { b: { description: "", props: { a: { type: "array" } } } } });
+    expect(validateComponentTree(reg, { component: "b", props: { a: Array.from({ length: 200 }, () => 1) } })).toEqual({ ok: true });
+    expect(validateComponentTree(reg, { component: "b", props: { a: Array.from({ length: 201 }, () => 1) } }).ok).toBe(false);
+  });
+
+  it("boolean 分支校验 enum", () => {
+    const reg = defineRegistry({ components: { b: { description: "", props: { p: { type: "boolean", enum: [true] } } } } });
+    expect(validateComponentTree(reg, { component: "b", props: { p: true } })).toEqual({ ok: true });
+    expect(validateComponentTree(reg, { component: "b", props: { p: false } }).ok).toBe(false);
+  });
+
+  it("嵌套 object 的必填从 PropSchema.required 派生", () => {
+    const reg = defineRegistry({
+      components: {
+        card: {
+          description: "",
+          props: { cta: { type: "object", props: { label: { type: "string", required: true }, href: "string" } } },
+        },
+      },
+    });
+    const missing = validateComponentTree(reg, { component: "card", props: { cta: { href: "/x" } } });
+    expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.errors[0].message).toContain("必填");
+    expect(validateComponentTree(reg, { component: "card", props: { cta: { label: "go" } } })).toEqual({ ok: true });
+  });
+});

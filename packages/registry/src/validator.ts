@@ -5,6 +5,10 @@ export interface ValidatorOptions {
   maxDepth?: number;
   /** 节点总数上限，默认 50 */
   maxNodes?: number;
+  /** 字符串 prop 全局上限（与 schema maxLength 取较严者），默认 10_000 */
+  maxStringLength?: number;
+  /** 数组 prop 全局上限（与 schema maxItems 取较严者），默认 200 */
+  maxArrayItems?: number;
 }
 
 export interface ValidationError {
@@ -26,6 +30,8 @@ export function validateComponentTree(
 ): ValidationResult {
   const maxDepth = options.maxDepth ?? 5;
   const maxNodes = options.maxNodes ?? 50;
+  const maxStringLength = options.maxStringLength ?? 10_000;
+  const maxArrayItems = options.maxArrayItems ?? 200;
   const errors: ValidationError[] = [];
   let nodeCount = 0;
 
@@ -103,8 +109,9 @@ export function validateComponentTree(
     switch (schema.type) {
       case "string": {
         if (typeof value !== "string") return fail(path, "props", "期望 string");
-        if (schema.maxLength !== undefined && value.length > schema.maxLength) {
-          return fail(path, "props", `超过 maxLength ${schema.maxLength}`);
+        const cap = Math.min(schema.maxLength ?? maxStringLength, maxStringLength);
+        if (value.length > cap) {
+          return fail(path, "props", `超过长度上限 ${cap}`);
         }
         if (schema.enum && !schema.enum.includes(value)) return fail(path, "props", "不在枚举范围内");
         return;
@@ -116,19 +123,26 @@ export function validateComponentTree(
       }
       case "boolean": {
         if (typeof value !== "boolean") return fail(path, "props", "期望 boolean");
+        if (schema.enum && !schema.enum.includes(value)) return fail(path, "props", "不在枚举范围内");
         return;
       }
       case "object": {
         if (typeof value !== "object" || value === null || Array.isArray(value)) {
           return fail(path, "props", "期望 object");
         }
-        if (schema.props) validateProps(schema.props as Record<string, PropSchema>, [], value, path);
+        if (schema.props) {
+          const nestedRequired = Object.entries(schema.props)
+            .filter(([, s]) => typeof s === "object" && (s as PropSchema).required === true)
+            .map(([key]) => key);
+          validateProps(schema.props as Record<string, PropSchema>, nestedRequired, value, path);
+        }
         return;
       }
       case "array": {
         if (!Array.isArray(value)) return fail(path, "props", "期望 array");
-        if (schema.maxItems !== undefined && value.length > schema.maxItems) {
-          return fail(path, "props", `超过 maxItems ${schema.maxItems}`);
+        const cap = Math.min(schema.maxItems ?? maxArrayItems, maxArrayItems);
+        if (value.length > cap) {
+          return fail(path, "props", `超过元素数上限 ${cap}`);
         }
         if (schema.items) {
           for (let i = 0; i < value.length; i++) {
