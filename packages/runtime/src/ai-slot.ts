@@ -17,10 +17,15 @@ export class AiSlotElement extends HTMLElement {
 
   protected fallbackHTML = "";
   protected editor: HTMLElement | null = null;
+  private fallbackCaptured = false;
   private timer: ReturnType<typeof setInterval> | undefined;
 
   connectedCallback(): void {
-    this.fallbackHTML = this.innerHTML;
+    // 同一实例可能反复挂载：只在首次捕获兜底，避免被 AI 内容或编辑条污染
+    if (!this.fallbackCaptured) {
+      this.fallbackHTML = this.innerHTML;
+      this.fallbackCaptured = true;
+    }
     if (this.hasAttribute("editable")) this.mountEditor();
     const intervalSec = Number(this.getAttribute("refresh-interval") ?? 0);
     if (intervalSec > 0) {
@@ -73,6 +78,11 @@ export class AiSlotElement extends HTMLElement {
 
   /** editable 的默认编辑条；样式通过 .ai-slot-editor 完全开放给用户自定义。 */
   protected mountEditor(): void {
+    if (this.editor) {
+      // 重连时复用已有编辑条，不重复创建
+      if (this.editor.parentNode !== this) this.appendChild(this.editor);
+      return;
+    }
     const form = document.createElement("form");
     form.className = "ai-slot-editor";
     const input = document.createElement("input");

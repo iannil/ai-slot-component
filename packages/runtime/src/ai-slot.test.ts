@@ -181,4 +181,40 @@ describe("<ai-slot editable> 用户提示词流程", () => {
     expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
     expect(el.querySelector("form.ai-slot-editor")).not.toBeNull();
   });
+
+  it("重连后 restore 仍恢复原始兜底内容", async () => {
+    mockFetch(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "AI 标题" } })),
+      }),
+    );
+    const el = mountEditable();
+    await flush();
+    expect(el.querySelector(".hero-banner")).not.toBeNull(); // AI 内容已替换兜底
+    el.remove();
+    document.body.appendChild(el); // 同一实例重新挂载
+    await flush();
+    el.restore();
+    expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
+    expect(el.querySelector(".hero-banner")).toBeNull(); // 兜底未被 AI 内容污染
+    expect(el.querySelector("form.ai-slot-editor")).not.toBeNull();
+  });
+
+  it("重连不重复挂载编辑条", async () => {
+    mockFetch(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(aiResponse({ component: "hero-banner", props: { title: "AI 标题" } })),
+      }),
+    );
+    const el = mountEditable();
+    await flush();
+    el.remove();
+    document.body.appendChild(el);
+    // connectedCallback 同步执行：有缺陷的实现会在此刻追加第二个编辑条
+    expect(el.querySelectorAll("form.ai-slot-editor")).toHaveLength(1);
+    await flush();
+    expect(el.querySelectorAll("form.ai-slot-editor")).toHaveLength(1);
+  });
 });
