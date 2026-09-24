@@ -6,12 +6,12 @@
 
 **ai-slot-component**：一个「AI Native 渲染 SDK」项目 —— 让任意前端项目的页面在正式展示前，先经由 AI 进行内容补充与改写；终端用户还可以通过提示词快速修改指定页面的展示。
 
-**当前阶段：v1 已实现并合入 master。** 四个包（registry / proxy / runtime / adapter-dom）+ 纯 HTML 端到端示例均已落地，86 个单元测试 + 3 个 Playwright e2e 全绿。设计文档：
+**当前阶段：v1 + v1.1 已实现并合入 master。** 六个包（registry / proxy / runtime / adapter-dom / adapter-react / adapter-vue）+ 纯 HTML 端到端示例均已落地，单元测试与 Playwright e2e 全绿。v1.1 在 v1 之上新增：props 全局护栏、缓存序列化与 CI 预生成、SSE 流式（`stream` 属性，骨架→终树双帧）、失效推送（`live` 属性）、React/Vue 渲染适配器。设计文档：
 
 - `docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md` —— 总体设计（含技术选型与接入方式）
 - `docs/superpowers/plans/2026-09-24-ai-native-rendering-sdk.md` —— v1 实现计划（已执行完毕）
 
-任何实现工作都应以该设计文档为准。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟、后续可立项的事项：SSE 流式渲染、WebSocket 失效推送、CI 构建时预生成工具、React/Vue 渲染适配器（`registerRenderer` 接口已预留）。
+任何实现工作都应以该设计文档为准。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟的事项中，SSE 流式渲染（骨架→终树双帧；token 级 LLM 增量流式仍推迟）、失效推送（SSE 通道；断开自动重连仍推迟）、CI 构建时预生成工具、React/Vue 渲染适配器均已在 v1.1 完成。剩余推迟项：token 级 LLM 增量流式、live 自动重连、多实例限流/缓存存储抽象。
 
 ## 语言约定
 
@@ -28,7 +28,7 @@
 5. **AI 调用收敛在服务端代理**（Edge/Serverless）：流水线为 `PromptCompiler → LLM Client → OutputValidator → Cache`，负责密钥安全、缓存、限流、降级。
 6. **AI 输出永远被视为不可信输入**：OutputValidator 依次校验组件名、props Schema、slots 嵌套合法性、嵌套深度与节点总数上限；任何一项失败即丢弃结果并回退兜底内容。
 
-规划中的主要模块：
+主要模块（均已落地）：
 
 | 模块 | 职责 |
 |---|---|
@@ -44,11 +44,13 @@
 - 运行全部测试：`pnpm test`（Vitest；runtime/adapter-dom 用 jsdom 环境）
 - 类型检查：`pnpm typecheck`
 - 单包命令：`pnpm --filter @ai-slot/<包名> test|build|typecheck`
-- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
+- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，当前共 7 条；首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
+- CI 预生成（AI 静态化）：`examples/plain-html` 下 `node prewarm.mjs` 生成 `ai-cache.json`，`node server.mjs` 启动时自动水合
+- 真实 LLM：示例默认走确定性 mock；设置 `OPENAI_API_KEY` 后切换为 OpenAI 兼容端点（可选 `AI_BASE_URL`、`AI_MODEL_DEVELOPER` 默认 gpt-4o、`AI_MODEL_USER` 默认 gpt-4o-mini）
 
 注意：`pnpm typecheck` 依赖各 workspace 包的 dist 类型产物，干净 checkout 后请先 `pnpm build`。
 
-## 测试策略（既定方针，v1 已按此落地）
+## 测试策略（既定方针，v1/v1.1 已按此落地）
 
 实现时应按此策略建立测试，优先级从高到低：
 
