@@ -1,6 +1,11 @@
-import { createAiRenderHandler, MemoryCacheStore } from "@ai-slot/proxy";
+import { createAiRenderHandler, createInvalidationChannel, MemoryCacheStore } from "@ai-slot/proxy";
 import { readFile } from "node:fs/promises";
 import { registry } from "./registry.mjs";
+
+export const invalidation = createInvalidationChannel();
+
+/** 输出内容带可观测版本号：publishUpdate 后重载结果可与旧内容区分。 */
+let version = 0;
 
 /** Mock LLM：确定性输出，slotId=broken 时模拟失败。 */
 export const mockLLM = {
@@ -14,7 +19,7 @@ export const mockLLM = {
         tree: {
           component: "hero-banner",
           props: {
-            title: isUser ? "用户定制标题" : "AI 增强后的标题",
+            title: isUser ? "用户定制标题" : `AI 增强后的标题 v${version}`,
             subtitle: "由 mock LLM 生成",
           },
         },
@@ -24,6 +29,16 @@ export const mockLLM = {
 };
 
 export const downLLM = { async complete() { throw new Error("LLM down（模拟故障）"); } };
+
+/**
+ * 数据源发布更新：内容版本+1（contentVersion 变化 → 缓存 key 变化 → 必然重新调用 LLM），
+ * 然后向 hero 槽位的所有订阅者推送失效信号。这正是真实语义：数据源变了 → 推送失效。
+ */
+export function publishUpdate() {
+  version += 1;
+  slots.hero.contentVersion = `v${version + 1}`;
+  invalidation.invalidate("hero");
+}
 
 export const slots = {
   hero: {

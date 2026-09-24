@@ -27,7 +27,7 @@ test("预生成缓存：LLM 不可用时 hero 仍渲染预生成内容", async (
     }
     await page.goto("http://localhost:4174/");
     const slot = page.locator('ai-slot[name="hero"]');
-    await expect(slot.locator(".hero-title")).toHaveText("AI 增强后的标题");
+    await expect(slot.locator(".hero-title")).toHaveText("AI 增强后的标题 v0");
   } finally {
     server.kill();
   }
