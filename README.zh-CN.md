@@ -61,7 +61,7 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 跑起来了？一个 ⭐ 能帮更多人看到这个项目。
 
 <p align="center">
-  <img src="assets/demo.gif" alt="访客提示词（三种交付方式之一）：单个槽位按校验过的组件树重新渲染" width="720">
+  <img src="assets/demo.gif" alt="一段录屏看三种交付方式：加载时 AI 内容流式上屏，数据源变更免发版原地更新标题，最后访客提示词个性化该槽位" width="720">
 </p>
 <p align="center">
   <img src="assets/screenshot-hero.png" alt="AI 增强后的 hero：由校验过的组件树渲染" width="49%">

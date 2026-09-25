@@ -61,7 +61,7 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 Got it running? A ⭐ helps others find the project.
 
 <p align="center">
-  <img src="assets/demo.gif" alt="A visitor prompt — one of the three delivery modes — re-renders a single slot from a validated component tree" width="720">
+  <img src="assets/demo.gif" alt="Three delivery modes in one recording: AI content streams in on load, a data-source change updates the title in place without a redeploy, then a visitor prompt personalizes the slot" width="720">
 </p>
 <p align="center">
   <img src="assets/screenshot-hero.png" alt="AI-enhanced hero rendered from a validated component tree" width="49%">
