@@ -119,7 +119,7 @@ configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 
 ## Usage
 
-> All packages are on npm as `@ai-slot/*` (currently `0.1.0`): client — `npm install @ai-slot/runtime @ai-slot/adapter-dom` (+ `@ai-slot/a2ui` for A2UI endpoints); server — `npm install @ai-slot/proxy @ai-slot/registry`. To hack on the monorepo instead, clone and `pnpm install && pnpm build`.
+> All packages are on npm as `@ai-slot/*`: client — `npm install @ai-slot/runtime @ai-slot/adapter-dom` (+ `@ai-slot/a2ui` for A2UI endpoints); server — `npm install @ai-slot/proxy @ai-slot/registry`. To hack on the monorepo instead, clone and `pnpm install && pnpm build`.
 
 **1. Declare what the AI may build with** (shared by proxy, runtime and build tooling):
 

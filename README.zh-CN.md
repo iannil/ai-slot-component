@@ -119,7 +119,7 @@ configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 
 ## 用法
 
-> 各包已发布到 npm（`@ai-slot/*`，当前 `0.1.0`）：客户端 `npm install @ai-slot/runtime @ai-slot/adapter-dom`（A2UI 端点另装 `@ai-slot/a2ui`）；服务端 `npm install @ai-slot/proxy @ai-slot/registry`。若要参与 monorepo 开发，克隆后 `pnpm install && pnpm build`。
+> 各包已发布到 npm（`@ai-slot/*`）：客户端 `npm install @ai-slot/runtime @ai-slot/adapter-dom`（A2UI 端点另装 `@ai-slot/a2ui`）；服务端 `npm install @ai-slot/proxy @ai-slot/registry`。若要参与 monorepo 开发，克隆后 `pnpm install && pnpm build`。
 
 **1. 声明 AI 可用的积木**（代理、运行时、构建工具三方共用）：
 
