@@ -41,8 +41,8 @@
     "@ai-slot/registry": "workspace:*"
   },
   "peerDependencies": {
-    "@ai-slot/adapter-dom": "workspace:*",
-    "@ai-slot/runtime": "workspace:*"
+    "@ai-slot/adapter-dom": "workspace:^",
+    "@ai-slot/runtime": "workspace:^"
   },
   "devDependencies": {
     "@ai-slot/adapter-dom": "workspace:*",

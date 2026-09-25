@@ -1,6 +1,6 @@
 {
   "name": "@ai-slot/runtime",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Zero-dependency <ai-slot> Web Component runtime for AI-enhanced pages with guaranteed fallback.",
   "keywords": [
