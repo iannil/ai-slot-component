@@ -16,6 +16,11 @@ export function registerWireFormat(id: string, format: WireFormat): void {
   wireFormats.set(id, format);
 }
 
+/** 注销线格式解析器。返回是否确实删除了条目（Map.delete 语义）。用于测试隔离与动态换装。 */
+export function unregisterWireFormat(id: string): boolean {
+  return wireFormats.delete(id);
+}
+
 export interface WireParseResult {
   /** 有 wire format 的 detect 命中（命中后无论 parse 成败都不再走原生路径） */
   matched: boolean;

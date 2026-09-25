@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ComponentNode } from "@ai-slot/registry";
-import { parseWithWireFormats, registerWireFormat, type WireFormat } from "./wire.js";
+import { parseWithWireFormats, registerWireFormat, unregisterWireFormat, type WireFormat } from "./wire.js";
 
 const fmt = (marker: string, tree: ComponentNode | null): WireFormat => ({
   detect: (d) => typeof d === "object" && d !== null && (d as Record<string, unknown>).marker === marker,
@@ -51,5 +51,17 @@ describe("registerWireFormat / parseWithWireFormats", () => {
     registerWireFormat("m6", fmt("m6", { component: "first" }));
     registerWireFormat("m6", fmt("m6", { component: "second" }));
     expect(parseWithWireFormats({ marker: "m6" })).toEqual({ matched: true, tree: { component: "second" } });
+  });
+});
+
+describe("unregisterWireFormat", () => {
+  it("注销后 parseWithWireFormats 不再命中该格式", () => {
+    registerWireFormat("m7", fmt("m7", { component: "a" }));
+    expect(unregisterWireFormat("m7")).toBe(true);
+    expect(parseWithWireFormats({ marker: "m7" })).toEqual({ matched: false, tree: null });
+  });
+
+  it("注销不存在的 id 返回 false", () => {
+    expect(unregisterWireFormat("m8-不存在")).toBe(false);
   });
 });
