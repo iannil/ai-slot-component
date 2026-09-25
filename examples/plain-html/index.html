@@ -3,6 +3,42 @@
   <head>
     <meta charset="utf-8" />
     <title>老站接入 ai-slot 示例</title>
+    <style>
+      /* 演示页的最低限度排版：老站本身零改动，这里只是让默认观感不至于太裸 */
+      body {
+        margin: 0 auto;
+        padding: 48px 32px 64px;
+        max-width: 640px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #1a1a1a;
+        background: #fafafa;
+      }
+      h1 { font-size: 28px; letter-spacing: -0.02em; margin: 0 0 4px; }
+      h1 + p { color: #555; margin: 0 0 20px; }
+      h2 { font-size: 20px; margin: 36px 0 0; }
+      form.ai-slot-editor { display: flex; gap: 8px; margin: 12px 0 4px; }
+      form.ai-slot-editor input[name="prompt"] {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background: #fff;
+      }
+      form.ai-slot-editor button {
+        padding: 8px 14px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background: #fff;
+        cursor: pointer;
+      }
+      form.ai-slot-editor button[type="submit"] {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: #fff;
+      }
+    </style>
     <script type="importmap">
       {
         "imports": {
