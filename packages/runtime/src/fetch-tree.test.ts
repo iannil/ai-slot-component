@@ -1,6 +1,7 @@
 import { defineRegistry } from "@ai-slot/registry";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchComponentTree } from "./fetch-tree.js";
+import { registerWireFormat, type WireFormat } from "./wire.js";
 
 const registry = defineRegistry({
   components: { "hero-banner": { description: "", props: { title: "string" }, required: ["title"] } },
@@ -155,5 +156,82 @@ describe("fetchComponentTree — SSE 流式", () => {
   it("stream: true 但代理返回 JSON 时向后兼容", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(goodBody) })));
     expect(await fetchComponentTree({ src: "/x", registry, stream: true })).toEqual(goodBody.tree);
+  });
+});
+
+describe("fetchComponentTree — wire format 扩展", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const a2uiBody = {
+    name: "demo",
+    messages: [
+      { version: "v1.0", createSurface: { surfaceId: "s" } },
+      {
+        version: "v1.0",
+        updateComponents: {
+          surfaceId: "s",
+          components: [{ id: "root", component: "hero-banner", props: { title: "t" } }],
+        },
+      },
+    ],
+  };
+
+  /** 测试用最小 wire format：识别 messages 包裹，取 id==="root" 的组件。 */
+  function fakeA2uiFormat(): WireFormat {
+    return {
+      detect: (d) => typeof d === "object" && d !== null && "messages" in d,
+      parse: (d) => {
+        const msgs = (d as { messages: Array<{ updateComponents?: { components: Array<{ id: string; component: string; props?: Record<string, unknown> }> } }> }).messages;
+        const root = msgs.find((m) => m.updateComponents)?.updateComponents?.components.find((c) => c.id === "root");
+        return root ? { component: root.component, props: root.props } : null;
+      },
+    };
+  }
+
+  // 注意：wireFormats 为模块级全局 Map（无 reset API），注册会跨用例残留。
+  // 因此「未注册」用例置于最前；后续用例以同 id 覆盖注册（Map.set 覆盖语义，同 wire.test.ts m4 模式）。
+  it("未注册任何命中格式时，A2UI 响应走原生路径 → data.tree 不存在 → null", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(a2uiBody) })));
+    expect(await fetchComponentTree({ src: "/x", registry })).toBeNull();
+  });
+
+  it("注册 wire format 后：A2UI 响应被解析并过注册表校验", async () => {
+    registerWireFormat("test-a2ui", fakeA2uiFormat());
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(a2uiBody) })));
+    const tree = await fetchComponentTree({ src: "/x", registry });
+    expect(tree).toEqual({ component: "hero-banner", props: { title: "t" } });
+  });
+
+  it("wire 解析结果非法时，注册表校验拦截 → null", async () => {
+    registerWireFormat("test-a2ui", {
+      detect: (d) => typeof d === "object" && d !== null && "messages" in d,
+      parse: () => ({ component: "no-such-comp" }),
+    });
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(a2uiBody) })));
+    expect(await fetchComponentTree({ src: "/x", registry })).toBeNull();
+  });
+
+  it("SSE 帧：wire format 命中的 skeleton/tree 帧同样生效", async () => {
+    registerWireFormat("test-a2ui", fakeA2uiFormat());
+    const sse =
+      `event: skeleton\ndata: ${JSON.stringify({ messages: [{ version: "v1.0", updateComponents: { surfaceId: "s", components: [{ id: "root", component: "hero-banner", props: { title: "" } }] } }] })}\n\n` +
+      `event: tree\ndata: ${JSON.stringify(a2uiBody)}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(sse));
+            controller.close();
+          },
+        }),
+        text: () => Promise.resolve(sse),
+      }),
+    ));
+    const skeletons: unknown[] = [];
+    const tree = await fetchComponentTree({ src: "/x", registry, stream: true, onSkeleton: (s) => skeletons.push(s) });
+    expect(skeletons).toEqual([{ component: "hero-banner", props: { title: "" } }]);
+    expect(tree).toEqual({ component: "hero-banner", props: { title: "t" } });
   });
 });

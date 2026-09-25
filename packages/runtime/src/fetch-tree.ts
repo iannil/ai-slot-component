@@ -1,4 +1,5 @@
 import { validateComponentTree, type AiRenderResponse, type ComponentNode, type Registry } from "@ai-slot/registry";
+import { parseWithWireFormats } from "./wire.js";
 
 export interface FetchTreeOptions {
   src: string;
@@ -33,12 +34,20 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
     if (opts.stream && res.headers?.get("content-type")?.includes("text/event-stream")) {
       return await readSSE(res, opts);
     }
-    const data = (await res.json()) as AiRenderResponse;
-    if (opts.registry && !validateComponentTree(opts.registry, data?.tree).ok) return null;
-    return data?.tree ?? null;
+    const tree = extractTree((await res.json()) as unknown);
+    if (tree && opts.registry && !validateComponentTree(opts.registry, tree).ok) return null;
+    return tree;
   } catch {
     return null;
   }
+}
+
+/** 已解析 JSON → 组件树：先按注册顺序探测 wire formats，全部未命中走原生 AiRenderResponse。 */
+function extractTree(data: unknown): ComponentNode | null {
+  const wire = parseWithWireFormats(data);
+  if (wire.matched) return wire.tree;
+  const body = data as AiRenderResponse;
+  return body?.tree ?? null;
 }
 
 /** 解析 SSE 帧流：skeleton 帧回调，tree 帧（校验后）作为结果。 */
@@ -58,15 +67,16 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
     }
     if (event === "skeleton") {
       // 骨架帧与终树同样过客户端校验（双保险）；非法骨架按损坏帧跳过
-      if (data?.tree && !(opts.registry && !validateComponentTree(opts.registry, data.tree).ok)) {
+      const skeleton = extractTree(data);
+      if (skeleton && !(opts.registry && !validateComponentTree(opts.registry, skeleton).ok)) {
         try {
-          opts.onSkeleton?.(data.tree);
+          opts.onSkeleton?.(skeleton);
         } catch {
           // 回调异常不影响主流程
         }
       }
     } else if (event === "tree") {
-      finalTree = data?.tree ?? null;
+      finalTree = extractTree(data);
     }
   }
   if (finalTree === null) return null;
