@@ -76,6 +76,37 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 - **密钥只留在服务端。** LLM 密钥只存在于代理；访客提示词经清洗、限长后作为受限上下文注入，并配有 token 预算、8s 超时、每分钟限流与用量日志。
 - **原始内容始终在页面里。** `<ai-slot>` 是渐进增强：爬虫与无 JS 访客看到的仍是你的真实内容。
 
+## 协议中立的设计
+
+ai-slot 分为三层：
+
+1. **槽位协议** —— AI 端点与页面之间的线格式。原生 JSON 之外，[A2UI](https://github.com/a2ui-project/a2ui)（Google 开源的 agent 驱动 UI 协议）经 [`@ai-slot/a2ui`](./packages/a2ui) 同样可用。
+2. **交付运行时** —— `<ai-slot>`、客户端二次校验、保证回退。
+3. **生命周期基础设施** —— 双层缓存、构建期预热、失效推送、限流。
+
+任何 A2UI 兼容端点都能喂给存量页面：
+
+```ts
+import { defineRegistry } from "@ai-slot/registry";
+import { createDomRenderer } from "@ai-slot/adapter-dom";
+import { configureAiSlot, registerRenderer, registerWireFormat } from "@ai-slot/runtime";
+import { a2uiWireFormat, basicCatalogComponentDefs, basicCatalogDomDefs } from "@ai-slot/a2ui";
+
+const registry = defineRegistry({
+  components: { ...basicCatalogComponentDefs /* , your brand components */ },
+});
+registerWireFormat("a2ui", a2uiWireFormat);
+registerRenderer("dom", createDomRenderer(basicCatalogDomDefs));
+configureAiSlot({ registry });
+```
+
+| | A2UI / AG-UI | ai-slot |
+|---|---|---|
+| 层级 | agent ↔ 应用内 UI 的线格式（Google / CopilotKit） | 公开网页内容槽位的交付层——经 `@ai-slot/a2ui` 说 A2UI |
+| 存量页面 | 遗留内容被 iframe 沙箱隔离 | 原地包裹既有 HTML，零改写 |
+| SEO 与爬虫 | 客户端渲染，爬虫不可见（包括 Googlebot） | 原始内容永在 HTML 里——爬虫与 AI 搜索可见 |
+| 生命周期 | 无服务端组件（无缓存、预热、失效） | 双层 TTL、构建期预热、失效推送、限流 |
+
 ## 特性
 
 - **老站即插即用** —— 把现有标记包进 `<ai-slot>` 即可；纯 HTML、React、Vue 都能接，无需重写。
@@ -88,7 +119,7 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 
 ## 用法
 
-> 各包已发布到 npm（`@ai-slot/*`，当前 `0.1.0`）：客户端 `npm install @ai-slot/runtime @ai-slot/adapter-dom`；服务端 `npm install @ai-slot/proxy @ai-slot/registry`。若要参与 monorepo 开发，克隆后 `pnpm install && pnpm build`。
+> 各包已发布到 npm（`@ai-slot/*`，当前 `0.1.0`）：客户端 `npm install @ai-slot/runtime @ai-slot/adapter-dom`（A2UI 端点另装 `@ai-slot/a2ui`）；服务端 `npm install @ai-slot/proxy @ai-slot/registry`。若要参与 monorepo 开发，克隆后 `pnpm install && pnpm build`。
 
 **1. 声明 AI 可用的积木**（代理、运行时、构建工具三方共用）：
 

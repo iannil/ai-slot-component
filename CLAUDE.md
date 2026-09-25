@@ -38,7 +38,7 @@ node server.mjs             # http://localhost:4173，启动时自动水合 ai-c
 
 ## 架构
 
-六个包 + 一个纯 HTML 端到端示例，依赖方向自上而下：
+七个包 + 一个纯 HTML 端到端示例，依赖方向自上而下：
 
 ```
 registry（协议核心，无依赖）
@@ -46,12 +46,15 @@ registry（协议核心，无依赖）
 proxy（服务端）        runtime（客户端 Web Components）
                           ↑
               adapter-dom / adapter-react / adapter-vue
+                          ↑
+        a2ui（可选兼容层，不反向依赖；接入点见下）
 ```
 
 - **`packages/registry`** —— AI 输出协议与安全边界的所在：`types.ts` 定义 `ComponentNode` / `Registry` / `AiRenderResponse`；`define-registry.ts` 声明组件清单（props Schema、slots、dataSources，支持 `"string"` 简写并规范化）；`validator.ts` 是 OutputValidator（校验组件名、props Schema、slots 合法性、深度/节点数上限）；`skeleton.ts` 的 `deriveSkeleton` 从终树生成骨架帧。**注意 validator 在 registry 而非 proxy**，三方（代理、客户端运行时、构建工具）共用同一份校验。
 - **`packages/proxy`** —— 无状态服务端代理，核心是 `handler.ts` 的 `createAiRenderHandler(): (Request) => Promise<Response>`（Web 标准接口，可直接部署到 Edge/Serverless；示例用 node `server.mjs` 包一层）。路由 `GET/POST /ai-render/:slotId`：GET 是开发者路径（长 TTL L1 缓存，可 CI 预生成）；POST 是用户路径（先限流 → `sanitize.ts` 过滤提示词 → 短 TTL L2 缓存）。流水线 `PromptCompiler → LLM Client（withRetry）→ OutputValidator → Cache`，缓存失败时按 stale 窗口回退。`openai-client.ts` 为 OpenAI 兼容实现；`prewarm.ts` 生成 `ai-cache.json`；`invalidate.ts` 暴露 `/ai-invalidate` 失效推送；SSE 场景返回双帧（先 `event: skeleton` 再 `event: tree`）。
 - **`packages/runtime`** —— 零依赖客户端运行时：`ai-slot.ts` 定义 `<ai-slot>` 元素与 `configureAiSlot({ registry })`。属性：`src`（代理地址）、`name`、`renderer`（默认 dom）、`editable`（用户改写编辑器）、`stream`（SSE 骨架→终树双帧）、`live` + `live-src`（订阅失效推送，静默重载）、`refresh-interval`。`renderer.ts` 维护 `registerRenderer(name, fn)` 全局注册表并递归渲染组件树（先渲染 children 与命名 slots 再组装父节点）。**custom elements upgrade 是同步的**——引入方的 `registerRenderer`/`configureAiSlot` 必须与导入 runtime 的代码在同一 module graph 中同步执行（首帧加载只推迟一个 microtask）。
 - **`packages/adapter-*`** —— 渲染适配器：`adapter-dom` 的 `createDomRenderer`（组件名 → `DomComponentDef`：`tag`/`class`/`applyProps`/`childrenTarget`；未注册组件跳过并警告，文本必须用 `textContent` 写入、禁止塞进 `innerHTML`）、`adapter-react` 的 `tree-to-react` + `<AiSlot>`、`adapter-vue` 的 `tree-to-vue` + `ai-slot` 组件。适配器把校验过的组件树映射到开发者真实组件。
+- **`packages/a2ui`** —— 可选兼容层（A2UI wire format ⇄ 组件树，全仓唯一持有 A2UI 知识的包）：消费侧 `createA2uiWireFormat({ mappings })` / `a2uiWireFormat` 经 runtime 的 `registerWireFormat` 接入（信封解析、邻接表→嵌套树、mappings 改名、`{path}` 绑定与 `action` 降级、`deleteSurface` → 兜底）；生产侧 `withA2uiOutput(handler)` 包住 proxy handler 重写 JSON/SSE 响应（proxy 零改动）。Basic Catalog 双侧静态表：`basicCatalogDomDefs`（渲染，零内置 CSS）+ `basicCatalogComponentDefs`（校验，全部可选、容器声明 default 槽位）。官方 fixtures 回放测试，`tree → A2UI → parse → tree` 往返等价锁定。
 
 **跨包测试别名**：各包 `vitest.config.ts` 把 `@ai-slot/registry` 等别名指向**源码** `../registry/src/index.ts`（不走 dist）。新增 workspace 依赖时需同步在该包 `vitest.config.ts` 加 alias，否则测试解析失败。
 

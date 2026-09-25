@@ -76,6 +76,37 @@ Got it running? A ⭐ helps others find the project.
 - **Secrets stay on the server.** LLM keys live only in the proxy. Visitor prompts are sanitized, length-capped and injected as bounded context, with token budgets, an 8s timeout, per-minute rate limiting and usage logs.
 - **The original content is always in the page.** `<ai-slot>` is progressive enhancement: crawlers and no-JS visitors see your real content.
 
+## Protocol-neutral by design
+
+ai-slot separates three layers:
+
+1. **Slot protocol** — the wire format between the AI endpoint and the page. Native JSON today; [A2UI](https://github.com/a2ui-project/a2ui) (Google's open protocol for agent-driven UI) works too via [`@ai-slot/a2ui`](./packages/a2ui).
+2. **Delivery runtime** — `<ai-slot>`, client-side re-validation, and the guaranteed fallback.
+3. **Lifecycle infrastructure** — two-tier caching, build-time pregeneration, invalidation push, rate limiting.
+
+Any A2UI-compliant agent endpoint can feed an existing page:
+
+```ts
+import { defineRegistry } from "@ai-slot/registry";
+import { createDomRenderer } from "@ai-slot/adapter-dom";
+import { configureAiSlot, registerRenderer, registerWireFormat } from "@ai-slot/runtime";
+import { a2uiWireFormat, basicCatalogComponentDefs, basicCatalogDomDefs } from "@ai-slot/a2ui";
+
+const registry = defineRegistry({
+  components: { ...basicCatalogComponentDefs /* , your brand components */ },
+});
+registerWireFormat("a2ui", a2uiWireFormat);
+registerRenderer("dom", createDomRenderer(basicCatalogDomDefs));
+configureAiSlot({ registry });
+```
+
+| | A2UI / AG-UI | ai-slot |
+|---|---|---|
+| Layer | Wire format for agent ↔ in-app UI (Google / CopilotKit) | Delivery layer for public web content slots — speaks A2UI via `@ai-slot/a2ui` |
+| Existing pages | Legacy content isolated in sandboxed iframes | Wraps existing HTML in place, zero rewrite |
+| SEO & crawlers | Client-rendered; crawlers see nothing (including Googlebot) | Original content always in the HTML — visible to crawlers and AI search |
+| Lifecycle | No server-side component (no cache, prewarm or invalidation) | Two-tier TTL, build-time prewarm, invalidation push, rate limiting |
+
 ## Features
 
 - **Drop-in for the site you already have** — wrap existing markup in `<ai-slot>`; plain HTML, React and Vue all work, no rewrite required.
@@ -88,7 +119,7 @@ Got it running? A ⭐ helps others find the project.
 
 ## Usage
 
-> All packages are on npm as `@ai-slot/*` (currently `0.1.0`): client — `npm install @ai-slot/runtime @ai-slot/adapter-dom`; server — `npm install @ai-slot/proxy @ai-slot/registry`. To hack on the monorepo instead, clone and `pnpm install && pnpm build`.
+> All packages are on npm as `@ai-slot/*` (currently `0.1.0`): client — `npm install @ai-slot/runtime @ai-slot/adapter-dom` (+ `@ai-slot/a2ui` for A2UI endpoints); server — `npm install @ai-slot/proxy @ai-slot/registry`. To hack on the monorepo instead, clone and `pnpm install && pnpm build`.
 
 **1. Declare what the AI may build with** (shared by proxy, runtime and build tooling):
 
