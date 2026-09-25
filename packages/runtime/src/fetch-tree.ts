@@ -11,8 +11,33 @@ export interface FetchTreeOptions {
   stream?: boolean;
   /** SSE skeleton 帧回调（先于终树到达） */
   onSkeleton?: (tree: ComponentNode) => void;
+  /** 可选失败观测：每个失败路径触发一次。回调异常被吞掉，绝不影响兜底。 */
+  onFailure?: (failure: FetchFailure) => void;
   /** 测试注入用 */
   fetchImpl?: typeof fetch;
+}
+
+/** 失败观测事件：stage 标识失败阶段，message 为人读原因（英文短语，API 面向国际用户）。 */
+export interface FetchFailure {
+  stage: "http-non-ok" | "parse" | "validate" | "fetch-error";
+  message: string;
+}
+
+/** 上报失败观测；回调异常一律吞掉——钩子绝不能破坏兜底路径。 */
+function safeReport(onFailure: ((failure: FetchFailure) => void) | undefined, failure: FetchFailure): void {
+  if (!onFailure) return;
+  try {
+    onFailure(failure);
+  } catch {
+    // 观测回调异常不影响兜底
+  }
+}
+
+/** 校验失败时的观测事件：携带 validator 首错 message（fail-fast 语义）。 */
+function validationFailure(registry: Registry, tree: ComponentNode): FetchFailure {
+  const result = validateComponentTree(registry, tree);
+  const message = result.ok ? "validation failed" : (result.errors[0]?.message ?? "validation failed");
+  return { stage: "validate", message };
 }
 
 /** 拉取并（可选）校验组件树。任何失败返回 null——调用方据此静默保留兜底内容。 */
@@ -30,24 +55,45 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
             body: JSON.stringify({ prompt: opts.userPrompt }),
           };
     const res = await doFetch(opts.src, init);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      safeReport(opts.onFailure, { stage: "http-non-ok", message: `HTTP ${res.status}` });
+      return null;
+    }
     if (opts.stream && res.headers?.get("content-type")?.includes("text/event-stream")) {
       return await readSSE(res, opts);
     }
-    const tree = extractTree((await res.json()) as unknown);
-    if (tree && opts.registry && !validateComponentTree(opts.registry, tree).ok) return null;
+    const { tree, failure } = extractTree((await res.json()) as unknown);
+    if (!tree) {
+      // failure 由 extractTree 构造保证存在；?? 仅为类型完备
+      safeReport(opts.onFailure, failure ?? { stage: "parse", message: "empty response" });
+      return null;
+    }
+    if (opts.registry && !validateComponentTree(opts.registry, tree).ok) {
+      safeReport(opts.onFailure, validationFailure(opts.registry, tree));
+      return null;
+    }
     return tree;
-  } catch {
+  } catch (error) {
+    safeReport(opts.onFailure, {
+      stage: "fetch-error",
+      message: error instanceof Error ? error.message : "unknown error",
+    });
     return null;
   }
 }
 
-/** 已解析 JSON → 组件树：先按注册顺序探测 wire formats，全部未命中走原生 AiRenderResponse。 */
-function extractTree(data: unknown): ComponentNode | null {
+/** 已解析 JSON → 组件树：先按注册顺序探测 wire formats，全部未命中走原生 AiRenderResponse。失败时附带观测事件。 */
+function extractTree(data: unknown): { tree: ComponentNode | null; failure?: FetchFailure } {
   const wire = parseWithWireFormats(data);
-  if (wire.matched) return wire.tree;
+  if (wire.matched) {
+    return wire.tree
+      ? { tree: wire.tree }
+      : { tree: null, failure: { stage: "parse", message: "wire format parse returned null" } };
+  }
   const body = data as AiRenderResponse;
-  return body?.tree ?? null;
+  return body?.tree
+    ? { tree: body.tree }
+    : { tree: null, failure: { stage: "parse", message: "response carried no component tree" } };
 }
 
 /** 解析 SSE 帧流：skeleton 帧回调，tree 帧（校验后）作为结果。 */
@@ -66,8 +112,8 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
       continue; // 单帧损坏：跳过，不中断
     }
     if (event === "skeleton") {
-      // 骨架帧与终树同样过客户端校验（双保险）；非法骨架按损坏帧跳过
-      const skeleton = extractTree(data);
+      // 骨架帧与终树同样过客户端校验（双保险）；非法骨架按损坏帧跳过（保持静默）
+      const skeleton = extractTree(data).tree;
       if (skeleton && !(opts.registry && !validateComponentTree(opts.registry, skeleton).ok)) {
         try {
           opts.onSkeleton?.(skeleton);
@@ -76,11 +122,14 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
         }
       }
     } else if (event === "tree") {
-      finalTree = extractTree(data);
+      finalTree = extractTree(data).tree;
     }
   }
   if (finalTree === null) return null;
-  if (opts.registry && !validateComponentTree(opts.registry, finalTree).ok) return null;
+  if (opts.registry && !validateComponentTree(opts.registry, finalTree).ok) {
+    safeReport(opts.onFailure, validationFailure(opts.registry, finalTree));
+    return null;
+  }
   return finalTree;
 }
 

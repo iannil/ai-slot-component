@@ -535,3 +535,24 @@ describe("<ai-slot live> 失效推送", () => {
     expect(fetchSpy.mock.calls.some(([u]) => String(u).includes("ai-invalidate"))).toBe(false);
   });
 });
+
+describe("configureAiSlot — 全局 onFailure", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    // 复位全局配置，避免泄漏到其它用例
+    configureAiSlot({ registry });
+  });
+
+  it("元素 load 命中失败路径时，全局钩子被调用且兜底内容保留", async () => {
+    const failures: Array<{ stage: string; message: string }> = [];
+    configureAiSlot({ registry, onFailure: (f) => failures.push(f) });
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: false, status: 503 })));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/hero");
+    el.innerHTML = "<h1>兜底标题</h1>";
+    document.body.appendChild(el);
+    await flush();
+    expect(failures).toEqual([{ stage: "http-non-ok", message: "HTTP 503" }]);
+    expect(el.querySelector("h1")?.textContent).toBe("兜底标题");
+  });
+});

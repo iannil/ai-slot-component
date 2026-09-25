@@ -235,3 +235,62 @@ describe("fetchComponentTree — wire format 扩展", () => {
     expect(tree).toEqual({ component: "hero-banner", props: { title: "t" } });
   });
 });
+
+describe("fetchComponentTree — onFailure 观测钩子", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("http-non-ok：非 2xx 报状态码", async () => {
+    const failures: unknown[] = [];
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: false, status: 503 })));
+    const tree = await fetchComponentTree({ src: "/x", registry, onFailure: (f) => failures.push(f) });
+    expect(tree).toBeNull();
+    expect(failures).toEqual([{ stage: "http-non-ok", message: "HTTP 503" }]);
+  });
+
+  it("parse：wire 命中但解析为 null", async () => {
+    registerWireFormat("ft-null", {
+      detect: (d) => typeof d === "object" && d !== null && "messages" in d,
+      parse: () => null,
+    });
+    const failures: unknown[] = [];
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ messages: [] }) })));
+    const tree = await fetchComponentTree({ src: "/x", registry, onFailure: (f) => failures.push(f) });
+    expect(tree).toBeNull();
+    expect(failures).toEqual([{ stage: "parse", message: "wire format parse returned null" }]);
+  });
+
+  it("parse：原生响应缺 tree", async () => {
+    const failures: unknown[] = [];
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ version: 1, slot: "hero" }) })));
+    const tree = await fetchComponentTree({ src: "/x", registry, onFailure: (f) => failures.push(f) });
+    expect(tree).toBeNull();
+    expect(failures).toEqual([{ stage: "parse", message: "response carried no component tree" }]);
+  });
+
+  it("validate：registry 拒绝时携带 validator 首错 message", async () => {
+    const failures: Array<{ stage: string; message: string }> = [];
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ version: 1, slot: "hero", tree: { component: "no-such-comp" } }) })));
+    const tree = await fetchComponentTree({ src: "/x", registry, onFailure: (f) => failures.push(f) });
+    expect(tree).toBeNull();
+    expect(failures).toHaveLength(1);
+    expect(failures[0].stage).toBe("validate");
+    expect(failures[0].message.length).toBeGreaterThan(0);
+  });
+
+  it("fetch-error：fetch 抛异常携带 message；回调自身抛异常不影响返回 null", async () => {
+    const failures: Array<{ stage: string; message: string }> = [];
+    vi.stubGlobal("fetch", vi.fn(() => {
+      throw new Error("网络断了");
+    }));
+    const tree = await fetchComponentTree({
+      src: "/x",
+      registry,
+      onFailure: (f) => {
+        failures.push(f);
+        throw new Error("回调异常");
+      },
+    });
+    expect(tree).toBeNull();
+    expect(failures).toEqual([{ stage: "fetch-error", message: "网络断了" }]);
+  });
+});

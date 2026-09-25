@@ -1,13 +1,15 @@
 import type { Registry } from "@ai-slot/registry";
-import { fetchComponentTree } from "./fetch-tree.js";
+import { fetchComponentTree, type FetchFailure } from "./fetch-tree.js";
 import { subscribeInvalidation, type InvalidationSubscription } from "./live.js";
 import { getRenderer, renderTree } from "./renderer.js";
 
 let globalRegistry: Registry | undefined;
+let globalOnFailure: ((failure: FetchFailure) => void) | undefined;
 
-/** 全局配置：提供 registry 时，客户端在渲染前对 AI 输出再做一次校验（双保险）。 */
-export function configureAiSlot(opts: { registry?: Registry }): void {
+/** 全局配置：registry 供渲染前二次校验；onFailure 为可选失败观测（load 时透传给 fetchComponentTree）。 */
+export function configureAiSlot(opts: { registry?: Registry; onFailure?: (failure: FetchFailure) => void }): void {
   globalRegistry = opts.registry;
+  globalOnFailure = opts.onFailure;
 }
 
 /**
@@ -63,6 +65,7 @@ export class AiSlotElement extends HTMLElement {
       src,
       userPrompt,
       registry: globalRegistry,
+      onFailure: globalOnFailure,
       stream: this.hasAttribute("stream"),
       onSkeleton: (skeleton) => {
         if (seq !== this.loadSeq || finalApplied) return;
