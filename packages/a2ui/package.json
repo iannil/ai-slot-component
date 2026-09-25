@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "license": "MIT",
   "description": "A2UI wire-format compatibility for ai-slot: consume A2UI agent endpoints and emit A2UI messages from ai-slot proxies.",
-  "keywords": ["a2ui", "generative-ui", "ai", "web-components", "adapter"],
+  "keywords": [
+    "a2ui",
+    "generative-ui",
+    "ai",
+    "web-components",
+    "adapter"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -11,7 +17,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iannil/ai-slot-component.git",
@@ -39,6 +47,7 @@
   "devDependencies": {
     "@ai-slot/adapter-dom": "workspace:*",
     "@ai-slot/runtime": "workspace:*",
+    "@types/node": "^26.6.2",
     "jsdom": "^25.0.0",
     "tsup": "^8.3.0",
     "typescript": "^5.6.0",
