@@ -1,0 +1,47 @@
+{
+  "name": "@ai-slot/a2ui",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "A2UI wire-format compatibility for ai-slot: consume A2UI agent endpoints and emit A2UI messages from ai-slot proxies.",
+  "keywords": ["a2ui", "generative-ui", "ai", "web-components", "adapter"],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/a2ui"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/a2ui#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-slot/registry": "workspace:*"
+  },
+  "peerDependencies": {
+    "@ai-slot/adapter-dom": "workspace:*",
+    "@ai-slot/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@ai-slot/adapter-dom": "workspace:*",
+    "@ai-slot/runtime": "workspace:*",
+    "jsdom": "^25.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
