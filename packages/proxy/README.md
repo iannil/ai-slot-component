@@ -2,7 +2,7 @@
 
 > AI-rendered page content — without leaked API keys, invalid LLM output, or white screens.
 
-The server side of the **ai-slot-component** SDK (private monorepo, not yet on npm): one stateless handler that turns a slot ID into a **validated component tree**. It speaks Web standard `Request → Response`, so it deploys unchanged to Cloudflare Workers, Deno, Bun, Vercel Edge, or a plain Node server.
+The server side of the **ai-slot-component** SDK ([on npm](https://www.npmjs.com/package/@ai-slot/proxy)): one stateless handler that turns a slot ID into a **validated component tree**. It speaks Web standard `Request → Response`, so it deploys unchanged to Cloudflare Workers, Deno, Bun, Vercel Edge, or a plain Node server.
 
 ```text
 PromptCompiler → LLM Client (retry, 8s timeout) → OutputValidator → Cache (fresh → stale → 503)
@@ -12,7 +12,11 @@ PromptCompiler → LLM Client (retry, 8s timeout) → OutputValidator → Cache 
 
 ## Quick start
 
-Workspace install (Node ≥ 18): `pnpm install && pnpm build` at the repo root, then `import ... from "@ai-slot/proxy"` in any workspace package.
+```bash
+npm install @ai-slot/proxy
+```
+
+Hacking inside the monorepo instead? `pnpm install && pnpm build` at the repo root, then `import ... from "@ai-slot/proxy"` in any workspace package.
 
 ```ts
 import { createAiRenderHandler, createOpenAIClient } from "@ai-slot/proxy";

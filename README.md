@@ -11,6 +11,7 @@ English | [简体中文](./README.zh-CN.md)
 [![runtime deps](https://img.shields.io/badge/%3Cai--slot%3E-zero%20dependencies-blue)](./packages/runtime)
 [![React](https://img.shields.io/badge/React-%E2%89%A518-61DAFB?logo=react&logoColor=black)](./packages/adapter-react)
 [![Vue](https://img.shields.io/badge/Vue-%E2%89%A53.4-4FC08D?logo=vuedotjs&logoColor=white)](./packages/adapter-vue)
+[![npm](https://img.shields.io/npm/v/@ai-slot/runtime)](https://www.npmjs.com/package/@ai-slot/runtime)
 
 </div>
 
@@ -87,7 +88,7 @@ Got it running? A ⭐ helps others find the project.
 
 ## Usage
 
-> The packages are not yet published to npm. Clone the repo and run `pnpm install && pnpm build`, then import the workspace packages (or copy their `dist/` output).
+> All packages are on npm as `@ai-slot/*` (currently `0.1.0`): client — `npm install @ai-slot/runtime @ai-slot/adapter-dom`; server — `npm install @ai-slot/proxy @ai-slot/registry`. To hack on the monorepo instead, clone and `pnpm install && pnpm build`.
 
 **1. Declare what the AI may build with** (shared by proxy, runtime and build tooling):
 

@@ -11,6 +11,7 @@
 [![runtime deps](https://img.shields.io/badge/%3Cai--slot%3E-zero%20dependencies-blue)](./packages/runtime)
 [![React](https://img.shields.io/badge/React-%E2%89%A518-61DAFB?logo=react&logoColor=black)](./packages/adapter-react)
 [![Vue](https://img.shields.io/badge/Vue-%E2%89%A53.4-4FC08D?logo=vuedotjs&logoColor=white)](./packages/adapter-vue)
+[![npm](https://img.shields.io/npm/v/@ai-slot/runtime)](https://www.npmjs.com/package/@ai-slot/runtime)
 
 </div>
 
@@ -87,7 +88,7 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 
 ## 用法
 
-> 各包尚未发布到 npm。请克隆仓库并执行 `pnpm install && pnpm build`，然后直接引用 workspace 包（或拷贝其 `dist/` 产物）。
+> 各包已发布到 npm（`@ai-slot/*`，当前 `0.1.0`）：客户端 `npm install @ai-slot/runtime @ai-slot/adapter-dom`；服务端 `npm install @ai-slot/proxy @ai-slot/registry`。若要参与 monorepo 开发，克隆后 `pnpm install && pnpm build`。
 
 **1. 声明 AI 可用的积木**（代理、运行时、构建工具三方共用）：
 
