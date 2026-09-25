@@ -1,7 +1,7 @@
 import { defineRegistry } from "@ai-slot/registry";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchComponentTree } from "./fetch-tree.js";
-import { registerWireFormat, type WireFormat } from "./wire.js";
+import { registerWireFormat, unregisterWireFormat, type WireFormat } from "./wire.js";
 
 const registry = defineRegistry({
   components: { "hero-banner": { description: "", props: { title: "string" }, required: ["title"] } },
@@ -188,7 +188,7 @@ describe("fetchComponentTree — wire format 扩展", () => {
     };
   }
 
-  // 注意：wireFormats 为模块级全局 Map（无 reset API），注册会跨用例残留。
+  // 注意：wireFormats 为模块级全局 Map（可用 unregisterWireFormat 清理），注册会跨用例残留。
   // 因此「未注册」用例置于最前；后续用例以同 id 覆盖注册（Map.set 覆盖语义，同 wire.test.ts m4 模式）。
   it("未注册任何命中格式时，A2UI 响应走原生路径 → data.tree 不存在 → null", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(a2uiBody) })));
@@ -237,7 +237,10 @@ describe("fetchComponentTree — wire format 扩展", () => {
 });
 
 describe("fetchComponentTree — onFailure 观测钩子", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    unregisterWireFormat("ft-null");
+  });
 
   it("http-non-ok：非 2xx 报状态码", async () => {
     const failures: unknown[] = [];
@@ -292,5 +295,53 @@ describe("fetchComponentTree — onFailure 观测钩子", () => {
     });
     expect(tree).toBeNull();
     expect(failures).toEqual([{ stage: "fetch-error", message: "网络断了" }]);
+  });
+
+  it("SSE：tree 帧到达但 wire 解析为 null → 上报 parse", async () => {
+    registerWireFormat("ft-sse-null", {
+      detect: (d) => typeof d === "object" && d !== null && "messages" in d,
+      parse: () => null,
+    });
+    const failures: Array<{ stage: string; message: string }> = [];
+    const sse =
+      `event: skeleton\ndata: ${JSON.stringify({ messages: [] })}\n\n` +
+      `event: tree\ndata: ${JSON.stringify({ messages: [] })}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(sse));
+            controller.close();
+          },
+        }),
+        text: () => Promise.resolve(sse),
+      }),
+    ));
+    const tree = await fetchComponentTree({ src: "/x", registry, stream: true, onFailure: (f) => failures.push(f) });
+    expect(tree).toBeNull();
+    expect(failures).toEqual([{ stage: "parse", message: "wire format parse returned null" }]);
+  });
+
+  it("SSE：只有 skeleton 帧、无 tree 帧 → 静默返回 null 且不上报", async () => {
+    const failures: Array<{ stage: string; message: string }> = [];
+    const sse = `event: skeleton\ndata: ${JSON.stringify({ version: 1, slot: "hero", tree: { component: "hero-banner", props: { title: "" } } })}\n\n`;
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        headers: new Headers({ "content-type": "text/event-stream" }),
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(sse));
+            controller.close();
+          },
+        }),
+        text: () => Promise.resolve(sse),
+      }),
+    ));
+    const tree = await fetchComponentTree({ src: "/x", registry, stream: true, onFailure: (f) => failures.push(f) });
+    expect(tree).toBeNull();
+    expect(failures).toEqual([]);
   });
 });

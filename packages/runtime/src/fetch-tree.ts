@@ -1,4 +1,4 @@
-import { validateComponentTree, type AiRenderResponse, type ComponentNode, type Registry } from "@ai-slot/registry";
+import { validateComponentTree, type AiRenderResponse, type ComponentNode, type Registry, type ValidationResult } from "@ai-slot/registry";
 import { parseWithWireFormats } from "./wire.js";
 
 export interface FetchTreeOptions {
@@ -34,10 +34,8 @@ function safeReport(onFailure: ((failure: FetchFailure) => void) | undefined, fa
 }
 
 /** 校验失败时的观测事件：携带 validator 首错 message（fail-fast 语义）。 */
-function validationFailure(registry: Registry, tree: ComponentNode): FetchFailure {
-  const result = validateComponentTree(registry, tree);
-  const message = result.ok ? "validation failed" : (result.errors[0]?.message ?? "validation failed");
-  return { stage: "validate", message };
+function validationFailure(result: Extract<ValidationResult, { ok: false }>): FetchFailure {
+  return { stage: "validate", message: result.errors[0]?.message ?? "validation failed" };
 }
 
 /** 拉取并（可选）校验组件树。任何失败返回 null——调用方据此静默保留兜底内容。 */
@@ -68,9 +66,12 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
       safeReport(opts.onFailure, failure ?? { stage: "parse", message: "empty response" });
       return null;
     }
-    if (opts.registry && !validateComponentTree(opts.registry, tree).ok) {
-      safeReport(opts.onFailure, validationFailure(opts.registry, tree));
-      return null;
+    if (opts.registry) {
+      const result = validateComponentTree(opts.registry, tree);
+      if (!result.ok) {
+        safeReport(opts.onFailure, validationFailure(result));
+        return null;
+      }
     }
     return tree;
   } catch (error) {
@@ -101,6 +102,7 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
   // 容忍 CRLF 分帧/行尾：统一归一为 \n 再解析
   const text = (await readBody(res)).replace(/\r\n/g, "\n");
   let finalTree: ComponentNode | null = null;
+  let finalFailure: FetchFailure | undefined;
   for (const chunk of text.split("\n\n")) {
     const event = chunk.match(/^event: (.+)$/m)?.[1];
     const raw = chunk.match(/^data: (.+)$/m)?.[1];
@@ -122,13 +124,22 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
         }
       }
     } else if (event === "tree") {
-      finalTree = extractTree(data).tree;
+      const extracted = extractTree(data);
+      finalTree = extracted.tree;
+      finalFailure = extracted.failure;
     }
   }
-  if (finalTree === null) return null;
-  if (opts.registry && !validateComponentTree(opts.registry, finalTree).ok) {
-    safeReport(opts.onFailure, validationFailure(opts.registry, finalTree));
+  if (finalTree === null) {
+    // 帧到达但解析失败 → 上报；流里根本没有 tree 帧 → 保持既有静默
+    if (finalFailure) safeReport(opts.onFailure, finalFailure);
     return null;
+  }
+  if (opts.registry) {
+    const result = validateComponentTree(opts.registry, finalTree);
+    if (!result.ok) {
+      safeReport(opts.onFailure, validationFailure(result));
+      return null;
+    }
   }
   return finalTree;
 }
