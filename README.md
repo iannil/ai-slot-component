@@ -2,7 +2,7 @@
 
 # ai-slot-component
 
-**Add AI-generated content to any existing web page — with a guaranteed fallback.**
+**The AI content delivery layer for the pages you already have.**
 
 English | [简体中文](./README.zh-CN.md)
 
@@ -15,19 +15,10 @@ English | [简体中文](./README.zh-CN.md)
 
 </div>
 
-Your page today:
+Existing pages already have content, crawlers and users. What they lack is a safe way to *receive* AI-generated content. ai-slot is that layer: wrap a region of your page, and what is inside stays exactly as it is — the original markup is untouched and always kept as the fallback:
 
 ```html
-<section class="hero">
-  <h1>Our product</h1>
-  <p>A normal product intro.</p>
-</section>
-```
-
-With ai-slot — the same markup, wrapped, nothing rewritten:
-
-```html
-<ai-slot name="hero" src="/ai-render/hero" editable stream live>
+<ai-slot name="hero" src="/ai-render/hero">
   <section class="hero">
     <h1>Our product</h1>
     <p>A normal product intro.</p>
@@ -35,7 +26,15 @@ With ai-slot — the same markup, wrapped, nothing rewritten:
 </ai-slot>
 ```
 
-Behind that element, a stateless server proxy asks an LLM to fill or rewrite the region and returns a **validated component tree** — never HTML — which is rendered as *your* real components. If the model times out, invents a component name, or violates a prop schema, the original markup above silently stays. Your SEO, accessibility and uptime never depend on the model.
+Behind that element sits a delivery pipeline: a stateless server proxy turns model output into a **validated component tree** — never HTML — rendered as *your* real components, served from a two-tier cache, streamed skeleton-first, and re-pushed when the underlying data changes. If the model times out, invents a component name, or violates a prop schema, the original markup above silently stays. Your SEO, accessibility and uptime never depend on the model.
+
+Content reaches a slot in three ways — visitor personalization is only one of them:
+
+| Delivery mode | Trigger | Path |
+|---|---|---|
+| **Pregenerated** | your build (`prewarm.mjs`) | baked into `ai-cache.json`, long-TTL cache, zero runtime LLM calls |
+| **Live** | a data-source change | invalidation push re-renders the slot on every open tab — no redeploy |
+| **Personalized** | a visitor prompt (`editable`) | sanitized, rate-limited, short TTL — scoped to that one slot |
 
 ## Quick Start
 
@@ -49,7 +48,7 @@ node examples/plain-html/server.mjs
 # → open http://localhost:4173
 ```
 
-The demo page covers the whole feature set: an `editable` + `stream` + `live` hero slot, a `broken` slot that shows the silent fallback, and `POST /admin/publish` to simulate a data-source change.
+The demo page puts all three delivery modes in reach: `stream` + `live` + `editable` on the hero slot, a `broken` slot that shows the silent fallback, `POST /admin/publish` to simulate a data-source change, and `node examples/plain-html/prewarm.mjs` to bake `ai-cache.json` for the pregenerated path.
 
 To use a real model instead of the mock:
 
@@ -62,12 +61,22 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 Got it running? A ⭐ helps others find the project.
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Type a prompt, hit apply — the hero slot re-renders from a validated component tree" width="720">
+  <img src="assets/demo.gif" alt="A visitor prompt — one of the three delivery modes — re-renders a single slot from a validated component tree" width="720">
 </p>
 <p align="center">
   <img src="assets/screenshot-hero.png" alt="AI-enhanced hero rendered from a validated component tree" width="49%">
   <img src="assets/screenshot-rewritten.png" alt="After a visitor prompt: the same slot re-rendered with the custom title" width="49%">
 </p>
+
+## Features
+
+- **Drop-in for the site you already have** — wrap existing markup in `<ai-slot>`; plain HTML, React and Vue all work, no rewrite required.
+- **Ship AI content like a static asset** — `prewarm.mjs` bakes developer prompts into `ai-cache.json` at build time, so production serves with zero runtime LLM calls.
+- **Content updates without a redeploy** — `live` subscribes to invalidation pushes; a data-source change re-renders the slot on every open tab.
+- **Skeleton-first streaming** — `stream` fetches over SSE: a skeleton frame renders immediately, the final tree replaces it.
+- **Protocol-neutral** — native JSON today, [A2UI](https://github.com/a2ui-project/a2ui) tomorrow via `@ai-slot/a2ui`; the endpoint changes, the page does not.
+- **Visitor personalization is opt-in, per slot** — `editable` adds a one-line prompt box scoped to that slot: sanitized, rate-limited, short TTL.
+- **Runs offline out of the box** — deterministic mock LLM by default; unit tests replay fixtures and never hit a real API.
 
 ## Why it is safe
 
@@ -107,16 +116,6 @@ configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 | SEO & crawlers | Client-rendered; crawlers see nothing (including Googlebot) | Original content always in the HTML — visible to crawlers and AI search |
 | Lifecycle | No server-side component (no cache, prewarm or invalidation) | Two-tier TTL, build-time prewarm, invalidation push, rate limiting |
 
-## Features
-
-- **Drop-in for the site you already have** — wrap existing markup in `<ai-slot>`; plain HTML, React and Vue all work, no rewrite required.
-- **Visitors edit with one line** — the `editable` attribute turns any slot into a prompt box scoped to that slot only.
-- **Skeleton-first streaming** — `stream` fetches over SSE: a skeleton frame renders immediately, the final tree replaces it.
-- **Content updates without a redeploy** — `live` subscribes to invalidation pushes; a data-source change re-renders the slot on every open tab.
-- **Pregenerate at build time** — `prewarm.mjs` bakes developer prompts into `ai-cache.json`, so production serves AI content with zero runtime LLM calls.
-- **Runs offline out of the box** — deterministic mock LLM by default; unit tests replay fixtures and never hit a real API.
-- **Two prompt tiers, two model tiers** — developer prompts are pregenerated and long-cached; visitor prompts are real-time, short-TTL and rate-limited.
-
 ## Usage
 
 > All packages are on npm as `@ai-slot/*`: client — `npm install @ai-slot/runtime @ai-slot/adapter-dom` (+ `@ai-slot/a2ui` for A2UI endpoints); server — `npm install @ai-slot/proxy @ai-slot/registry`. To hack on the monorepo instead, clone and `pnpm install && pnpm build`.
@@ -151,7 +150,7 @@ export const handler = createAiRenderHandler({
   llm: createOpenAIClient({ apiKey: process.env.OPENAI_API_KEY! }), // baseUrl: any OpenAI-compatible endpoint
   resolveSlot: (slotId) => slots[slotId] ?? null,
 });
-// Exposes GET/POST /ai-render/:slotId — GET for CI pregeneration, POST for visitor prompts.
+// Exposes GET/POST /ai-render/:slotId — GET for CI pregeneration, POST for real-time delivery (visitor prompts included).
 ```
 
 **3. Render it** — pick your stack:
@@ -188,12 +187,12 @@ export const handler = createAiRenderHandler({
 | `src` | Proxy endpoint for this slot (`/ai-render/:slotId`) |
 | `name` | Slot id sent to the proxy |
 | `renderer` | Registered renderer to use (default `dom`) |
-| `editable` | Adds a one-line prompt box that re-renders this slot |
 | `stream` | Fetch over SSE: skeleton frame first, final tree second |
 | `live` | Subscribe to invalidation pushes and re-render on change (`live-src` overrides the endpoint) |
 | `refresh-interval` | Re-fetch every N seconds |
+| `editable` | Adds a one-line prompt box that re-renders this slot |
 
-## How it works
+## The delivery pipeline
 
 ```mermaid
 graph TD

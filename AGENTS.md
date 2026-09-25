@@ -4,9 +4,9 @@
 
 ## 项目概况
 
-**ai-slot-component**：一个「AI Native 渲染 SDK」项目 —— 让任意前端项目的页面在正式展示前，先经由 AI 进行内容补充与改写；终端用户还可以通过提示词快速修改指定页面的展示。
+**ai-slot-component**：一个「存量页面的 AI 内容交付层」项目 —— 把任意存量页面的指定区域变成 AI 内容的安全上线通道：AI 返回**结构化组件树 JSON**（绝不返回 HTML），经校验后渲染为开发者的真实组件，失败/超时/校验不过一律静默回退原始内容。主场景是内容交付：构建期预生成（零运行时 LLM 成本）、失效推送让内容更新免重新部署、可接 A2UI/agent 端点；访客经提示词修改指定槽位（`editable`）是特性之一，不是主叙事。
 
-**当前阶段：v1 + v1.1 已实现并合入 master。** 六个包（registry / proxy / runtime / adapter-dom / adapter-react / adapter-vue）+ 纯 HTML 端到端示例均已落地，单元测试与 Playwright e2e 全绿。v1.1 在 v1 之上新增：props 全局护栏、缓存序列化与 CI 预生成、SSE 流式（`stream` 属性，骨架→终树双帧）、失效推送（`live` 属性）、React/Vue 渲染适配器。设计文档：
+**当前阶段：v1 + v1.1 已实现并合入 master。** 七个包（registry / proxy / runtime / adapter-dom / adapter-react / adapter-vue / a2ui）+ 纯 HTML 端到端示例均已落地，单元测试与 Playwright e2e 全绿。v1.1 在 v1 之上新增：props 全局护栏、缓存序列化与 CI 预生成、SSE 流式（`stream` 属性，骨架→终树双帧）、失效推送（`live` 属性）、React/Vue 渲染适配器。设计文档：
 
 - `docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md` —— 总体设计（含技术选型与接入方式）
 - `docs/superpowers/plans/2026-09-24-ai-native-rendering-sdk.md` —— v1 实现计划（已执行完毕）

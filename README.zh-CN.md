@@ -2,7 +2,7 @@
 
 # ai-slot-component
 
-**给任意已有网页加上 AI 生成内容——且保证有兜底。**
+**存量页面的 AI 内容交付层。**
 
 [English](./README.md) | 简体中文
 
@@ -15,19 +15,10 @@
 
 </div>
 
-你现在的页面：
+存量页面已经有内容、爬虫和用户，缺的是一个安全**接收** AI 生成内容的途径。ai-slot 就是这一层：把页面中的一块区域包起来，里面的内容原样保留——原始标记一字不改，并永远作为兜底内容：
 
 ```html
-<section class="hero">
-  <h1>我们的产品</h1>
-  <p>一个普通的产品介绍。</p>
-</section>
-```
-
-接入 ai-slot —— 原有标记一字不改，只包一层：
-
-```html
-<ai-slot name="hero" src="/ai-render/hero" editable stream live>
+<ai-slot name="hero" src="/ai-render/hero">
   <section class="hero">
     <h1>我们的产品</h1>
     <p>一个普通的产品介绍。</p>
@@ -35,7 +26,15 @@
 </ai-slot>
 ```
 
-这个元素背后是一个无状态服务端代理：它让 LLM 补充或改写该区域，但只返回**经过校验的组件树**（绝不返回 HTML），再由适配器渲染成你真实的组件。一旦模型超时、编造组件名或违反 props Schema，上面的原始标记会静默保留。SEO、无障碍与页面可用性从不依赖模型。
+这个元素背后是一条交付流水线：无状态服务端代理把模型输出变成**经过校验的组件树**（绝不返回 HTML），由适配器渲染成你真实的组件——经双层缓存交付、可骨架帧流式、数据源变更时重新推送。一旦模型超时、编造组件名或违反 props Schema，上面的原始标记会静默保留。SEO、无障碍与页面可用性从不依赖模型。
+
+内容进入槽位有三种交付方式——访客个性化只是其中之一：
+
+| 交付方式 | 触发 | 路径 |
+|---|---|---|
+| **预生成** | 构建期（`prewarm.mjs`） | 烘焙进 `ai-cache.json`，长 TTL 缓存，零运行时 LLM 调用 |
+| **实时更新** | 数据源变更 | 失效推送让所有打开的页面自动重渲染——无需发版 |
+| **个性化** | 访客提示词（`editable`） | 清洗、限流、短 TTL——只作用于该槽位 |
 
 ## 快速开始
 
@@ -49,7 +48,7 @@ node examples/plain-html/server.mjs
 # → 打开 http://localhost:4173
 ```
 
-示例页覆盖全部特性：`editable` + `stream` + `live` 的 hero 槽位、演示静默兜底的 `broken` 槽位，以及模拟数据源变更的 `POST /admin/publish`。
+示例页把三种交付方式都放在手边：hero 槽位带 `stream` + `live` + `editable`，`broken` 槽位演示静默兜底，`POST /admin/publish` 模拟数据源变更，`node examples/plain-html/prewarm.mjs` 烘焙 `ai-cache.json` 走预生成路径。
 
 切换到真实模型：
 
@@ -62,12 +61,22 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 跑起来了？一个 ⭐ 能帮更多人看到这个项目。
 
 <p align="center">
-  <img src="assets/demo.gif" alt="输入一句提示词点击应用——hero 槽位按校验过的组件树重新渲染" width="720">
+  <img src="assets/demo.gif" alt="访客提示词（三种交付方式之一）：单个槽位按校验过的组件树重新渲染" width="720">
 </p>
 <p align="center">
   <img src="assets/screenshot-hero.png" alt="AI 增强后的 hero：由校验过的组件树渲染" width="49%">
   <img src="assets/screenshot-rewritten.png" alt="用户提示词提交后：同一槽位按定制标题重新渲染" width="49%">
 </p>
+
+## 特性
+
+- **老站即插即用** —— 把现有标记包进 `<ai-slot>` 即可；纯 HTML、React、Vue 都能接，无需重写。
+- **AI 内容当静态资源发** —— `prewarm.mjs` 在构建期把开发者提示词烘焙进 `ai-cache.json`，生产环境零运行时 LLM 调用。
+- **内容更新不发版** —— `live` 订阅失效推送；数据源一变，所有打开的页面自动重渲染。
+- **骨架帧优先的流式** —— `stream` 走 SSE：先渲染骨架帧，终树到达后替换。
+- **协议中立** —— 今天说原生 JSON，明天经 `@ai-slot/a2ui` 说 [A2UI](https://github.com/a2ui-project/a2ui)；端点换了，页面不用改。
+- **访客个性化按槽位选配** —— `editable` 给该槽位加一行提示词输入框：清洗、限流、短 TTL。
+- **开箱即离线** —— 默认确定性 mock LLM；单元测试用 fixture 回放，绝不真实调 API。
 
 ## 为什么安全
 
@@ -107,16 +116,6 @@ configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 | SEO 与爬虫 | 客户端渲染，爬虫不可见（包括 Googlebot） | 原始内容永在 HTML 里——爬虫与 AI 搜索可见 |
 | 生命周期 | 无服务端组件（无缓存、预热、失效） | 双层 TTL、构建期预热、失效推送、限流 |
 
-## 特性
-
-- **老站即插即用** —— 把现有标记包进 `<ai-slot>` 即可；纯 HTML、React、Vue 都能接，无需重写。
-- **访客一句话改写** —— `editable` 属性把任意槽位变成提示词输入框，且只作用于该槽位。
-- **骨架帧优先的流式** —— `stream` 走 SSE：先渲染骨架帧，终树到达后替换。
-- **内容更新不发版** —— `live` 订阅失效推送；数据源一变，所有打开的页面自动重渲染。
-- **构建期预生成** —— `prewarm.mjs` 把开发者提示词烘焙进 `ai-cache.json`，生产环境零运行时 LLM 调用。
-- **开箱即离线** —— 默认确定性 mock LLM；单元测试用 fixture 回放，绝不真实调 API。
-- **双层提示词、双档模型** —— 开发者提示词可预生成 + 长缓存；访客提示词实时调用 + 短 TTL + 限流。
-
 ## 用法
 
 > 各包已发布到 npm（`@ai-slot/*`）：客户端 `npm install @ai-slot/runtime @ai-slot/adapter-dom`（A2UI 端点另装 `@ai-slot/a2ui`）；服务端 `npm install @ai-slot/proxy @ai-slot/registry`。若要参与 monorepo 开发，克隆后 `pnpm install && pnpm build`。
@@ -151,7 +150,7 @@ export const handler = createAiRenderHandler({
   llm: createOpenAIClient({ apiKey: process.env.OPENAI_API_KEY! }), // baseUrl：任意 OpenAI 兼容端点
   resolveSlot: (slotId) => slots[slotId] ?? null,
 });
-// 暴露 GET/POST /ai-render/:slotId —— GET 走 CI 预生成，POST 走访客实时提示词。
+// 暴露 GET/POST /ai-render/:slotId —— GET 走 CI 预生成，POST 走实时交付（含访客提示词）。
 ```
 
 **3. 渲染** —— 按你的技术栈选：
@@ -188,12 +187,12 @@ export const handler = createAiRenderHandler({
 | `src` | 该槽位的代理端点（`/ai-render/:slotId`） |
 | `name` | 发送给代理的槽位 id |
 | `renderer` | 使用的已注册渲染器（默认 `dom`） |
-| `editable` | 加一行提示词输入框，实时改写该槽位 |
 | `stream` | 走 SSE：先骨架帧，后终树 |
 | `live` | 订阅失效推送，内容变更时自动重渲染（`live-src` 可覆盖端点） |
 | `refresh-interval` | 每 N 秒重新拉取 |
+| `editable` | 加一行提示词输入框，实时改写该槽位 |
 
-## 工作原理
+## 交付流水线
 
 ```mermaid
 graph TD
