@@ -20,11 +20,13 @@ npm install @ai-slot/runtime
   import { createDomRenderer } from "@ai-slot/adapter-dom";
 
   registerRenderer("dom", createDomRenderer(components));
-  configureAiSlot({ registry });
+  configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 </script>
 ```
 
 Element attributes: `src`, `name`, `renderer` (default `dom`), `editable`, `stream` (SSE skeleton → tree), `live` + `live-src` (invalidation push), `refresh-interval`.
+
+Wire format APIs: `registerWireFormat(id, format)` / `unregisterWireFormat(id)` plug alternative wire formats into the fetch pipeline. Failures are observed via `onFailure` as `FetchFailure { stage: "http-non-ok" | "parse" | "validate" | "fetch-error", message }` — set it globally in `configureAiSlot` or per call on `fetchComponentTree`. The silent-fallback behavior never changes; the hook is observation only.
 
 > Registration must happen synchronously in the same module graph that imports the runtime — custom element upgrade is synchronous.
 

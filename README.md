@@ -97,7 +97,7 @@ const registry = defineRegistry({
 });
 registerWireFormat("a2ui", a2uiWireFormat);
 registerRenderer("dom", createDomRenderer(basicCatalogDomDefs));
-configureAiSlot({ registry });
+configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 ```
 
 | | A2UI / AG-UI | ai-slot |
