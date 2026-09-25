@@ -2,7 +2,13 @@
   "name": "@ai-slot/adapter-vue",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
+  "description": "Vue 3 renderer adapter for ai-slot: render validated component trees as real Vue components.",
+  "keywords": [
+    "vue",
+    "ai",
+    "renderer",
+    "adapter"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -10,17 +16,32 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/adapter-vue"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/adapter-vue#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "vue": ">=3.4"
-  },
   "dependencies": {
     "@ai-slot/registry": "workspace:*",
     "@ai-slot/runtime": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": ">=3.4"
   },
   "devDependencies": {
     "@vue/server-renderer": "^3.5.0",

@@ -2,7 +2,15 @@
   "name": "@ai-slot/registry",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
+  "description": "AI output protocol for ai-slot: registry definition, validated component trees, and skeleton derivation.",
+  "keywords": [
+    "ai",
+    "llm",
+    "registry",
+    "json-schema",
+    "validator",
+    "web-components"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -10,6 +18,21 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/registry"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/registry#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",

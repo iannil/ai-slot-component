@@ -2,7 +2,13 @@
   "name": "@ai-slot/adapter-react",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
+  "description": "React renderer adapter for ai-slot: render validated component trees as real React components.",
+  "keywords": [
+    "react",
+    "ai",
+    "renderer",
+    "adapter"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -10,18 +16,33 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/adapter-react"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/adapter-react#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18"
-  },
   "dependencies": {
     "@ai-slot/registry": "workspace:*",
     "@ai-slot/runtime": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

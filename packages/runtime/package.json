@@ -2,13 +2,34 @@
   "name": "@ai-slot/runtime",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
+  "description": "Zero-dependency <ai-slot> Web Component runtime for AI-enhanced pages with guaranteed fallback.",
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "ai",
+    "llm",
+    "progressive-enhancement"
+  ],
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/runtime"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/runtime#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",

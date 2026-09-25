@@ -2,7 +2,13 @@
   "name": "@ai-slot/adapter-dom",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
+  "description": "DOM renderer adapter for ai-slot: map validated component trees to plain HTML elements.",
+  "keywords": [
+    "dom",
+    "web-components",
+    "ai",
+    "renderer"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -10,6 +16,21 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/adapter-dom"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/adapter-dom#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",

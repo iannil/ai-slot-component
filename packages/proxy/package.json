@@ -2,7 +2,16 @@
   "name": "@ai-slot/proxy",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
+  "description": "Stateless AI render proxy: prompt compiler, LLM client with retry, output validator, and two-tier cache.",
+  "keywords": [
+    "ai",
+    "llm",
+    "proxy",
+    "edge",
+    "serverless",
+    "cache",
+    "rate-limit"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -10,6 +19,21 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/proxy"
+  },
+  "bugs": "https://github.com/iannil/ai-slot-component/issues",
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/proxy#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "test": "vitest run",
