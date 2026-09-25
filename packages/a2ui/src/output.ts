@@ -9,7 +9,11 @@ export interface ToA2uiOptions {
   includeSurface?: boolean;
 }
 
-/** 嵌套树 → A2UI messages。id 自动生成（n0、n1…）；命名槽位内容按序并入 children。 */
+/**
+ * 嵌套树 → A2UI messages。id 自动生成（n0、n1…）；命名槽位内容按序并入 children。
+ * 约定：props 中与信封保留键（id/component/children）同名的键会被剥离（不报错，
+ * 与项目「静默降级」哲学一致）——否则会覆盖信封键，令 children 引用指向不存在的 id。
+ */
 export function toA2uiMessages(tree: ComponentNode, opts: ToA2uiOptions): A2uiMessage[] {
   const version = opts.version ?? "v1.0";
   const components: Array<{ id: string; component: string; children?: string[] } & Record<string, unknown>> = [];
@@ -17,11 +21,16 @@ export function toA2uiMessages(tree: ComponentNode, opts: ToA2uiOptions): A2uiMe
   const flatten = (node: ComponentNode): string => {
     const id = `n${counter++}`;
     const childIds = [...(node.children ?? []), ...Object.values(node.slots ?? {}).flat()].map(flatten);
+    // 剥离信封保留键：props 展开在信封键之后，若不剥离会静默覆盖 id/component/children
+    const props: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(node.props ?? {})) {
+      if (key !== "id" && key !== "component" && key !== "children") props[key] = value;
+    }
     components.push({
       id,
       component: node.component,
       ...(childIds.length > 0 ? { children: childIds } : {}),
-      ...(node.props ?? {}),
+      ...props,
     });
     return id;
   };
@@ -50,9 +59,16 @@ export function withA2uiOutput(
   return async (req: Request): Promise<Response> => {
     const res = await handler(req);
     const contentType = res.headers.get("content-type") ?? "";
+    // 重建响应体后旧 content-length 不再匹配（Node 的 Response 构造器会原样保留它），
+    // 声明/实际不一致会导致下游截断或挂起——所有重建点都删除该头；透传路径不动。
+    const rebuiltHeaders = (): Headers => {
+      const headers = new Headers(res.headers);
+      headers.delete("content-length");
+      return headers;
+    };
     if (contentType.includes("text/event-stream")) {
       const text = await res.text();
-      return new Response(rewriteSse(text, opts), { status: res.status, headers: res.headers });
+      return new Response(rewriteSse(text, opts), { status: res.status, headers: rebuiltHeaders() });
     }
     if (!contentType.includes("application/json")) return res;
     // 先读文本再解析：res.json() 会消费 body 流，解析失败后原样返回 res 会得到 "Body is unusable"。
@@ -61,11 +77,11 @@ export function withA2uiOutput(
     try {
       body = JSON.parse(text);
     } catch {
-      return new Response(text, { status: res.status, headers: res.headers });
+      return new Response(text, { status: res.status, headers: rebuiltHeaders() });
     }
-    if (!isAiRenderResponse(body)) return new Response(text, { status: res.status, headers: res.headers });
+    if (!isAiRenderResponse(body)) return new Response(text, { status: res.status, headers: rebuiltHeaders() });
     const messages = toA2uiMessages(body.tree, { surfaceId: opts.surfaceId, version: opts.version });
-    return new Response(JSON.stringify(messages), { status: res.status, headers: res.headers });
+    return new Response(JSON.stringify(messages), { status: res.status, headers: rebuiltHeaders() });
   };
 }
 

@@ -34,6 +34,24 @@ describe("toA2uiMessages", () => {
     const messages = toA2uiMessages(tree, { surfaceId: "s1" });
     expect(parseA2ui(messages)).toEqual(tree);
   });
+
+  it("props 中的信封保留键被剥离：id 仍是自动生成的 n0，且无 children 键污染（终审 F1）", () => {
+    // 剥离而非抛错——与项目「静默降级」哲学一致；若不剥离，props.id 会覆盖信封 id，
+    // 令 children 引用指向不存在的 id，消费端永久 null 兜底
+    const messages = toA2uiMessages({ component: "Card", props: { id: "x" } }, { surfaceId: "s1" });
+    const card = messages[1].updateComponents!.components[0];
+    expect(card.id).toBe("n0");
+    expect(card.children).toBeUndefined();
+  });
+
+  it("保留键 props 往返等价：roundtrip 后 props 中不含被剥离的保留键（有意剥离，终审 F1）", () => {
+    const reserved = { component: "Card", props: { id: "x", component: "y", children: ["z"] } };
+    const messages = toA2uiMessages(reserved, { surfaceId: "s1" });
+    const card = messages[1].updateComponents!.components[0];
+    expect(card).not.toHaveProperty("id", "x");
+    // 剥离后 props 只剩空对象 → parseA2ui 不产出 props 键
+    expect(parseA2ui(messages)).toEqual({ component: "Card" });
+  });
 });
 
 describe("withA2uiOutput", () => {
@@ -80,5 +98,20 @@ describe("withA2uiOutput", () => {
     const final = JSON.parse(frames[1].match(/^data: (.+)$/m)![1]) as Array<Record<string, unknown>>;
     expect(final).toHaveLength(1); // 仅 updateComponents
     expect(final[0].updateComponents).toBeTruthy();
+  });
+
+  it("带 content-length 头的上游响应：重建后剥离该头，避免声明/实际不匹配（终审 F2）", async () => {
+    // Node 的 Response 构造器会保留旧 content-length；重建后 body 变短，若不删除会截断/挂起
+    const wrapped = withA2uiOutput(
+      async () =>
+        new Response(JSON.stringify(aiResponse), {
+          headers: { "content-type": "application/json", "content-length": String(JSON.stringify(aiResponse).length) },
+        }),
+      { surfaceId: "s1" },
+    );
+    const res = await wrapped(new Request("https://x/ai-render/hero"));
+    expect(res.headers.get("content-length")).toBeNull();
+    const messages = (await res.json()) as Array<Record<string, unknown>>;
+    expect(messages[1].updateComponents).toBeTruthy();
   });
 });

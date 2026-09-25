@@ -109,4 +109,13 @@ describe("parseA2ui", () => {
     });
     expect(tree).toEqual({ component: "Card" });
   });
+
+  it("未知 version（v9.9）：detect 命中且 parse 正常（宽松版本语义，spec §6.2）", () => {
+    const envelope = {
+      version: "v9.9",
+      updateComponents: { surfaceId: "s", components: [{ id: "root", component: "Card" }] },
+    };
+    expect(detectA2ui(envelope)).toBe(true);
+    expect(parseA2ui(envelope)).toEqual({ component: "Card" });
+  });
 });

@@ -85,4 +85,21 @@ describe("A2UI 端点 → ai-slot 交付层（组合集成）", () => {
     stubA2uiResponse(deep); // 树深 6 > 默认 maxDepth 5
     expect(await fetchComponentTree({ src: "/x", registry })).toBeNull();
   });
+
+  it("超节点数扇形：validator maxNodes 50 拦截 → null（spec §6.2 对抗样例）", async () => {
+    registerWireFormat("a2ui", a2uiWireFormat);
+    // 根 Row + 60 个 Text 子节点 = 61 节点 > maxNodes 50；深度仅 2，证明拦截来自节点数上限
+    const fan = {
+      version: "v1.0",
+      updateComponents: {
+        surfaceId: "s",
+        components: [
+          { id: "root", component: "Row", children: Array.from({ length: 60 }, (_, i) => `n${i}`) },
+          ...Array.from({ length: 60 }, (_, i) => ({ id: `n${i}`, component: "Text", text: `t${i}` })),
+        ],
+      },
+    };
+    stubA2uiResponse(fan);
+    expect(await fetchComponentTree({ src: "/x", registry })).toBeNull();
+  });
 });
