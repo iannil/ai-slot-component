@@ -29,7 +29,7 @@ test("预生成缓存：LLM 不可用时 hero 仍渲染预生成内容", async (
     if (!ready) throw new Error("server 未能就绪");
     await page.goto("http://localhost:4174/");
     const slot = page.locator('ai-slot[name="hero"]');
-    await expect(slot.locator(".hero-title")).toHaveText("AI 增强后的标题 v0");
+    await expect(slot.locator(".hero-title")).toHaveText("降噪耳机 X100：地铁再吵，只剩音乐");
   } finally {
     server.kill();
   }

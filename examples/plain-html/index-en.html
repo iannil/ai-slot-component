@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>降噪耳机 X100 - 老友商城</title>
+    <title>X100 Headphones - Old Pal Shop</title>
     <style>
-      /* 演示页的最低限度排版：老站本身零改动，这里只是让默认观感不至于太裸 */
+      /* Minimal styling for the demo page: the legacy site itself needs zero changes */
       body {
         margin: 0 auto;
         padding: 0 32px 64px;
@@ -69,25 +69,32 @@
       import { domComponents } from "/components.mjs";
 
       registerRenderer("dom", createDomRenderer(domComponents));
-      configureAiSlot({ registry });
+      configureAiSlot({
+        registry,
+        editorLabels: {
+          placeholder: "Tweak this section in one line…",
+          submit: "Apply",
+          reset: "Reset",
+        },
+      });
     </script>
   </head>
   <body>
     <header class="shop-header">
-      <span class="logo">老友商城</span>
-      <nav><span>首页</span><span>分类</span><span>购物车 (2)</span></nav>
+      <span class="logo">Old Pal Shop</span>
+      <nav><span>Home</span><span>Categories</span><span>Cart (2)</span></nav>
     </header>
 
-    <!-- 老站原有商品区，一个字不改，直接包进 ai-slot -->
+    <!-- The legacy product section, unchanged, wrapped in ai-slot -->
     <ai-slot name="hero" src="/ai-render/hero" editable stream live>
-      <h1>降噪耳机 X100</h1>
-      <p>音质好，佩戴舒适。</p>
+      <h1>X100 Noise-Canceling Headphones</h1>
+      <p>Good sound. Comfortable fit.</p>
     </ai-slot>
 
-    <!-- AI 推荐服务故障时，这个推荐位保持静态内容 -->
+    <!-- If the recommendation AI fails, this section keeps its static content -->
     <ai-slot name="broken" src="/ai-render/broken">
-      <h2>为您推荐</h2>
-      <p>耳塞套 · 收纳盒 · 延保服务</p>
+      <h2>You may also like</h2>
+      <p>Ear tips · Carrying case · Extended warranty</p>
     </ai-slot>
   </body>
 </html>
