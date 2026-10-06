@@ -13,6 +13,17 @@ npm run preview    # 预览生产构建
 
 注意：`vite.config.ts` 把 `@ai-slot/*` 别名直接指向 `../packages/*/src`，构建官网无需先构建 monorepo 包。
 
+## 部署
+
+Cloudflare Pages 项目 `aislot`，**生产分支是 `main`**（不是 master，写错会部署成预览环境）：
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=aislot --branch=main
+```
+
+部署后用 `curl -s https://aislot.pages.dev/ | grep -o 'index-[^"]*\.js'` 对比 `dist/assets/` 里的产物哈希，确认线上已切换。
+
 ## 演示区（src/demo/）
 
 Demo 区不是录屏：页面内嵌真实的 `@ai-slot/runtime` 与 `@ai-slot/adapter-dom`，
