@@ -13,10 +13,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // 演示区跑真实运行时：直接引用 monorepo 里已构建的 dist（需先 pnpm build）
-      "@ai-slot/runtime": path.resolve(__dirname, "../packages/runtime/dist/index.js"),
-      "@ai-slot/adapter-dom": path.resolve(__dirname, "../packages/adapter-dom/dist/index.js"),
-      "@ai-slot/registry": path.resolve(__dirname, "../packages/registry/dist/index.js"),
+      // 演示区跑真实运行时：直接引用 monorepo 包源码，无需先 pnpm build（静态托管构建也能跑）
+      "@ai-slot/runtime": path.resolve(__dirname, "../packages/runtime/src/index.ts"),
+      "@ai-slot/adapter-dom": path.resolve(__dirname, "../packages/adapter-dom/src/index.ts"),
+      "@ai-slot/registry": path.resolve(__dirname, "../packages/registry/src/index.ts"),
     },
   },
 });
