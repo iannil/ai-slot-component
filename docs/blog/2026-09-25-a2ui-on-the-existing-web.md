@@ -22,7 +22,7 @@ The A2UI specification concerns itself with the message format and the client re
 
 ### 2. There is no SEO or crawler story
 
-A2UI UI is client-rendered by design: the client parses messages and renders components at runtime. A crawler that fetches the page sees the transport payload, not rendered content — and for surfaces delivered over streaming transports, not even that. The specification does not define any progressive-enhancement or server-side-rendering mechanism. For the spec's own "Smart Wrapper" approach to embedding agent UI into pages with existing content, the answer for legacy material is isolation: wrap the old content in a sandboxed iframe and render the agent UI around it. That is a sound containment choice — but note what it means for the original page: the legacy content is walled off from the document, and nothing in the protocol addresses what crawlers or AI search engines should see.
+A protocol does not by itself establish an indexing strategy. A host that only renders generated UI in the browser relies on each crawler’s JavaScript support and access to its data endpoints. Google can render JavaScript; other crawlers may behave differently. Supplying useful initial HTML reduces that dependency, but does not guarantee indexing. See [Google’s JavaScript SEO documentation](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics).
 
 ### 3. It targets in-app GenUI, not public content pages
 
@@ -34,7 +34,7 @@ In the A2UI model, UI is driven by an agent conversation. There is no per-slot n
 
 ## What a delivery layer looks like
 
-At [ai-slot-component](https://github.com/iannil/ai-slot-component) we built that layer and made it protocol-neutral. The core idea: a page author wraps an existing region in a `<ai-slot>` custom element with the original content inside it. A stateless server proxy produces the agent UI; the client re-validates it against a registry the page author declared; and on any failure — timeout, invalid output, rate limit — the original content silently stays. The original markup is never removed from the HTML, so crawlers, no-JS visitors, and AI search engines always see real content.
+At [ai-slot-component](https://github.com/iannil/ai-slot-component) we built that layer and made it protocol-neutral. The core idea: a page author wraps an existing region in a `<ai-slot>` custom element with the original content inside it. A stateless server proxy produces the agent UI; the client re-validates it against a registry the page author declared; and on any failure — timeout, invalid output, rate limit — the original content silently stays. The initial response contains author-provided fallback HTML. On successful enhancement, the runtime replaces the visible slot children and retains a fallback copy for recovery. Build-time prewarming creates JSON cache entries, not generated HTML; indexing depends on the deployed host and crawler.
 
 As of this week, ai-slot consumes A2UI directly. The example below is the entire client-side integration — it accepts an A2UI `messages` payload wherever the slot expects a response:
 
@@ -90,9 +90,9 @@ On the production side, a wrapper rewrites an existing ai-slot proxy's responses
 | | A2UI / AG-UI | ai-slot |
 |---|---|---|
 | Layer | Wire format for agent ↔ in-app UI (Google / CopilotKit) | Delivery layer for public web content slots — speaks A2UI via `@ai-slot/a2ui` |
-| Existing pages | Legacy content isolated in sandboxed iframes | Wraps existing HTML in place, zero rewrite |
-| SEO & crawlers | Client-rendered; crawlers see nothing (including Googlebot) | Original content always in the HTML — visible to crawlers and AI search |
-| Lifecycle | No server-side component (no cache, prewarm or invalidation) | Two-tier TTL, build-time prewarm, invalidation push, rate limiting |
+| Existing pages | Integration depends on the host application | Wraps existing HTML with an explicit fallback |
+| SEO & crawlers | Determined by the host renderer and crawler capabilities | Author-provided initial HTML fallback; generated enhancements render on the client |
+| Lifecycle | The host application defines caching and delivery behavior | Two-tier TTL, build-time prewarm, invalidation push, rate limiting |
 
 Read that table as "different layers," not "better." AG-UI and A2UI solve the agent-to-application problem, and solve it well. ai-slot solves the agent-to-existing-web problem, which they do not address — and it consumes their formats where they overlap.
 

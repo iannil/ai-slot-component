@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./assets/logo.svg" alt="ai-slot logo" width="72" />
+
 # ai-slot-component
 
 **The AI content delivery layer for the pages you already have.**
@@ -15,7 +17,7 @@ English | [简体中文](./README.zh-CN.md)
 
 </div>
 
-Existing pages already have content, crawlers and users. What they lack is a safe way to *receive* AI-generated content. ai-slot is that layer: wrap a region of your page, and what is inside stays exactly as it is — the original markup is untouched and always kept as the fallback:
+Existing pages already have content, crawlers and users. What they lack is a safe way to *receive* AI-generated content. ai-slot is that layer: wrap a region of your page, and provide the initial HTML as a fallback. The runtime keeps a copy for recovery when it replaces the visible content:
 
 ```html
 <ai-slot name="hero" src="/ai-render/hero">
@@ -26,13 +28,13 @@ Existing pages already have content, crawlers and users. What they lack is a saf
 </ai-slot>
 ```
 
-Behind that element sits a delivery pipeline: a stateless server proxy turns model output into a **validated component tree** — never HTML — rendered as *your* real components, served from a two-tier cache, streamed skeleton-first, and re-pushed when the underlying data changes. If the model times out, invents a component name, or violates a prop schema, the original markup above silently stays. Your SEO, accessibility and uptime never depend on the model.
+Behind that element sits a delivery pipeline: a stateless server proxy turns model output into a **validated component tree** — never HTML — rendered as *your* real components, served from a two-tier cache, streamed skeleton-first, and re-pushed when the underlying data changes. If the model times out, invents a component name, or violates a prop schema, the original markup above silently stays. The initial HTML supplies fallback content independently of the model; indexing, accessibility and uptime still depend on the host application.
 
 Content reaches a slot in three ways — visitor personalization is only one of them:
 
 | Delivery mode | Trigger | Path |
 |---|---|---|
-| **Pregenerated** | your build (`prewarm.mjs`) | baked into `ai-cache.json`, long-TTL cache, zero runtime LLM calls |
+| **Pregenerated** | your build (`prewarm.mjs`) | baked into `ai-cache.json`, long-TTL cache, no runtime LLM calls on cache hits |
 | **Live** | a data-source change | invalidation push re-renders the slot on every open tab — no redeploy |
 | **Personalized** | a visitor prompt (`editable`) | sanitized, rate-limited, short TTL — scoped to that one slot |
 
@@ -71,7 +73,7 @@ Got it running? A ⭐ helps others find the project.
 ## Features
 
 - **Drop-in for the site you already have** — wrap existing markup in `<ai-slot>`; plain HTML, React and Vue all work, no rewrite required.
-- **Ship AI content like a static asset** — `prewarm.mjs` bakes developer prompts into `ai-cache.json` at build time, so production serves with zero runtime LLM calls.
+- **Ship AI content like a static asset** — `prewarm.mjs` bakes developer prompts into `ai-cache.json` at build time, so production serves with no runtime LLM calls on cache hits.
 - **Content updates without a redeploy** — `live` subscribes to invalidation pushes; a data-source change re-renders the slot on every open tab.
 - **Skeleton-first streaming** — `stream` fetches over SSE: a skeleton frame renders immediately, the final tree replaces it.
 - **Protocol-neutral** — native JSON today, [A2UI](https://github.com/a2ui-project/a2ui) tomorrow via `@ai-slot/a2ui`; the endpoint changes, the page does not.
@@ -80,20 +82,20 @@ Got it running? A ⭐ helps others find the project.
 
 ## Why it is safe
 
-- **The model never writes markup.** It returns component-tree JSON whose component names must exist in the registry you declared, validated against prop schemas, slot rules, depth and node-count limits before anything renders. Prompt injection has no path to your DOM.
-- **Your page never breaks.** Any failure — network, timeout, rate limit, invalid output — falls back silently to the content inside `<ai-slot>`. No blank screen, no error shown to visitors.
+- **The model never writes markup.** It returns component-tree JSON whose component names must exist in the registry you declared, validated against prop schemas, slot rules, depth and node-count limits before anything renders. This constrains model output; application components must still handle untrusted props safely.
+- **Fallback for handled delivery failures.** A network failure, timeout, rate limit or invalid output falls back silently to the content inside `<ai-slot>`. No blank screen, no error shown to visitors.
 - **Secrets stay on the server.** LLM keys live only in the proxy. Visitor prompts are sanitized, length-capped and injected as bounded context, with token budgets, an 8s timeout, per-minute rate limiting and usage logs.
-- **The original content is always in the page.** `<ai-slot>` is progressive enhancement: crawlers and no-JS visitors see your real content.
+- **Initial HTML contains the fallback you provide.** After a successful render, the runtime replaces the slot’s visible children and retains the fallback for recovery. Crawlers that render JavaScript may see the enhanced content; indexing is not guaranteed.
 
 ## Protocol-neutral by design
 
 ai-slot separates three layers:
 
 1. **Slot protocol** — the wire format between the AI endpoint and the page. Native JSON today; [A2UI](https://github.com/a2ui-project/a2ui) (Google's open protocol for agent-driven UI) works too via [`@ai-slot/a2ui`](./packages/a2ui).
-2. **Delivery runtime** — `<ai-slot>`, client-side re-validation, and the guaranteed fallback.
+2. **Delivery runtime** — `<ai-slot>`, client-side re-validation, and fallback recovery for handled failures.
 3. **Lifecycle infrastructure** — two-tier caching, build-time pregeneration, invalidation push, rate limiting.
 
-Any A2UI-compliant agent endpoint can feed an existing page:
+An agent endpoint using the A2UI versions and message subset supported by `@ai-slot/a2ui` can feed an existing page:
 
 ```ts
 import { defineRegistry } from "@ai-slot/registry";
@@ -112,9 +114,15 @@ configureAiSlot({ registry, onFailure: (f) => console.debug(f) });
 | | A2UI / AG-UI | ai-slot |
 |---|---|---|
 | Layer | Wire format for agent ↔ in-app UI (Google / CopilotKit) | Delivery layer for public web content slots — speaks A2UI via `@ai-slot/a2ui` |
-| Existing pages | Legacy content isolated in sandboxed iframes | Wraps existing HTML in place, zero rewrite |
-| SEO & crawlers | Client-rendered; crawlers see nothing (including Googlebot) | Original content always in the HTML — visible to crawlers and AI search |
-| Lifecycle | No server-side component (no cache, prewarm or invalidation) | Two-tier TTL, build-time prewarm, invalidation push, rate limiting |
+| Existing pages | Integration depends on the host application | Wraps existing HTML with an explicit fallback |
+| SEO & crawlers | Depends on the host rendering strategy, access and crawler capabilities | Author-provided fallback in initial HTML; generated enhancements render on the client |
+| Lifecycle | A protocol does not determine the host application’s cache or delivery lifecycle | Two-tier TTL, build-time prewarm, invalidation push, rate limiting |
+
+## Rendering and indexing boundaries
+
+`prewarm.mjs` generates `ai-cache.json`, not HTML. It avoids runtime model calls for cache hits; a cache miss or expiry can still invoke the model. Generated component trees are fetched and rendered by the browser. To put generated content in the initial HTML, the host must add its own static or server rendering integration; this example does not provide one.
+
+Google can render JavaScript, while other crawlers may have different capabilities. Keep useful fallback content in the initial response and verify the deployed page. See [Google’s JavaScript SEO guide](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) and the [Chinese delivery-boundary guide](./docs/delivery-boundaries.md).
 
 ## Usage
 
