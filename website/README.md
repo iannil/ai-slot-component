@@ -1,6 +1,6 @@
 # ai-slot 官网
 
-ai-slot 的项目网站（Cloudflare Pages 静态托管）：https://aislot.pages.dev
+ai-slot 的项目网站（Cloudflare Pages 静态托管）：https://aislot.dev
 
 ## 开发
 
