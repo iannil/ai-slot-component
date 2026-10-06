@@ -12,6 +12,15 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@ai-slot/runtime": [
+        "../packages/runtime/dist/index.d.ts"
+      ],
+      "@ai-slot/adapter-dom": [
+        "../packages/adapter-dom/dist/index.d.ts"
+      ],
+      "@ai-slot/registry": [
+        "../packages/registry/dist/index.d.ts"
       ]
     },
     /* Bundler mode */

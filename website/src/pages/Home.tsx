@@ -14,6 +14,7 @@ import {
   Undo2,
   ArrowRight,
 } from 'lucide-react'
+import DemoSection from '../demo/DemoSection'
 
 const GITHUB = 'https://github.com/iannil/ai-slot-component'
 const NPM = 'https://www.npmjs.com/package/@ai-slot/runtime'
@@ -37,32 +38,9 @@ const dict = {
     codeH1: 'X100 Noise-Canceling Headphones',
     codeFooter: 'validated → rendered as your components',
     demoKicker: 'demo',
-    demoTitle: 'One old product page, four real recordings.',
+    demoTitle: 'Pick an industry, then drive every delivery mode yourself.',
     demoSub:
-      'A plain e-commerce detail page from the demo app — every clip is a real run, not a mockup.',
-    demoAlt: 'Demo recording',
-    scenarios: [
-      {
-        key: 'stream',
-        title: 'Page load: AI-optimized selling points',
-        sub: 'The static page renders instantly; AI copy streams in and replaces it when ready.',
-      },
-      {
-        key: 'live',
-        title: 'Deal change goes live instantly',
-        sub: '$29.99 → $24.99 flash sale: every open tab updates in place. No redeploy.',
-      },
-      {
-        key: 'editable',
-        title: 'Visitor-personalized copy',
-        sub: '“pitch it to students” rewrites just this block — sanitized, rate-limited, short TTL.',
-      },
-      {
-        key: 'fallback',
-        title: 'AI down? The page still sells.',
-        sub: 'The recommendation service fails; the static section stays. No blank screen.',
-      },
-    ],
+      'E-commerce, travel, news and finance — four realistic legacy pages running the actual <ai-slot> runtime and validator in your browser. No auto-playing recordings: a highlight points at the next control, and you do the clicking.',
     modesKicker: 'delivery',
     modesTitle: 'Content reaches a slot three ways.',
     modesSub:
@@ -141,31 +119,9 @@ const dict = {
     codeH1: '降噪耳机 X100',
     codeFooter: '校验通过 → 渲染为你的组件',
     demoKicker: '演示',
-    demoTitle: '一个老电商详情页，四段实录。',
-    demoSub: '演示应用里的普通商品页——每段都是真实运行录屏，不是示意图。',
-    demoAlt: '演示录屏',
-    scenarios: [
-      {
-        key: 'stream',
-        title: '打开商品页：AI 优化卖点文案',
-        sub: '静态内容先行不挡打开，AI 文案流式替换卖点。',
-      },
-      {
-        key: 'live',
-        title: '运营改促销，原地生效',
-        sub: '¥199 8 折 → ¥159 秒杀：所有打开的页面同步更新，免发版。',
-      },
-      {
-        key: 'editable',
-        title: '访客一句话定制',
-        sub: '输入「给学生党推荐」，文案只为他改写——过滤、限流、短 TTL。',
-      },
-      {
-        key: 'fallback',
-        title: 'AI 挂了也不影响下单',
-        sub: '推荐服务故障，静态推荐位照常显示。不白屏。',
-      },
-    ],
+    demoTitle: '先选行业，再亲手操作四种交付方式。',
+    demoSub:
+      '电商、酒店、新闻、理财四个贴近真实业务的存量页面，浏览器里跑的是真实 <ai-slot> 运行时与校验。没有自动播放的录屏——高亮指向下一个控件，操作由你完成。',
     modesKicker: '交付',
     modesTitle: '内容通过三种方式到达槽位。',
     modesSub: '访客个性化只是其中之一。主角是交付：构建期预生成与失效推送。',
@@ -411,26 +367,8 @@ function Demo({ t, lang }: { t: Dict; lang: Lang }) {
           {t.demoTitle}
         </h2>
         <p className="mt-4 max-w-2xl text-muted-foreground">{t.demoSub}</p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {t.scenarios.map((s) => (
-            <figure
-              key={s.key}
-              className="overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
-            >
-              <img
-                key={lang}
-                src={`/assets/demo-${s.key}-${lang}.gif`}
-                alt={`${t.demoAlt}: ${s.title}`}
-                className="w-full border-b border-border"
-                loading="lazy"
-              />
-              <figcaption className="p-5">
-                <p className="font-mono text-xs text-primary">{s.key}</p>
-                <h3 className="mt-1.5 font-semibold">{s.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.sub}</p>
-              </figcaption>
-            </figure>
-          ))}
+        <div className="mt-10">
+          <DemoSection lang={lang} />
         </div>
       </div>
     </section>
