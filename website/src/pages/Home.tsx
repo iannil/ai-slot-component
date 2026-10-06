@@ -92,7 +92,7 @@ const dict = {
     qsSubBefore: 'The demo ships with a deterministic mock LLM. Set',
     qsSubAfter: 'to switch to any OpenAI-compatible endpoint.',
     qsComment: '# Node ≥ 18, pnpm (corepack enable)',
-    qsOpen: '# → open http://localhost:4173',
+    qsOpen: '# → open https://demo.aislot.dev (hosted) or http://localhost:4173 (local)',
     stats: [
       ['7 packages', 'registry · proxy · runtime · dom/react/vue adapters · a2ui'],
       ['Zero deps', '<ai-slot> runtime is a dependency-free Web Component'],
@@ -171,7 +171,7 @@ const dict = {
     qsSubBefore: '示例内置确定性 mock LLM。设置',
     qsSubAfter: '即可切换到任意 OpenAI 兼容端点。',
     qsComment: '# Node ≥ 18，pnpm（corepack enable）',
-    qsOpen: '# → 打开 http://localhost:4173',
+    qsOpen: '# → 打开 https://demo.aislot.dev（在线）或 http://localhost:4173（本地）',
     stats: [
       ['7 个包', 'registry · proxy · runtime · dom/react/vue 适配器 · a2ui'],
       ['零依赖', '<ai-slot> 运行时是无依赖 Web Component'],
