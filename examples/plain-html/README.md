@@ -32,7 +32,7 @@ OPENAI_API_KEY=sk-... node server.mjs
 
 ## 部署（Cloudflare Workers）
 
-线上地址：https://ai-slot-demo.zhurongx-971.workers.dev
+线上地址：https://demo.aislot.dev（备用：https://ai-slot-demo.zhurongx-971.workers.dev）
 
 ```bash
 pnpm deploy:worker   # prewarm 生成缓存 → build-public.mjs 生成 public/ → wrangler deploy

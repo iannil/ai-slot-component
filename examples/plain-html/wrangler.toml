@@ -4,6 +4,13 @@ compatibility_date = "2026-10-06"
 # nodejs_compat 让 ai.mjs 里的动态 import("node:fs/promises") 可打包（Workers 上读不到文件，自动跳过水合之外的用途）
 compatibility_flags = ["nodejs_compat"]
 
+# 自定义域：Cloudflare 自动在 aislot.dev zone 建 DNS 记录
+routes = [
+  { pattern = "demo.aislot.dev", custom_domain = true },
+]
+# 保留 workers.dev 地址可用（配置 routes 后默认会禁用）
+workers_dev = true
+
 # ai-cache.json 以文本内联进 bundle，用于水合预生成缓存（零运行时 LLM 成本的演示路径）
 rules = [
   { type = "Text", globs = ["**/ai-cache.json"] },
