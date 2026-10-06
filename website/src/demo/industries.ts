@@ -50,7 +50,7 @@ export const INDUSTRIES: Industry[] = [
       zh: {
         name: '电商零售 · 老友商城',
         tagline: '3C 数码产品详情页：AI 优化卖点文案，运营改促销免发版生效。',
-        url: 'oldpal.example.com/item/X100',
+        url: 'demo.aislot.dev/shop.html',
         heroTitle: '降噪耳机 X100：地铁再吵，只剩音乐',
         promos: ['¥199 · 今日下单享 8 折', '¥159 · 限时秒杀，今晚 24 点截止'],
         devPrompt: '面向通勤族，突出降噪效果和佩戴舒适',
@@ -64,7 +64,7 @@ export const INDUSTRIES: Industry[] = [
       en: {
         name: 'E-commerce · Old Pal Shop',
         tagline: 'A 3C product page: AI-polished selling points, deal changes without redeploys.',
-        url: 'oldpal.example.com/item/X100',
+        url: 'demo.aislot.dev/shop.html',
         heroTitle: 'X100: the subway disappears, the music stays',
         promos: ['$29.99 · 20% off today', '$24.99 · flash sale ends at midnight'],
         devPrompt: 'For commuters, emphasize noise canceling and all-day comfort',
@@ -85,7 +85,7 @@ export const INDUSTRIES: Industry[] = [
       zh: {
         name: '酒店旅游 · 栖澜西湖酒店',
         tagline: '酒店预订详情页：AI 重写酒店卖点，房价套餐变更实时推送。',
-        url: 'xilan.example.com/hotel/westlake',
+        url: 'demo.aislot.dev/hotel.html',
         heroTitle: '推窗见西湖：把断桥残雪装进清晨',
         promos: ['¥899/晚 · 含双早+欢迎茶点', '¥799/晚 · 周中特惠，限量 20 间'],
         devPrompt: '面向周末度假的夫妻与家庭客，突出湖景与步行可达的景点',
@@ -99,7 +99,7 @@ export const INDUSTRIES: Industry[] = [
       en: {
         name: 'Travel · Xilan Westlake Hotel',
         tagline: 'A hotel booking page: AI rewrites the pitch, rate changes push live.',
-        url: 'xilan.example.com/hotel/westlake',
+        url: 'demo.aislot.dev/hotel.html',
         heroTitle: 'Wake up to West Lake, Broken Bridge at dawn',
         promos: ['$129/night · breakfast + welcome tea', '$115/night · midweek special, 20 rooms'],
         devPrompt: 'For weekend couples and families; lake view and walkable sights',
@@ -120,7 +120,7 @@ export const INDUSTRIES: Industry[] = [
       zh: {
         name: '新闻资讯 · 前沿观察',
         tagline: '科技媒体文章页：AI 生成「要点速览」导读，快讯更新即时修订。',
-        url: 'frontline.example.com/news/llm-inference',
+        url: 'demo.aislot.dev/news.html',
         heroTitle: '',
         promos: [
           '导读：新一代推理引擎将调用成本降至原来的 30%，首批 200 家厂商完成接入；开发者价格同步下调，小团队第一次用得起工业级推理。',
@@ -137,7 +137,7 @@ export const INDUSTRIES: Industry[] = [
       en: {
         name: 'News · Frontline Observer',
         tagline: 'A tech-news article: AI brief, breaking updates revised in place.',
-        url: 'frontline.example.com/news/llm-inference',
+        url: 'demo.aislot.dev/news.html',
         heroTitle: '',
         promos: [
           'Brief: the new inference engine cuts call costs to 30%; 200 vendors onboarded in 48 hours — small teams can finally afford industrial-grade inference.',
@@ -161,7 +161,7 @@ export const INDUSTRIES: Industry[] = [
       zh: {
         name: '金融理财 · 恒信银行',
         tagline: '银行理财产品页：AI 打磨产品亮点，年化与额度变更实时生效。',
-        url: 'bank.example.com/wealth/wenying-180',
+        url: 'demo.aislot.dev/fin.html',
         heroTitle: '稳盈 180 天：给闲钱一个半程加油站',
         promos: ['七日年化 2.85% · 1 元起购', '七日年化 2.91% · 新客专享加息券'],
         devPrompt: '面向有闲钱的工薪族，突出稳健与流动性安排，避免收益承诺',
@@ -175,7 +175,7 @@ export const INDUSTRIES: Industry[] = [
       en: {
         name: 'Finance · Hengxin Bank',
         tagline: 'A wealth product page: AI-tuned highlights, yield updates go live instantly.',
-        url: 'bank.example.com/wealth/wenying-180',
+        url: 'demo.aislot.dev/fin.html',
         heroTitle: 'Steady 180: a halfway pit stop for idle cash',
         promos: ['7-day yield 2.85% · from $1', '7-day yield 2.91% · new-client coupon'],
         devPrompt: 'For salaried savers: steadiness and liquidity, no yield promises',
