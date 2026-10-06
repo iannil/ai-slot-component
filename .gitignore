@@ -5,4 +5,5 @@ test-results/
 playwright-report/
 ai-cache.json
 docs/business
-examples/plain-html/public/examples/plain-html/.wrangler/
+examples/plain-html/public/
+examples/plain-html/.wrangler/
