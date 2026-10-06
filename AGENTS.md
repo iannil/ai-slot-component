@@ -44,7 +44,8 @@
 - 运行全部测试：`pnpm test`（Vitest；runtime/adapter-dom 用 jsdom 环境）
 - 类型检查：`pnpm typecheck`
 - 单包命令：`pnpm --filter @ai-slot/<包名> test|build|typecheck`
-- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，当前共 7 条；首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
+- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，当前共 12 条；首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
+- 示例站结构：`examples/plain-html` 的 `index.html` 是演示中心（行业选择），`shop/hotel/news/fin.html` 为四个行业的高保真页面（电商/酒店/新闻/理财），另有英文电商页 `shop-en.html` 供录制；槽位命名为 `<行业>-hero`（stream+live）与 `<行业>-rec`（mock 永远失败，演示兜底）。页面上没有输入框——卖点方向调整由 `admin.html` 运营控制台（`POST /admin/prompt`）完成并推送
 - CI 预生成（AI 静态化）：`examples/plain-html` 下 `node prewarm.mjs` 生成 `ai-cache.json`，`node server.mjs` 启动时自动水合
 - 真实 LLM：示例默认走确定性 mock；设置 `OPENAI_API_KEY` 后切换为 OpenAI 兼容端点（可选 `AI_BASE_URL`、`AI_MODEL_DEVELOPER` 默认 gpt-4o、`AI_MODEL_USER` 默认 gpt-4o-mini）
 
@@ -59,7 +60,7 @@
 3. **缓存层**：单测 key 生成、TTL、stale 回退。
 4. **LLM Client**：接口抽象，测试用录制 fixture 回放，不依赖真实 API。
 5. **客户端运行时**：针对 `dom` 适配器的集成测试（jsdom/Playwright），覆盖挂载→加载→渲染→降级全生命周期。
-6. **端到端**：示例项目（纯 HTML + dom 适配器）跑通「开发者提示词预生成 + 用户实时修改」两条路径。
+6. **端到端**：示例项目（纯 HTML + dom 适配器）跑通「开发者提示词预生成 + 运营实时调整（/admin/prompt 推送）」两条路径。
 
 ## 安全注意事项
 

@@ -50,7 +50,7 @@ node examples/plain-html/server.mjs
 # → 打开 http://localhost:4173
 ```
 
-示例页把三种交付方式都放在手边：hero 槽位带 `stream` + `live` + `editable`，`broken` 槽位演示静默兜底，`POST /admin/publish` 模拟数据源变更，`node examples/plain-html/prewarm.mjs` 烘焙 `ai-cache.json` 走预生成路径。
+示例站打开后是行业选择页：电商、酒店、新闻、理财四个贴近真实业务的存量页面。hero 槽位带 `stream` + `live`，推荐槽位的 AI 永远故障以演示静默兜底。页面上没有输入框——调整者是运营/开发者：`admin.html` 运营控制台（或 `POST /admin/prompt?slot=<槽位名>&prompt=<新提示词>`）改卖点方向，`POST /admin/publish?slot=<槽位名>` 模拟数据源变更，两者都通过失效推送让打开的页面原地更新；`node examples/plain-html/prewarm.mjs` 烘焙 `ai-cache.json` 走预生成路径。[项目官网](https://aislot.pages.dev)内嵌了同一套页面的交互演示——浏览器里跑真实运行时，按高亮引导逐步手动操作。
 
 切换到真实模型：
 
@@ -60,14 +60,14 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 # 可选：AI_MODEL_DEVELOPER（默认 gpt-4o）/ AI_MODEL_USER（默认 gpt-4o-mini）
 ```
 
-跑起来了？一个 ⭐ 能帮更多人看到这个项目。
+跑起来了？点个 GitHub Star 能帮更多人看到这个项目。
 
 <p align="center">
-  <img src="assets/demo.gif" alt="一段录屏看三种交付方式：加载时 AI 内容流式上屏，数据源变更免发版原地更新标题，最后访客提示词个性化该槽位" width="720">
+  <img src="assets/demo.gif" alt="一段录屏看三种交付方式：加载时 AI 内容流式上屏，数据源变更免发版原地更新标题，最后运营控制台改卖点方向推送生效" width="720">
 </p>
 <p align="center">
   <img src="assets/screenshot-hero.png" alt="AI 增强后的 hero：由校验过的组件树渲染" width="49%">
-  <img src="assets/screenshot-rewritten.png" alt="用户提示词提交后：同一槽位按定制标题重新渲染" width="49%">
+  <img src="assets/screenshot-rewritten.png" alt="运营发布新提示词后：同一槽位按新卖点方向重新渲染" width="49%">
 </p>
 
 ## 特性

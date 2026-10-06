@@ -58,7 +58,7 @@ proxy（服务端）        runtime（客户端 Web Components）
 
 **跨包测试别名**：各包 `vitest.config.ts` 把 `@ai-slot/registry` 等别名指向**源码** `../registry/src/index.ts`（不走 dist）。新增 workspace 依赖时需同步在该包 `vitest.config.ts` 加 alias，否则测试解析失败。
 
-**示例（examples/plain-html）**：模拟老站零侵入接入——原 HTML 原样包进 `<ai-slot>`；`server.mjs` 同时挂载代理 handler、`/ai-invalidate` 与 `POST /admin/publish`（模拟数据源变更 → bump 内容版本 → 推送失效）；`hero` 槽位演示 editable/stream/live 全特性，`broken` 槽位演示静默兜底。根 README 用的截图与演示 GIF（`assets/`）由 `node capture-assets.mjs` 重新生成（需 server 运行中，ffmpeg 转 GIF）。
+**示例（examples/plain-html）**：模拟老站零侵入接入——原 HTML 原样包进 `<ai-slot>`；`server.mjs` 同时挂载代理 handler、`/ai-invalidate`、`POST /admin/publish`（模拟数据源变更 → bump 内容版本 → 推送失效）与 `POST /admin/prompt`（运营改卖点方向 → 推送）；`admin.html` 是运营控制台，访客页面上没有输入框；`hero` 槽位演示 stream/live，`-rec` 槽位演示静默兜底。根 README 用的截图与演示 GIF（`assets/`）由 `node capture-assets.mjs` 重新生成（需 server 运行中，ffmpeg 转 GIF）。
 
 ## 关键不变量（每个改动都要守住）
 

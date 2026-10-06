@@ -50,7 +50,7 @@ node examples/plain-html/server.mjs
 # → open http://localhost:4173
 ```
 
-The demo page puts all three delivery modes in reach: `stream` + `live` + `editable` on the hero slot, a `broken` slot that shows the silent fallback, `POST /admin/publish` to simulate a data-source change, and `node examples/plain-html/prewarm.mjs` to bake `ai-cache.json` for the pregenerated path.
+The demo app opens with an industry picker — e-commerce, hotel, news and banking pages, each a realistic legacy page. The hero slot carries `stream` + `live`, and a recommendation slot whose AI always fails shows the silent fallback. There is no input box on the page — the operator is the one who adjusts: the `admin.html` ops console (or `POST /admin/prompt?slot=<slotId>&prompt=<new prompt>`) changes the selling-point angle, `POST /admin/publish?slot=<slotId>` simulates a data-source change, and both push invalidation so open pages update in place. `node examples/plain-html/prewarm.mjs` bakes `ai-cache.json` for the pregenerated path. The [project website](https://aislot.pages.dev) embeds the same pages as an interactive, step-guided demo running the real runtime in your browser.
 
 To use a real model instead of the mock:
 
@@ -60,14 +60,14 @@ OPENAI_API_KEY=sk-... node examples/plain-html/server.mjs
 # optional: AI_MODEL_DEVELOPER (default gpt-4o) / AI_MODEL_USER (default gpt-4o-mini)
 ```
 
-Got it running? A ⭐ helps others find the project.
+Got it running? A GitHub star helps others find the project.
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Three delivery modes in one recording: AI content streams in on load, a data-source change updates the title in place without a redeploy, then a visitor prompt personalizes the slot" width="720">
+  <img src="assets/demo.gif" alt="Three delivery modes in one recording: AI content streams in on load, a data-source change updates the title in place without a redeploy, then an ops-console prompt change rewrites the slot" width="720">
 </p>
 <p align="center">
   <img src="assets/screenshot-hero.png" alt="AI-enhanced hero rendered from a validated component tree" width="49%">
-  <img src="assets/screenshot-rewritten.png" alt="After a visitor prompt: the same slot re-rendered with the custom title" width="49%">
+  <img src="assets/screenshot-rewritten.png" alt="After the ops prompt publish: the same slot re-rendered with the new angle" width="49%">
 </p>
 
 ## Features
