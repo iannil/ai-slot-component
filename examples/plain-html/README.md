@@ -30,6 +30,19 @@ OPENAI_API_KEY=sk-... node server.mjs
 # 可选：AI_MODEL_DEVELOPER（默认 gpt-4o）/ AI_MODEL_USER（默认 gpt-4o-mini）
 ```
 
+## 部署（Cloudflare Workers）
+
+线上地址：https://ai-slot-demo.zhurongx-971.workers.dev
+
+```bash
+pnpm deploy:worker   # prewarm 生成缓存 → build-public.mjs 生成 public/ → wrangler deploy
+```
+
+`worker.mjs` 是 Worker 入口（与 server.mjs 等价的路由）：静态页面走 Workers Static Assets（`public/`），
+所有 API 转发到全局单例 Durable Object——槽位状态与 SSE 订阅表在内存中，必须收敛到同一对象，
+否则多 isolate 路由会让「发布 → 失效推送」链路丢推送。免费套餐要求 DO 使用 `new_sqlite_classes` 迁移。
+注意：wrangler 需用系统 Node 运行（Electron 的 node 模式会导致参数解析失败）。
+
 ## CI 预生成（AI 静态化）
 
 ```bash

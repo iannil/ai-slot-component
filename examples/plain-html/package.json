@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "node server.mjs",
     "build": "echo 无需构建",
+    "build:public": "node build-public.mjs",
+    "deploy:worker": "node prewarm.mjs && node build-public.mjs && wrangler deploy",
     "typecheck": "echo 无需类型检查",
     "test": "echo 单元测试见各包；e2e 请用 test:e2e",
     "test:e2e": "playwright test"

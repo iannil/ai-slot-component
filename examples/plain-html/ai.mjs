@@ -1,13 +1,15 @@
 import { createAiRenderHandler, createInvalidationChannel, createOpenAIClient, MemoryCacheStore } from "@ai-slot/proxy";
-import { readFile } from "node:fs/promises";
 import { registry } from "./registry.mjs";
+
+/** Workers 等无 process 的环境下回退为空对象（全部走默认值/mock）。 */
+const env = typeof process !== "undefined" && process.env ? process.env : {};
 
 export const invalidation = createInvalidationChannel();
 
 /** 官网英文录制的文案（AI_DEMO_LANG=en）：仅覆盖 shop 行业；默认中文，e2e 断言依赖中文文案，勿改默认值。 */
-const en = process.env.AI_DEMO_LANG === "en";
+const en = env.AI_DEMO_LANG === "en";
 /** 录制用：放慢 mock 响应让加载过程在视频里可见（AI_DEMO_SLOW=毫秒数）。 */
-const demoSlowMs = Number(process.env.AI_DEMO_SLOW ?? 0);
+const demoSlowMs = Number(env.AI_DEMO_SLOW ?? 0);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
@@ -138,7 +140,7 @@ function heroTree(industry, slotId, dev) {
 export const mockLLM = {
   async complete(req) {
     const slotId = req.user.match(/槽位：([\w-]+)/)?.[1] ?? "";
-    if (process.env.AI_DEMO_TRACE) {
+    if (env.AI_DEMO_TRACE) {
       console.error(`[mock] complete slot=${slotId} slow=${demoSlowMs} user=${req.user.slice(0, 40).replace(/\n/g, "\\n")}`);
     }
     if (slotId.endsWith("-rec")) throw new Error("mock LLM failure");
@@ -220,31 +222,32 @@ export const slots = Object.fromEntries(
 
 /** 真实 LLM（设置了 OPENAI_API_KEY 时）；否则 null 表示用 mock。重试由 handler 内置的 withRetry 统一负责，这里不再叠加。 */
 function realLLM() {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = env.OPENAI_API_KEY;
   if (!apiKey) return null;
   return createOpenAIClient({
     apiKey,
-    baseUrl: process.env.AI_BASE_URL, // 可选：OpenAI 兼容端点
+    baseUrl: env.AI_BASE_URL, // 可选：OpenAI 兼容端点
   });
 }
 
-/** 装配 handler；cacheFile 存在时水合预生成缓存。 */
-export async function createHandler({ llm, cacheFile } = {}) {
+/** 装配 handler；cacheFile（Node，读文件）或 cacheData（Workers，内联字符串）存在时水合预生成缓存。 */
+export async function createHandler({ llm, cacheFile, cacheData } = {}) {
   const resolved = llm ?? realLLM() ?? mockLLM;
   // 真实 LLM 时分档选模型；mock 时由 handler 默认值兜底
-  const models = process.env.OPENAI_API_KEY
+  const models = env.OPENAI_API_KEY
     ? {
-        developer: process.env.AI_MODEL_DEVELOPER ?? "gpt-4o",
-        user: process.env.AI_MODEL_USER ?? "gpt-4o-mini",
+        developer: env.AI_MODEL_DEVELOPER ?? "gpt-4o",
+        user: env.AI_MODEL_USER ?? "gpt-4o-mini",
       }
     : undefined;
   let store;
-  if (cacheFile) {
+  const cacheText = cacheData ?? (cacheFile ? await readCacheFile(cacheFile) : null);
+  if (cacheText) {
     try {
-      store = MemoryCacheStore.load(await readFile(cacheFile, "utf8"), Date.now());
-      console.log(`[ai] 已水合预生成缓存: ${cacheFile}`);
+      store = MemoryCacheStore.load(cacheText, Date.now());
+      console.log(`[ai] 已水合预生成缓存`);
     } catch {
-      // 文件不存在或损坏：跳过水合
+      // 内容损坏：跳过水合
     }
   }
   return createAiRenderHandler({
@@ -254,4 +257,14 @@ export async function createHandler({ llm, cacheFile } = {}) {
     models,
     resolveSlot: (slotId) => slots[slotId] ?? null,
   });
+}
+
+/** 仅在 Node 环境读缓存文件；文件不存在或环境无 fs 时返回 null。 */
+async function readCacheFile(cacheFile) {
+  try {
+    const { readFile } = await import("node:fs/promises");
+    return await readFile(cacheFile, "utf8");
+  } catch {
+    return null;
+  }
 }
