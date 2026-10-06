@@ -6,10 +6,30 @@ import { getRenderer, renderTree } from "./renderer.js";
 let globalRegistry: Registry | undefined;
 let globalOnFailure: ((failure: FetchFailure) => void) | undefined;
 
-/** 全局配置：registry 供渲染前二次校验；onFailure 为可选失败观测（load 时透传给 fetchComponentTree）。 */
-export function configureAiSlot(opts: { registry?: Registry; onFailure?: (failure: FetchFailure) => void }): void {
+/** editable 编辑条文案，可被 configureAiSlot 的 editorLabels 覆盖（默认中文）。 */
+export interface EditorLabels {
+  placeholder: string;
+  submit: string;
+  reset: string;
+}
+
+const defaultEditorLabels: EditorLabels = {
+  placeholder: "用一句话调整这个区域…",
+  submit: "应用",
+  reset: "恢复默认",
+};
+
+let globalEditorLabels: EditorLabels = { ...defaultEditorLabels };
+
+/** 全局配置：registry 供渲染前二次校验；onFailure 为可选失败观测（load 时透传给 fetchComponentTree）；editorLabels 覆盖编辑条文案。 */
+export function configureAiSlot(opts: {
+  registry?: Registry;
+  onFailure?: (failure: FetchFailure) => void;
+  editorLabels?: Partial<EditorLabels>;
+}): void {
   globalRegistry = opts.registry;
   globalOnFailure = opts.onFailure;
+  globalEditorLabels = { ...defaultEditorLabels, ...opts.editorLabels };
 }
 
 /**
@@ -30,17 +50,19 @@ export class AiSlotElement extends HTMLElement {
       this.fallbackHTML = this.innerHTML;
       this.fallbackCaptured = true;
     }
-    if (this.hasAttribute("editable")) this.mountEditor();
     const intervalSec = Number(this.getAttribute("refresh-interval") ?? 0);
     if (intervalSec > 0) {
       this.timer = setInterval(() => void this.load(), intervalSec * 1000);
     }
-    // 首次加载推迟到微任务：customElements.define 会同步升级文档中已存在的
-    // <ai-slot>，此刻引入方的 registerRenderer/configureAiSlot 可能尚未执行，
-    // 同步调用 load() 会因找不到渲染器而静默放弃且不再重试。
+    // 首次加载与编辑条挂载都推迟到微任务：customElements.define 会同步升级
+    // 文档中已存在的 <ai-slot>，此刻引入方的 registerRenderer/configureAiSlot
+    // 可能尚未执行——同步 load() 会因找不到渲染器而静默放弃，同步 mountEditor()
+    // 会错过 configureAiSlot 配置的 editorLabels。
     queueMicrotask(() => {
-      if (this.isConnected) void this.load();
-      if (this.isConnected && this.hasAttribute("live")) this.mountLive();
+      if (!this.isConnected) return;
+      if (this.hasAttribute("editable")) this.mountEditor();
+      void this.load();
+      if (this.hasAttribute("live")) this.mountLive();
     });
   }
 
@@ -129,13 +151,13 @@ export class AiSlotElement extends HTMLElement {
     const input = document.createElement("input");
     input.name = "prompt";
     input.maxLength = 500;
-    input.placeholder = "用一句话调整这个区域…";
+    input.placeholder = globalEditorLabels.placeholder;
     const submit = document.createElement("button");
     submit.type = "submit";
-    submit.textContent = "应用";
+    submit.textContent = globalEditorLabels.submit;
     const reset = document.createElement("button");
     reset.type = "button";
-    reset.textContent = "恢复默认";
+    reset.textContent = globalEditorLabels.reset;
     form.append(input, submit, reset);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
