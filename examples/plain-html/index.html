@@ -2,92 +2,89 @@
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
-    <title>降噪耳机 X100 - 老友商城</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ai-slot 示例演示中心</title>
     <style>
-      /* 演示页的最低限度排版：老站本身零改动，这里只是让默认观感不至于太裸 */
+      * { box-sizing: border-box; }
       body {
-        margin: 0 auto;
-        padding: 0 32px 64px;
-        max-width: 640px;
+        margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-        color: #1a1a1a;
-        background: #fafafa;
+        color: #e4e4e7;
+        background: #09090b;
       }
-      .shop-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 14px 0;
-        margin-bottom: 28px;
-        border-bottom: 1px solid #e5e5e5;
-        font-size: 14px;
+      .page { max-width: 960px; margin: 0 auto; padding: 72px 32px 64px; }
+      .brand { font-family: ui-monospace, Menlo, monospace; color: #a3e635; font-size: 15px; margin-bottom: 18px; }
+      h1 { font-size: 34px; letter-spacing: -0.02em; margin: 0 0 12px; color: #fafafa; }
+      .sub { color: #a1a1aa; font-size: 15px; line-height: 1.8; max-width: 640px; margin: 0 0 40px; }
+      .sub code { background: #27272a; border-radius: 4px; padding: 1px 6px; font-size: 13px; color: #a3e635; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .card {
+        display: block; text-decoration: none; color: inherit;
+        background: #18181b; border: 1px solid #27272a; border-radius: 14px; padding: 24px 26px;
+        transition: border-color .15s;
       }
-      .shop-header .logo { font-weight: 700; }
-      .shop-header nav { color: #777; display: flex; gap: 16px; }
-      h1 { font-size: 28px; letter-spacing: -0.02em; margin: 0 0 4px; }
-      h1 + p { color: #555; margin: 0 0 20px; }
-      h2 { font-size: 20px; margin: 36px 0 0; }
-      h2 + p { color: #555; margin: 4px 0 0; font-size: 14px; }
-      .hero-subtitle { color: #c2410c; font-weight: 600; font-size: 18px; margin: 6px 0 20px; }
-      form.ai-slot-editor { display: flex; gap: 8px; margin: 12px 0 4px; }
-      form.ai-slot-editor input[name="prompt"] {
-        flex: 1;
-        padding: 8px 12px;
-        font-size: 14px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background: #fff;
+      .card:hover { border-color: #a3e635; }
+      .card .icon { display: block; color: #a3e635; }
+      .card h2 { font-size: 18px; margin: 12px 0 6px; color: #fafafa; }
+      .card p { margin: 0; color: #a1a1aa; font-size: 13.5px; line-height: 1.7; }
+      .card .go { display: inline-block; margin-top: 14px; font-size: 13px; color: #a3e635; font-family: ui-monospace, Menlo, monospace; }
+      .card.wide { grid-column: span 2; border-style: dashed; }
+      @media (max-width: 720px) { .card.wide { grid-column: span 1; } }
+      .note {
+        margin-top: 40px; border: 1px dashed #3f3f46; border-radius: 12px; padding: 18px 22px;
+        color: #a1a1aa; font-size: 13px; line-height: 1.9;
       }
-      form.ai-slot-editor button {
-        padding: 8px 14px;
-        font-size: 14px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background: #fff;
-        cursor: pointer;
-      }
-      form.ai-slot-editor button[type="submit"] {
-        background: #1a1a1a;
-        border-color: #1a1a1a;
-        color: #fff;
-      }
+      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
     </style>
-    <script type="importmap">
-      {
-        "imports": {
-          "@ai-slot/registry": "/vendor/registry/index.js",
-          "@ai-slot/runtime": "/vendor/runtime/index.js",
-          "@ai-slot/adapter-dom": "/vendor/adapter-dom/index.js"
-        }
-      }
-    </script>
-    <script type="module">
-      import { configureAiSlot } from "@ai-slot/runtime";
-      import { registerRenderer } from "@ai-slot/runtime";
-      import { createDomRenderer } from "@ai-slot/adapter-dom";
-      import { registry } from "/registry-client.mjs";
-      import { domComponents } from "/components.mjs";
-
-      registerRenderer("dom", createDomRenderer(domComponents));
-      configureAiSlot({ registry });
-    </script>
   </head>
   <body>
-    <header class="shop-header">
-      <span class="logo">老友商城</span>
-      <nav><span>首页</span><span>分类</span><span>购物车 (2)</span></nav>
-    </header>
-
-    <!-- 老站原有商品区，一个字不改，直接包进 ai-slot -->
-    <ai-slot name="hero" src="/ai-render/hero" editable stream live>
-      <h1>降噪耳机 X100</h1>
-      <p>音质好，佩戴舒适。</p>
-    </ai-slot>
-
-    <!-- AI 推荐服务故障时，这个推荐位保持静态内容 -->
-    <ai-slot name="broken" src="/ai-render/broken">
-      <h2>为您推荐</h2>
-      <p>耳塞套 · 收纳盒 · 延保服务</p>
-    </ai-slot>
+    <div class="page">
+      <p class="brand">&lt;ai-slot&gt; · 示例演示中心</p>
+      <h1>选择一个行业，进入真实业务页面</h1>
+      <p class="sub">
+        每个页面都是一份「老站」：标题区与推荐区包在 <code>&lt;ai-slot&gt;</code> 里。
+        首屏文案由 AI 流式替换（stream），促销/摘要变更通过失效推送原地生效（live），
+        推荐区演示 AI 故障时的静默兜底。页面上没有输入框——卖点方向的调整在运营控制台完成，
+        发布后推送到所有打开的页面。
+      </p>
+      <div class="grid">
+        <a class="card" href="/shop.html">
+          <span class="icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+          <h2>电商零售 · 老友商城</h2>
+          <p>3C 数码产品详情页：AI 优化商品卖点，促销价与卖点方向由运营后台推送生效。</p>
+          <span class="go">进入演示 →</span>
+        </a>
+        <a class="card" href="/hotel.html">
+          <span class="icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></svg></span>
+          <h2>酒店旅游 · 栖澜西湖酒店</h2>
+          <p>酒店预订详情页：AI 重写酒店卖点，房价套餐与人群卖点变更实时推送。</p>
+          <span class="go">进入演示 →</span>
+        </a>
+        <a class="card" href="/news.html">
+          <span class="icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V9"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg></span>
+          <h2>新闻资讯 · 前沿观察</h2>
+          <p>科技媒体文章页：AI 生成「要点速览」导读，快讯更新与导读口径即时修订。</p>
+          <span class="go">进入演示 →</span>
+        </a>
+        <a class="card" href="/fin.html">
+          <span class="icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="m12 2 8 5H4Z"/></svg></span>
+          <h2>金融理财 · 恒信银行</h2>
+          <p>银行理财产品页：AI 打磨产品亮点，年化、额度与投资者视角说明实时生效。</p>
+          <span class="go">进入演示 →</span>
+        </a>
+        <a class="card wide" href="/admin.html">
+          <span class="icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/></svg></span>
+          <h2>运营控制台</h2>
+          <p>运营/开发者在这里改卖点方向（提示词）或发布内容更新，失效推送让所有打开的页面原地更新。建议与任意行业页并排打开：左边控制台发布，右边页面即刻变化。</p>
+          <span class="go">打开控制台 →</span>
+        </a>
+      </div>
+      <p class="note">
+        提示：每页底部另有一个「推荐」槽位，它背后的 AI 服务被故意置为故障——页面照常显示静态推荐内容，
+        这就是静默兜底。构建期预生成可执行 <code>node prewarm.mjs</code>；
+        调整卖点方向可 <code>POST /admin/prompt?slot=&lt;槽位名&gt;&amp;prompt=&lt;新提示词&gt;</code>，
+        模拟数据源变更可 <code>POST /admin/publish?slot=&lt;槽位名&gt;</code>。
+      </p>
+    </div>
   </body>
 </html>

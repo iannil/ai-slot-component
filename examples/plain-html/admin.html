@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>运营控制台 · ai-slot 示例</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #e4e4e7;
+        background: #09090b;
+      }
+      .page { max-width: 960px; margin: 0 auto; padding: 72px 32px 64px; }
+      .brand { font-family: ui-monospace, Menlo, monospace; color: #a3e635; font-size: 15px; margin-bottom: 18px; }
+      .brand a { color: inherit; text-decoration: none; }
+      h1 { font-size: 30px; letter-spacing: -0.02em; margin: 0 0 12px; color: #fafafa; }
+      .sub { color: #a1a1aa; font-size: 15px; line-height: 1.8; max-width: 680px; margin: 0 0 36px; }
+      .sub code { background: #27272a; border-radius: 4px; padding: 1px 6px; font-size: 13px; color: #a3e635; }
+      .slot-card {
+        background: #18181b; border: 1px solid #27272a; border-radius: 14px;
+        padding: 22px 24px; margin-bottom: 16px;
+      }
+      .slot-card .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .slot-card .name { font-size: 16px; font-weight: 600; color: #fafafa; }
+      .slot-card .slot-id { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #71717a; }
+      .slot-card .ver {
+        margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+        color: #a3e635; border: 1px solid #3f3f46; border-radius: 999px; padding: 2px 10px;
+      }
+      .slot-card .cur { margin: 14px 0 4px; font-size: 12.5px; color: #71717a; }
+      .slot-card .cur code {
+        display: block; margin-top: 5px; background: #09090b; border: 1px solid #27272a;
+        border-radius: 8px; padding: 9px 12px; color: #d4d4d8; font-size: 13px;
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .slot-card input[name="prompt"] {
+        width: 100%; margin-top: 12px; padding: 9px 12px; font-size: 14px; color: #e4e4e7;
+        background: #09090b; border: 1px solid #3f3f46; border-radius: 8px; outline: none;
+      }
+      .slot-card input[name="prompt"]:focus { border-color: #a3e635; }
+      .slot-card .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .slot-card .chip {
+        border: 1px solid #3f6212; color: #a3e635; background: transparent;
+        border-radius: 999px; padding: 4px 12px; font-size: 12.5px; cursor: pointer;
+      }
+      .slot-card .chip:hover { border-color: #a3e635; }
+      .slot-card .actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+      .slot-card button.publish-prompt {
+        background: #a3e635; color: #09090b; border: 0; border-radius: 8px;
+        padding: 9px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+      }
+      .slot-card button.publish-content {
+        background: transparent; color: #e4e4e7; border: 1px solid #3f3f46;
+        border-radius: 8px; padding: 9px 16px; font-size: 13.5px; cursor: pointer;
+      }
+      .slot-card a.open-page {
+        margin-left: auto; color: #a1a1aa; font-size: 13px; text-decoration: none;
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .slot-card a.open-page:hover { color: #a3e635; }
+      .note {
+        margin-top: 28px; border: 1px dashed #3f3f46; border-radius: 12px; padding: 18px 22px;
+        color: #a1a1aa; font-size: 13px; line-height: 1.9;
+      }
+      .note code { background: #27272a; border-radius: 4px; padding: 1px 6px; font-size: 12.5px; color: #a3e635; }
+      #toast {
+        position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+        background: #a3e635; color: #09090b; border-radius: 10px; padding: 10px 18px;
+        font-size: 13.5px; font-weight: 600; opacity: 0; transition: all .25s; pointer-events: none;
+      }
+      #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <p class="brand"><a href="/">&lt;ai-slot&gt;</a> · 运营控制台</p>
+      <h1>调整在这里发生，访客只看到结果</h1>
+      <p class="sub">
+        修改卖点方向（提示词）或发布内容版本更新，都会触发失效推送——所有打开的访客页面原地更新，免发版。
+        访客页面上没有输入框；真实部署中这个控制台就是你的 CMS、代码仓库或内部后台。
+      </p>
+      <div id="slots"></div>
+      <p class="note">
+        每个行业页底部另有一个「推荐」槽位，它背后的 AI 服务被故意置为故障——不在此列出，页面照常显示静态推荐内容（静默兜底）。
+        命令行等价操作：<code>POST /admin/prompt?slot=&lt;槽位名&gt;&amp;prompt=&lt;新提示词&gt;</code>
+        与 <code>POST /admin/publish?slot=&lt;槽位名&gt;</code>。
+      </p>
+    </div>
+    <div id="toast"></div>
+    <script type="module">
+      const PAGE_FOR = {
+        "shop-hero": "/shop.html",
+        "hotel-hero": "/hotel.html",
+        "news-hero": "/news.html",
+        "fin-hero": "/fin.html",
+      };
+      const INDUSTRY_NAME = {
+        shop: "电商零售 · 老友商城",
+        hotel: "酒店旅游 · 栖澜西湖酒店",
+        news: "新闻资讯 · 前沿观察",
+        fin: "金融理财 · 恒信银行",
+      };
+
+      const slotsEl = document.getElementById("slots");
+      const toastEl = document.getElementById("toast");
+      let toastTimer;
+      function toast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      }
+
+      async function post(url) {
+        const res = await fetch(url, { method: "POST" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      }
+
+      function render(state) {
+        slotsEl.innerHTML = "";
+        for (const slot of state.slots) {
+          if (!PAGE_FOR[slot.slotId]) continue; // rec 槽位为故障演示，不出现在控制台
+          const industry = slot.slotId.split("-")[0];
+          const card = document.createElement("section");
+          card.className = "slot-card";
+          card.dataset.slot = slot.slotId;
+
+          const head = document.createElement("div");
+          head.className = "head";
+          const name = document.createElement("span");
+          name.className = "name";
+          name.textContent = INDUSTRY_NAME[industry] ?? industry;
+          const slotId = document.createElement("span");
+          slotId.className = "slot-id";
+          slotId.textContent = slot.slotId;
+          const ver = document.createElement("span");
+          ver.className = "ver";
+          ver.textContent = slot.contentVersion;
+          head.append(name, slotId, ver);
+
+          const cur = document.createElement("div");
+          cur.className = "cur";
+          cur.append("当前卖点方向（developer prompt）");
+          const code = document.createElement("code");
+          code.className = "current-prompt";
+          code.textContent = slot.developerPrompt ?? "（未设置）";
+          cur.append(code);
+
+          const input = document.createElement("input");
+          input.name = "prompt";
+          input.placeholder = "输入新的卖点方向，例如：面向学生党，突出性价比";
+
+          const chips = document.createElement("div");
+          chips.className = "chips";
+          for (const preset of state.presets[slot.slotId] ?? []) {
+            const chip = document.createElement("button");
+            chip.className = "chip";
+            chip.textContent = preset.label;
+            chip.addEventListener("click", () => {
+              input.value = preset.prompt;
+              input.focus();
+            });
+            chips.append(chip);
+          }
+
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const publishPrompt = document.createElement("button");
+          publishPrompt.className = "publish-prompt";
+          publishPrompt.textContent = "发布新提示词";
+          publishPrompt.addEventListener("click", async () => {
+            const prompt = input.value.trim();
+            if (!prompt) {
+              input.focus();
+              return;
+            }
+            await post(`/admin/prompt?slot=${slot.slotId}&prompt=${encodeURIComponent(prompt)}`);
+            toast(`已发布：${slot.slotId} 的页面将原地更新`);
+            await load();
+          });
+          const publishContent = document.createElement("button");
+          publishContent.className = "publish-content";
+          publishContent.textContent = "发布内容更新";
+          publishContent.title = "模拟数据源变更（促销、额度、快讯修订）";
+          publishContent.addEventListener("click", async () => {
+            await post(`/admin/publish?slot=${slot.slotId}`);
+            toast(`内容已更新：${slot.slotId}`);
+            await load();
+          });
+          const open = document.createElement("a");
+          open.className = "open-page";
+          open.href = PAGE_FOR[slot.slotId];
+          open.target = "_blank";
+          open.rel = "noreferrer";
+          open.textContent = "打开访客页面 ↗";
+          actions.append(publishPrompt, publishContent, open);
+
+          card.append(head, cur, input, chips, actions);
+          slotsEl.append(card);
+        }
+      }
+
+      async function load() {
+        const res = await fetch("/admin/state");
+        render(await res.json());
+      }
+      load();
+    </script>
+  </body>
+</html>

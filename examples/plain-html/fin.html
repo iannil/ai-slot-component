@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>稳盈 180 天·固收增强 - 恒信银行</title>
+    <style>
+      /* 老站原有排版：接近真实银行理财页，除两个 ai-slot 外零改动 */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #1a1a1a;
+        background: #f3f4f6;
+      }
+      .topbar {
+        background: #7f1d1d; color: #fecaca;
+        display: flex; align-items: center; gap: 26px;
+        padding: 0 32px; height: 56px; font-size: 14px;
+      }
+      .topbar .logo { font-weight: 700; font-size: 17px; color: #fff; }
+      .topbar nav { display: flex; gap: 22px; }
+      .topbar .phone { margin-left: auto; font-size: 13px; }
+      .crumbs { max-width: 1080px; margin: 0 auto; padding: 14px 32px 0; font-size: 13px; color: #6b7280; }
+      .crumbs b { color: #374151; font-weight: 500; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 12px 32px 48px; }
+      .product {
+        display: grid; grid-template-columns: 1fr 360px; gap: 32px;
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px;
+      }
+      .product h1 { font-size: 24px; margin: 0 0 6px; }
+      .product h1 + p { color: #4b5563; margin: 0 0 4px; font-size: 15px; }
+      .hero-subtitle { color: #b91c1c; font-weight: 600; font-size: 16px !important; margin: 6px 0 4px !important; }
+      .badges { display: flex; gap: 8px; margin: 12px 0 18px; }
+      .badges span { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 12px; border-radius: 4px; padding: 3px 9px; }
+      table.facts { width: 100%; border-collapse: collapse; font-size: 14px; }
+      table.facts td { border-top: 1px solid #f3f4f6; padding: 11px 4px; }
+      table.facts td:first-child { color: #6b7280; width: 40%; }
+      .yield-card {
+        background: linear-gradient(160deg, #7f1d1d, #991b1b); color: #fff;
+        border-radius: 12px; padding: 26px 24px;
+      }
+      .yield-card .num { font-size: 42px; font-weight: 800; letter-spacing: -0.02em; }
+      .yield-card .num i { font-size: 20px; font-style: normal; }
+      .yield-card .cap { color: #fecaca; font-size: 13px; margin-top: 2px; }
+      .yield-card hr { border: 0; border-top: 1px solid rgba(254,202,202,.3); margin: 18px 0; }
+      .yield-card .row { display: flex; justify-content: space-between; font-size: 13px; color: #fee2e2; padding: 4px 0; }
+      .yield-card button {
+        width: 100%; margin-top: 20px; height: 46px; border: 0; border-radius: 8px;
+        background: #fff; color: #7f1d1d; font-size: 15px; font-weight: 700; cursor: pointer;
+      }
+      .yield-card .ghost {
+        margin-top: 10px; background: transparent; color: #fecaca; border: 1px solid rgba(254,202,202,.5);
+        font-weight: 400;
+      }
+      .notes, .rec {
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+        padding: 22px 26px; margin-top: 24px;
+      }
+      .rec { display: block; }
+      .notes h2, .rec h2 { font-size: 17px; margin: 0 0 12px; }
+      .notes ul { margin: 0; padding-left: 18px; color: #374151; font-size: 14px; line-height: 1.9; }
+      .rec p { margin: 0; font-size: 14px; color: #4b5563; }
+      .disclaimer { color: #9ca3af; font-size: 12px; line-height: 1.8; margin-top: 24px; }
+      .footer { text-align: center; color: #9ca3af; font-size: 12px; padding: 24px 0 8px; }
+      @media (max-width: 900px) { .product { grid-template-columns: 1fr; } }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ai-slot/registry": "/vendor/registry/index.js",
+          "@ai-slot/runtime": "/vendor/runtime/index.js",
+          "@ai-slot/adapter-dom": "/vendor/adapter-dom/index.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { configureAiSlot } from "@ai-slot/runtime";
+      import { registerRenderer } from "@ai-slot/runtime";
+      import { createDomRenderer } from "@ai-slot/adapter-dom";
+      import { registry } from "/registry-client.mjs";
+      import { domComponents } from "/components.mjs";
+
+      registerRenderer("dom", createDomRenderer(domComponents));
+      configureAiSlot({ registry });
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="logo">恒信银行</span>
+      <nav><span>首页</span><span>理财</span><span>基金</span><span>贷款</span><span>我的账户</span></nav>
+      <span class="phone">客服热线 95588</span>
+    </header>
+
+    <div class="crumbs">理财 / 固定收益 / <b>稳盈 180 天·固收增强</b></div>
+
+    <div class="page">
+      <main class="product">
+        <div>
+          <!-- 老站原有产品名称区，一个字不改，直接包进 ai-slot -->
+          <ai-slot name="fin-hero" src="/ai-render/fin-hero" stream live>
+            <h1>稳盈 180 天·固收增强</h1>
+            <p>稳健理财，期限适中。</p>
+          </ai-slot>
+
+          <div class="badges"><span>R2 稳健型</span><span>固收增强</span><span>银行自营</span></div>
+
+          <table class="facts">
+            <tr><td>产品期限</td><td>180 天封闭期，到期自动赎回</td></tr>
+            <tr><td>起购金额</td><td>1 元，1 元递增</td></tr>
+            <tr><td>风险等级</td><td>R2（稳健型），适合保守型及以上投资者</td></tr>
+            <tr><td>管理人</td><td>恒信银行资产管理部</td></tr>
+            <tr><td>费用</td><td>申购 0 费 · 持有期管理费 0.3%/年</td></tr>
+          </table>
+        </div>
+
+        <aside class="yield-card">
+          <div class="num">2.85<i>%</i></div>
+          <div class="cap">七日年化收益率（2026-10-05）· 成立以来年化 3.02%</div>
+          <hr />
+          <div class="row"><span>本期额度</span><span>剩余 38%</span></div>
+          <div class="row"><span>已申购人数</span><span>41,206 人</span></div>
+          <div class="row"><span>确认时间</span><span>T+1 起息</span></div>
+          <button>立即买入</button>
+          <button class="ghost">加入自选</button>
+        </aside>
+      </main>
+
+      <section class="notes">
+        <h2>产品说明</h2>
+        <ul>
+          <li>主要投资于利率债与高等级信用债，权益类仓位不超过 20%。</li>
+          <li>封闭期内不可赎回，请合理安排资金。</li>
+          <li>历史 36 期产品均按期兑付，过往业绩不代表未来表现。</li>
+        </ul>
+      </section>
+
+      <!-- AI 推荐服务故障时，这个推荐位保持静态内容 -->
+      <ai-slot name="fin-rec" src="/ai-render/fin-rec" class="rec">
+        <h2>相似产品</h2>
+        <p>稳盈 90 天 · 季季盈 · 安享货币 A</p>
+      </ai-slot>
+
+      <p class="disclaimer">
+        理财非存款，产品有风险，投资须谨慎。业绩比较基准不代表收益承诺，理财产品过往业绩不代表其未来表现，
+        不等于理财产品实际收益。投资者购买前应仔细阅读产品说明书与风险揭示书。
+      </p>
+
+      <footer class="footer">恒信银行股份有限公司 · 金融许可证 B0001H211000001</footer>
+    </div>
+  </body>
+</html>

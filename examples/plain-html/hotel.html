@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>栖澜·西湖度假酒店 - 栖澜酒店集团</title>
+    <style>
+      /* 老站原有排版：接近真实酒店预订页，除两个 ai-slot 外零改动 */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #1c1917;
+        background: #f5f5f4;
+      }
+      .topbar {
+        background: #fff; border-bottom: 1px solid #e7e5e4;
+        display: flex; align-items: center; gap: 28px;
+        padding: 0 32px; height: 60px; font-size: 14px;
+      }
+      .topbar .logo { font-weight: 700; font-size: 17px; color: #0c4a6e; }
+      .topbar nav { display: flex; gap: 22px; color: #57534e; }
+      .topbar .member { margin-left: auto; color: #0c4a6e; border: 1px solid #bae6fd; border-radius: 999px; padding: 6px 16px; }
+      .crumbs { max-width: 1080px; margin: 0 auto; padding: 14px 32px 0; font-size: 13px; color: #78716c; }
+      .crumbs b { color: #44403c; font-weight: 500; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 12px 32px 48px; }
+      .gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; border-radius: 12px; overflow: hidden; }
+      .gallery div { height: 220px; display: flex; align-items: center; justify-content: center; font-size: 56px; }
+      .gallery .main { height: 300px; grid-row: span 2; font-size: 88px; background: linear-gradient(150deg, #0c4a6e, #0369a1 60%, #082f49); }
+      .gallery .g2 { background: linear-gradient(150deg, #134e4a, #0f766e); }
+      .gallery .g3 { background: linear-gradient(150deg, #365314, #4d7c0f); }
+      .gallery .g4 { background: linear-gradient(150deg, #7c2d12, #c2410c); }
+      .gallery .g5 { background: linear-gradient(150deg, #3b0764, #7e22ce); }
+      .hotel { display: grid; grid-template-columns: 1fr 340px; gap: 32px; margin-top: 24px; }
+      .hotel h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.01em; }
+      .hotel h1 + p { color: #57534e; margin: 0 0 4px; font-size: 15px; }
+      .hero-subtitle { color: #b45309; font-weight: 600; font-size: 16px !important; margin: 6px 0 4px !important; }
+      .score { display: flex; align-items: center; gap: 10px; margin: 12px 0; font-size: 14px; }
+      .score b { background: #0c4a6e; color: #fff; border-radius: 6px; padding: 4px 8px; font-size: 15px; }
+      .score span { color: #78716c; }
+      .addr { color: #57534e; font-size: 14px; margin: 0 0 14px; }
+      .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+      .tags span { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; font-size: 12px; border-radius: 4px; padding: 3px 9px; }
+      .rooms h2, .review-card h2, .rec h2 { font-size: 18px; margin: 0 0 14px; }
+      .room {
+        display: flex; align-items: center; gap: 16px; background: #fff;
+        border: 1px solid #e7e5e4; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+      }
+      .room .pic { width: 92px; height: 68px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; }
+      .room .r1 { background: linear-gradient(150deg, #e0f2fe, #bae6fd); }
+      .room .r2 { background: linear-gradient(150deg, #ecfccb, #d9f99d); }
+      .room .name { font-weight: 600; font-size: 15px; }
+      .room .desc { color: #78716c; font-size: 13px; margin-top: 4px; }
+      .room .price { margin-left: auto; text-align: right; }
+      .room .price b { color: #b45309; font-size: 20px; }
+      .room .price i { font-style: normal; color: #a8a29e; font-size: 12px; }
+      .room .price button {
+        display: block; margin-top: 6px; background: #0c4a6e; color: #fff; border: 0;
+        border-radius: 6px; padding: 7px 18px; font-size: 13px; cursor: pointer;
+      }
+      .side-card { background: #fff; border: 1px solid #e7e5e4; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+      .side-card h3 { margin: 0 0 12px; font-size: 15px; }
+      .side-card ul { margin: 0; padding: 0; list-style: none; color: #57534e; font-size: 13px; }
+      .side-card li { padding: 5px 0; }
+      .side-card li i { color: #16a34a; font-style: normal; margin-right: 6px; }
+      .review-card, .rec {
+        background: #fff; border: 1px solid #e7e5e4; border-radius: 12px;
+        padding: 22px 24px; margin-top: 24px;
+      }
+      .rec { display: block; }
+      .review-card .who { color: #78716c; font-size: 13px; margin-bottom: 6px; }
+      .review-card .star { color: #f59e0b; }
+      .review-card p, .rec p { margin: 0; font-size: 14px; color: #44403c; }
+      .footer { text-align: center; color: #a8a29e; font-size: 12px; padding: 36px 0 8px; }
+      @media (max-width: 900px) {
+        .hotel { grid-template-columns: 1fr; }
+        .gallery { grid-template-columns: 1fr 1fr; }
+        .gallery .main { grid-column: span 2; }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ai-slot/registry": "/vendor/registry/index.js",
+          "@ai-slot/runtime": "/vendor/runtime/index.js",
+          "@ai-slot/adapter-dom": "/vendor/adapter-dom/index.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { configureAiSlot } from "@ai-slot/runtime";
+      import { registerRenderer } from "@ai-slot/runtime";
+      import { createDomRenderer } from "@ai-slot/adapter-dom";
+      import { registry } from "/registry-client.mjs";
+      import { domComponents } from "/components.mjs";
+
+      registerRenderer("dom", createDomRenderer(domComponents));
+      configureAiSlot({ registry });
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="logo">栖澜酒店集团</span>
+      <nav><span>酒店</span><span>民宿</span><span>机票</span><span>会员权益</span></nav>
+      <span class="member">金卡会员 · 积分 12,400</span>
+    </header>
+
+    <div class="crumbs">杭州酒店 / 西湖风景区 / <b>栖澜·西湖度假酒店</b></div>
+
+    <div class="page">
+      <div class="gallery">
+        <div class="main"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#e0f2fe" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg></div>
+        <div class="g2"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#99f6e4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></div>
+        <div class="g3"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d9f99d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2"/><path d="M10 2v2"/><path d="M14 2v2"/></svg></div>
+        <div class="g4"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fed7aa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Z"/><path d="M21 15v7"/></svg></div>
+        <div class="g5"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e9d5ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></div>
+      </div>
+
+      <main class="hotel">
+        <div>
+          <!-- 老站原有标题区，一个字不改，直接包进 ai-slot -->
+          <ai-slot name="hotel-hero" src="/ai-render/hotel-hero" stream live>
+            <h1>栖澜·西湖度假酒店</h1>
+            <p>位置好，风景不错。</p>
+          </ai-slot>
+
+          <div class="score"><b>4.8</b><span>3,214 条评价 · 「湖景无敌」「服务贴心」</span></div>
+          <p class="addr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0c4a6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:2px"><path d="M20 10c0 4.99-5.54 10.19-7.4 11.79a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>杭州 · 西湖区北山街 27 号 · 距断桥残雪步行 6 分钟 · 距凤起路地铁站 800 米</p>
+          <div class="tags"><span>湖景房</span><span>含双早</span><span>免费取消</span><span>近地铁</span><span>亲子友好</span></div>
+
+          <section class="rooms">
+            <h2>房型与价格</h2>
+            <div class="room">
+              <div class="pic r1"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#075985" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></div>
+              <div>
+                <div class="name">湖景大床房</div>
+                <div class="desc">38㎡ · 2 人入住 · 含双早 · 落地窗直面西湖</div>
+              </div>
+              <div class="price"><b>¥899</b><i>/晚</i><button>预订</button></div>
+            </div>
+            <div class="room">
+              <div class="pic r2"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3f6212" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+              <div>
+                <div class="name">庭院双床房</div>
+                <div class="desc">32㎡ · 2 人入住 · 含双早 · 内庭花园景观</div>
+              </div>
+              <div class="price"><b>¥699</b><i>/晚</i><button>预订</button></div>
+            </div>
+          </section>
+        </div>
+
+        <aside>
+          <div class="side-card">
+            <h3>酒店设施</h3>
+            <ul>
+              <li><i>✓</i>免费停车场</li>
+              <li><i>✓</i>健身房 · 茶室</li>
+              <li><i>✓</i>行李寄存 · 叫醒服务</li>
+              <li><i>✓</i>儿童乐园</li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h3>入住须知</h3>
+            <ul>
+              <li>入住 14:00 后 · 退房 12:00 前</li>
+              <li>不可携带宠物</li>
+              <li>早餐 7:00–10:00（西餐厅）</li>
+            </ul>
+          </div>
+        </aside>
+      </main>
+
+      <section class="review-card">
+        <h2>住客评价 <span style="color:#a8a29e;font-size:13px;font-weight:400">（3,214）</span></h2>
+        <div class="who"><span class="star">★★★★★</span> 沈** · 湖景大床房 · 2026-09-30 入住</div>
+        <p>清晨拉开窗帘就是断桥，值回房价。早餐的片儿川很地道，前台帮忙叫了手摇船，体验满分。</p>
+      </section>
+
+      <!-- AI 推荐服务故障时，这个推荐位保持静态内容 -->
+      <ai-slot name="hotel-rec" src="/ai-render/hotel-rec" class="rec">
+        <h2>周边推荐</h2>
+        <p>曲院风荷 · 楼外楼 · 手摇船码头</p>
+      </ai-slot>
+
+      <footer class="footer">栖澜酒店集团 · 浙ICP备14000001号 · 预订热线 400-800-1024</footer>
+    </div>
+  </body>
+</html>

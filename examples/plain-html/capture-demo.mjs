@@ -1,8 +1,8 @@
-// 录制官网演示 GIF：4 个场景 × 中英双语（自包含：自动起/停两个示例服务器，互不干扰）：
+// 录制根 README 演示 GIF（自包含：自动起/停两个示例服务器，互不干扰）：
 //   node capture-demo.mjs
-// 场景：stream（骨架→终树）/ live（失效推送原地更新）/ editable（访客提示词）/ fallback（AI 失败静默兜底）
-// 产物：../../website/public/assets/demo-{场景}-{lang}.gif，外加完整流程 demo-{lang}.gif
-//       ../../assets/demo.gif（英文完整版，供根 README 使用）
+// 官网演示区已改为页内交互演示（真实运行时 + 虚拟后端），不再消费 GIF；
+// 这里只录制「完整流程」（stream → live → 运营提示词推送 连播）供根 README 使用。
+// 产物：../../assets/demo-zh.gif、../../assets/demo-en.gif，并将英文版复制为 ../../assets/demo.gif
 // 依赖：已 pnpm build（vendor 指向 packages/*/dist）、ffmpeg、playwright chromium
 import { spawn, execFileSync } from "node:child_process";
 import { mkdirSync, copyFileSync, writeFileSync, rmSync } from "node:fs";
@@ -11,38 +11,36 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 
 const exampleDir = fileURLToPath(new URL(".", import.meta.url));
-const websiteAssets = fileURLToPath(new URL("../../website/public/assets/", import.meta.url));
 const repoAssets = fileURLToPath(new URL("../../assets/", import.meta.url));
 const videoRoot = "/tmp/ai-slot-demo-capture";
-mkdirSync(websiteAssets, { recursive: true });
 mkdirSync(videoRoot, { recursive: true });
 
-const VIEWPORT = { width: 800, height: 400 };
+const VIEWPORT = { width: 1120, height: 760 };
 
 const LANGS = {
   zh: {
     port: 4181,
-    page: "/index.html",
+    page: "/shop.html",
     finalTitle: "地铁再吵，只剩音乐",
     rewrittenTitle: "学生党闭眼入的降噪耳机",
-    prompt: "给学生党推荐",
+    altPrompt: "面向学生党，突出性价比与宿舍降噪",
     captions: {
       stream: "打开商品页：静态内容先行，AI 卖点文案随后替换",
       live: "运营后台改促销 → 所有打开的页面原地更新，免发版",
-      editable: "访客输入「给学生党推荐」→ 只改写这一个区域",
+      ops: "运营控制台改卖点方向（提示词）→ 发布 → 页面原地换成新文案",
       fallback: "推荐服务故障 → 静态推荐位照常显示，不影响下单",
     },
   },
   en: {
     port: 4182,
-    page: "/index-en.html",
+    page: "/shop-en.html",
     finalTitle: "the subway disappears",
     rewrittenTitle: "The student pick for deep focus",
-    prompt: "pitch it to students",
+    altPrompt: "Pitch it to students: value and dorm-friendly noise canceling",
     captions: {
       stream: "Page load: static content first, AI selling points follow",
       live: "Deal changed in admin → live on every open tab. No redeploy.",
-      editable: "Visitor: “pitch it to students” → rewrites just this block",
+      ops: "Ops changes the angle (prompt) → publish → the page rewrites in place",
       fallback: "Recommendation AI down → the static section stays",
     },
   },
@@ -121,7 +119,7 @@ async function setCaption(page, text) {
 // waitForFunction 的断言必须传真实函数（needle 走 arg 注入）：
 // 传字符串 "() => ..." 会被当成表达式求值，结果是函数对象——恒真，第一轮轮询就放行
 const heroHasFn = (needle) =>
-  (document.querySelector('ai-slot[name="hero"] .hero-title')?.textContent ?? "").includes(needle);
+  (document.querySelector('ai-slot[name="shop-hero"] .hero-title')?.textContent ?? "").includes(needle);
 
 async function withRecording(name, cfg, fn) {
   // 不用 recordVideo：Playwright 视频在 context.close 时会丢末尾缓冲帧，时序不可控。
@@ -186,32 +184,28 @@ const scenarios = {
     await setCaption(page, cfg.captions.live);
     await page.waitForFunction(heroHasFn, cfg.finalTitle, { timeout: 15_000 });
     trace("finalTitle visible");
-    const initial = await page.locator('ai-slot[name="hero"] .hero-subtitle').textContent();
+    const initial = await page.locator('ai-slot[name="shop-hero"] .hero-subtitle').textContent();
     await page.waitForTimeout(1_400); // 让观众看清初始促销
-    await page.request.post(`${base}/admin/publish`);
+    await page.request.post(`${base}/admin/publish?slot=shop-hero`);
     trace("published");
     await page.waitForFunction(
       (prev) =>
-        (document.querySelector('ai-slot[name="hero"] .hero-subtitle')?.textContent ?? "") !== prev,
+        (document.querySelector('ai-slot[name="shop-hero"] .hero-subtitle')?.textContent ?? "") !== prev,
       initial,
       { timeout: 15_000 },
     );
     trace("subtitle updated");
     await page.waitForTimeout(1_600);
   },
-  async editable(page, base, cfg) {
+  async ops(page, base, cfg) {
+    // 运营调整发生在页面之外：控制台/管理端点改提示词 → 失效推送 → 页面原地更新
     await page.goto(`${base}${cfg.page}`);
-    await setCaption(page, cfg.captions.editable);
+    await setCaption(page, cfg.captions.ops);
     await page.waitForFunction(heroHasFn, cfg.finalTitle, { timeout: 15_000 });
     trace("finalTitle visible");
-    await page.waitForTimeout(600);
-    const input = page.locator('ai-slot[name="hero"] input[name=prompt]');
-    await input.click();
-    await input.pressSequentially(cfg.prompt, { delay: 110 });
-    trace("typed");
-    await page.waitForTimeout(400);
-    await page.locator('ai-slot[name="hero"] button[type=submit]').click();
-    trace("submitted");
+    await page.waitForTimeout(1_400); // 让观众看清当前卖点
+    await page.request.post(`${base}/admin/prompt?slot=shop-hero&prompt=${encodeURIComponent(cfg.altPrompt)}`);
+    trace("prompt published");
     await page.waitForFunction(heroHasFn, cfg.rewrittenTitle, { timeout: 15_000 });
     trace("rewritten visible");
     await page.waitForTimeout(1_400);
@@ -227,22 +221,18 @@ const scenarios = {
   async full(page, base, cfg) {
     await scenarios.stream(page, base, cfg);
     await setCaption(page, cfg.captions.live);
-    const initial = await page.locator('ai-slot[name="hero"] .hero-subtitle').textContent();
+    const initial = await page.locator('ai-slot[name="shop-hero"] .hero-subtitle').textContent();
     await page.waitForTimeout(1_200);
-    await page.request.post(`${base}/admin/publish`);
+    await page.request.post(`${base}/admin/publish?slot=shop-hero`);
     await page.waitForFunction(
       (prev) =>
-        (document.querySelector('ai-slot[name="hero"] .hero-subtitle')?.textContent ?? "") !== prev,
+        (document.querySelector('ai-slot[name="shop-hero"] .hero-subtitle')?.textContent ?? "") !== prev,
       initial,
       { timeout: 15_000 },
     );
     await page.waitForTimeout(1_400);
-    await setCaption(page, cfg.captions.editable);
-    const input = page.locator('ai-slot[name="hero"] input[name=prompt]');
-    await input.click();
-    await input.pressSequentially(cfg.prompt, { delay: 110 });
-    await page.waitForTimeout(400);
-    await page.locator('ai-slot[name="hero"] button[type=submit]').click();
+    await setCaption(page, cfg.captions.ops);
+    await page.request.post(`${base}/admin/prompt?slot=shop-hero&prompt=${encodeURIComponent(cfg.altPrompt)}`);
     await page.waitForFunction(heroHasFn, cfg.rewrittenTitle, { timeout: 15_000 });
     await page.waitForTimeout(1_600);
   },
@@ -252,33 +242,27 @@ function toGif(framesDir, out) {
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error",
     "-f", "concat", "-safe", "0", "-i", join(framesDir, "list.txt"),
-    "-vf", "scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+    "-vf", "scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
     out,
   ]);
 }
 
 for (const [lang, cfg] of Object.entries(LANGS)) {
-  // 每个场景起独立服务器实例：version 是模块状态，复用会导致后续场景的初始促销文案漂移。
-  // 端口也按场景错开：旧进程退出需要时间，同端口复用会让浏览器打到缓存已热的旧实例。
-  const names = Object.keys(scenarios);
-  for (let i = 0; i < names.length; i++) {
-    const name = names[i];
-    const port = cfg.port + i * 10;
-    const server = startServer({ port, lang });
-    try {
-      await waitReady(port, server);
-      const framesDir = await withRecording(`${name}-${lang}`, { ...cfg, port }, (page, base) =>
-        scenarios[name](page, base, { ...cfg, port }),
-      );
-      const out = join(websiteAssets, `demo-${name}-${lang}.gif`);
-      toGif(framesDir, out);
-      console.log(`✓ ${out}`);
-    } finally {
-      await stopServer(server);
-    }
+  // 每次录制起独立服务器实例：version 是模块状态，复用会导致初始促销文案漂移
+  const server = startServer({ port: cfg.port, lang });
+  try {
+    await waitReady(cfg.port, server);
+    const framesDir = await withRecording(`full-${lang}`, cfg, (page, base) =>
+      scenarios.full(page, base, cfg),
+    );
+    const out = join(repoAssets, `demo-${lang}.gif`);
+    toGif(framesDir, out);
+    console.log(`✓ ${out}`);
+  } finally {
+    await stopServer(server);
   }
 }
 
-// 根 README 用英文完整版
-copyFileSync(join(websiteAssets, "demo-full-en.gif"), join(repoAssets, "demo.gif"));
+// 根 README（英文）用英文完整版
+copyFileSync(join(repoAssets, "demo-en.gif"), join(repoAssets, "demo.gif"));
 console.log("✓ 根 assets/demo.gif 已更新为英文完整版");

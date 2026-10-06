@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>国产大模型推理成本再降 70%，开发者生态迎来拐点 - 前沿观察</title>
+    <style>
+      /* 老站原有排版：接近真实科技媒体文章页，除两个 ai-slot 外零改动 */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #171717;
+        background: #fafafa;
+      }
+      .topbar {
+        background: #fff; border-bottom: 1px solid #e5e5e5;
+        display: flex; align-items: center; gap: 26px;
+        padding: 0 32px; height: 56px; font-size: 14px;
+      }
+      .topbar .logo { font-weight: 800; font-size: 18px; color: #b91c1c; letter-spacing: 0.04em; }
+      .topbar nav { display: flex; gap: 20px; color: #525252; }
+      .topbar .sub { margin-left: auto; background: #b91c1c; color: #fff; border-radius: 4px; padding: 6px 14px; font-size: 13px; }
+      .page { max-width: 760px; margin: 0 auto; padding: 28px 32px 48px; }
+      .channel { font-size: 13px; color: #b91c1c; font-weight: 600; margin-bottom: 10px; }
+      h1.headline { font-size: 30px; line-height: 1.35; letter-spacing: -0.01em; margin: 0 0 14px; }
+      .byline { display: flex; gap: 14px; align-items: center; color: #737373; font-size: 13px; padding-bottom: 18px; border-bottom: 1px solid #e5e5e5; }
+      /* AI 导读槽位：媒体站常见的「要点速览」卡片 */
+      .digest {
+        display: block; background: #fff; border: 1px solid #e5e5e5; border-left: 4px solid #b91c1c;
+        border-radius: 6px; padding: 16px 20px; margin: 22px 0;
+      }
+      .digest .label { font-size: 12px; font-weight: 700; color: #b91c1c; letter-spacing: 0.1em; margin-bottom: 8px; }
+      .digest p { margin: 0; font-size: 15px; line-height: 1.75; color: #262626; }
+      .digest .markdown { font-size: 15px; line-height: 1.75; }
+      article p { font-size: 16px; line-height: 1.9; color: #262626; margin: 18px 0; }
+      article .figure {
+        height: 260px; border-radius: 8px; margin: 24px 0 8px;
+        background: linear-gradient(140deg, #1c1917, #44403c);
+        display: flex; align-items: center; justify-content: center; font-size: 72px;
+      }
+      article .caption { text-align: center; color: #a3a3a3; font-size: 12px; margin: 0 0 16px; }
+      .rec {
+        display: block; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px;
+        padding: 20px 24px; margin-top: 32px;
+      }
+      .rec h2 { font-size: 17px; margin: 0 0 10px; }
+      .rec p { margin: 0; font-size: 14px; color: #525252; }
+      .footer { text-align: center; color: #a3a3a3; font-size: 12px; padding: 36px 0 8px; }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ai-slot/registry": "/vendor/registry/index.js",
+          "@ai-slot/runtime": "/vendor/runtime/index.js",
+          "@ai-slot/adapter-dom": "/vendor/adapter-dom/index.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { configureAiSlot } from "@ai-slot/runtime";
+      import { registerRenderer } from "@ai-slot/runtime";
+      import { createDomRenderer } from "@ai-slot/adapter-dom";
+      import { registry } from "/registry-client.mjs";
+      import { domComponents } from "/components.mjs";
+
+      registerRenderer("dom", createDomRenderer(domComponents));
+      configureAiSlot({ registry });
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="logo">前沿观察</span>
+      <nav><span>要闻</span><span>科技</span><span>财经</span><span>深度</span><span>视频</span></nav>
+      <span class="sub">订阅会员</span>
+    </header>
+
+    <div class="page">
+      <p class="channel">科技 · 人工智能</p>
+      <h1 class="headline">国产大模型推理成本再降 70%，开发者生态迎来拐点</h1>
+      <div class="byline">
+        <span>记者 林澜</span><span>2026-10-06 09:41</span><span>阅读 8.2 万</span><span>评论 412</span>
+      </div>
+
+      <!-- 老站原有「要点速览」区，一个字不改，直接包进 ai-slot -->
+      <h2 style="font-size:13px;color:#b91c1c;letter-spacing:.1em;margin:22px 0 8px">AI 导读 · 要点速览</h2>
+      <ai-slot name="news-hero" src="/ai-render/news-hero" stream live class="digest">
+        <p>推理成本大幅下降，开发者生态受益。</p>
+      </ai-slot>
+
+      <article>
+        <p>
+          10 月 5 日，澜舟智能正式发布新一代推理引擎「流火 2.0」。官方数据显示，在同等并发下，
+          千亿参数模型的单次调用成本降至上一代产品的 30%，这是国产大模型今年第三次大幅下调推理价格。
+        </p>
+        <p>
+          成本下探直接点燃了开发者侧的热情。发布 48 小时内，官方披露已有 200 家厂商完成接入，
+          覆盖办公、电商客服、教育辅导等场景。多位受访创业者表示，推理成本首次低于「人工质检成本的十分之一」，
+          此前算不过账的应用开始批量立项。
+        </p>
+        <div class="figure"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#d6d3d1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
+        <p class="caption">「流火 2.0」与上一代产品的单位推理成本对比（官方数据）</p>
+        <p>
+          不过，也有分析师提醒，价格战正在压缩模型厂商的利润空间，行业洗牌可能加速。
+          对于开发者而言，眼下的窗口期或许正是把 demo 变成产品的最好时机。
+        </p>
+      </article>
+
+      <!-- AI 推荐服务故障时，这个推荐位保持静态内容 -->
+      <ai-slot name="news-rec" src="/ai-render/news-rec" class="rec">
+        <h2>相关阅读</h2>
+        <p>大模型价格战始末 · 推理优化入门</p>
+      </ai-slot>
+
+      <footer class="footer">前沿观察 · 京ICP备09000001号 · 未经授权不得转载</footer>
+    </div>
+  </body>
+</html>

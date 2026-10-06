@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHandler, downLLM, invalidation, publishUpdate } from "./ai.mjs";
+import { adminState, applyPrompt, createHandler, downLLM, invalidation, publishUpdate } from "./ai.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const pkgRoot = (name) => fileURLToPath(new URL(`../../packages/${name}/dist`, import.meta.url));
@@ -48,8 +48,20 @@ export const server = createServer(async (req, res) => {
     return;
   }
   if (url.pathname === "/admin/publish" && req.method === "POST") {
-    publishUpdate();
-    res.writeHead(200, { "content-type": "application/json" }).end('{"ok":true}');
+    // ?slot=<slotId> 指定要发布更新的槽位，缺省 shop-hero
+    const ok = publishUpdate(url.searchParams.get("slot") ?? undefined);
+    res.writeHead(ok ? 200 : 404, { "content-type": "application/json" }).end(`{"ok":${ok}}`);
+    return;
+  }
+  if (url.pathname === "/admin/prompt" && req.method === "POST") {
+    // ?slot=<slotId>&prompt=<新提示词>：运营/开发者调整卖点方向 → 重新生成 + 失效推送
+    const ok = applyPrompt(url.searchParams.get("slot") ?? "", url.searchParams.get("prompt") ?? "");
+    res.writeHead(ok ? 200 : 400, { "content-type": "application/json" }).end(`{"ok":${ok}}`);
+    return;
+  }
+  if (url.pathname === "/admin/state") {
+    // 运营控制台（admin.html）读取槽位当前提示词、内容版本与预设方向
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" }).end(JSON.stringify(adminState()));
     return;
   }
   if (url.pathname.startsWith("/ai-render/")) {
@@ -78,6 +90,11 @@ export const server = createServer(async (req, res) => {
 });
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === normalize(process.argv[1])) {
-  const port = Number(process.env.PORT ?? 4173);
+  // 端口优先级：--port 参数 > PORT 环境变量 > 4173（便于 npm run dev -- --port <n> 透传）
+  const flagIdx = process.argv.findIndex((a) => a === "--port" || a.startsWith("--port="));
+  const cliPort = flagIdx >= 0
+    ? Number(process.argv[flagIdx].includes("=") ? process.argv[flagIdx].split("=")[1] : process.argv[flagIdx + 1])
+    : NaN;
+  const port = cliPort || Number(process.env.PORT ?? 4173);
   server.listen(port, () => console.log(`示例站: http://localhost:${port}`));
 }

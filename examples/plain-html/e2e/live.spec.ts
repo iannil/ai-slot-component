@@ -21,11 +21,11 @@ test("失效推送：publish 后页面静默更新到新版促销", async ({ pag
       } catch { /* 未就绪 */ }
       await new Promise((r) => setTimeout(r, 200));
     }
-    await page.goto(`http://localhost:${LIVE_PORT}/`);
-    const slot = page.locator('ai-slot[name="hero"]');
+    await page.goto(`http://localhost:${LIVE_PORT}/shop.html`);
+    const slot = page.locator('ai-slot[name="shop-hero"]');
     await expect(slot.locator(".hero-subtitle")).toHaveText("¥199 · 今日下单享 8 折");
     // 模拟数据源变更：管理端点发布 → 推送失效 → 槽位静默重新加载，促销文案原地更新
-    const res = await page.request.post(`http://localhost:${LIVE_PORT}/admin/publish`);
+    const res = await page.request.post(`http://localhost:${LIVE_PORT}/admin/publish?slot=shop-hero`);
     expect(res.ok()).toBe(true);
     await expect(slot.locator(".hero-subtitle")).toHaveText("¥159 · 限时秒杀，今晚 24 点截止");
   } finally {

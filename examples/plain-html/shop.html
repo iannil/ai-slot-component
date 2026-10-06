@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>降噪耳机 X100 - 老友商城</title>
+    <style>
+      /* 老站原有排版：接近真实电商详情页，除两个 ai-slot 外零改动 */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #1a1a1a;
+        background: #f4f4f5;
+      }
+      .topbar {
+        background: #18181b; color: #e4e4e7;
+        display: flex; align-items: center; gap: 24px;
+        padding: 0 32px; height: 56px; font-size: 14px;
+      }
+      .topbar .logo { font-weight: 700; font-size: 17px; color: #fff; letter-spacing: 0.02em; }
+      .topbar nav { display: flex; gap: 20px; color: #a1a1aa; }
+      .topbar .search {
+        margin-left: auto; background: #27272a; border: 1px solid #3f3f46;
+        border-radius: 999px; padding: 6px 16px; color: #a1a1aa; font-size: 13px; width: 220px;
+      }
+      .crumbs { max-width: 1080px; margin: 0 auto; padding: 14px 32px 0; font-size: 13px; color: #71717a; }
+      .crumbs b { color: #3f3f46; font-weight: 500; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 12px 32px 48px; }
+      .product {
+        display: grid; grid-template-columns: 460px 1fr; gap: 36px;
+        background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 28px;
+      }
+      .gallery .photo {
+        height: 360px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        font-size: 120px; background: linear-gradient(135deg, #1e293b 0%, #334155 55%, #0f172a 100%);
+      }
+      .gallery .thumbs { display: flex; gap: 10px; margin-top: 12px; }
+      .gallery .thumbs span {
+        width: 72px; height: 56px; border-radius: 8px; border: 1px solid #e4e4e7;
+        display: flex; align-items: center; justify-content: center; font-size: 24px; background: #fafafa;
+      }
+      .gallery .thumbs span:first-child { border-color: #18181b; }
+      /* AI 槽位：替换前后都保持同样的标题层级，页面不跳动 */
+      .info h1 { font-size: 26px; letter-spacing: -0.01em; margin: 0 0 6px; }
+      .info h1 + p { color: #52525b; margin: 0 0 4px; font-size: 15px; }
+      .hero-subtitle { color: #c2410c; font-weight: 600; font-size: 16px !important; margin: 6px 0 4px !important; }
+      .price-row { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 4px; }
+      .price-row .price { font-size: 32px; font-weight: 700; color: #c2410c; }
+      .price-row .price::first-letter { font-size: 18px; }
+      .price-row s { color: #a1a1aa; font-size: 15px; }
+      .price-row .tag {
+        background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;
+        font-size: 12px; border-radius: 4px; padding: 2px 8px;
+      }
+      .meta { display: flex; gap: 8px; align-items: center; color: #71717a; font-size: 13px; margin: 10px 0 18px; flex-wrap: wrap; }
+      .meta .star { color: #f59e0b; }
+      .sku { border-top: 1px solid #f4f4f5; padding-top: 16px; font-size: 14px; }
+      .sku dt { color: #71717a; margin-bottom: 8px; font-size: 13px; }
+      .sku dd { margin: 0 0 14px; display: flex; gap: 8px; }
+      .sku dd span { border: 1px solid #d4d4d8; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+      .sku dd span.on { border-color: #18181b; font-weight: 600; box-shadow: inset 0 0 0 1px #18181b; }
+      .service { display: flex; gap: 16px; color: #52525b; font-size: 13px; border-top: 1px solid #f4f4f5; padding-top: 14px; }
+      .service i { color: #16a34a; font-style: normal; margin-right: 4px; }
+      .actions { display: flex; gap: 12px; margin-top: 22px; }
+      .actions button {
+        flex: 1; height: 46px; border-radius: 8px; font-size: 15px; cursor: pointer; border: 1px solid #18181b;
+      }
+      .actions .cart { background: #fff; }
+      .actions .buy { background: #18181b; color: #fff; }
+      .reviews { background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 24px 28px; margin-top: 24px; }
+      .reviews h2, .rec h2 { font-size: 18px; margin: 0 0 14px; }
+      .review { border-top: 1px solid #f4f4f5; padding: 14px 0; font-size: 14px; }
+      .review:first-of-type { border-top: 0; }
+      .review .who { color: #71717a; font-size: 13px; margin-bottom: 6px; }
+      .review .star { color: #f59e0b; }
+      .rec {
+        display: block; background: #fff; border: 1px solid #e4e4e7; border-radius: 12px;
+        padding: 24px 28px; margin-top: 24px;
+      }
+      .rec p { color: #52525b; margin: 0; font-size: 14px; }
+      .footer { text-align: center; color: #a1a1aa; font-size: 12px; padding: 36px 0 8px; }
+      @media (max-width: 900px) {
+        .product { grid-template-columns: 1fr; }
+        .topbar .search { display: none; }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ai-slot/registry": "/vendor/registry/index.js",
+          "@ai-slot/runtime": "/vendor/runtime/index.js",
+          "@ai-slot/adapter-dom": "/vendor/adapter-dom/index.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { configureAiSlot } from "@ai-slot/runtime";
+      import { registerRenderer } from "@ai-slot/runtime";
+      import { createDomRenderer } from "@ai-slot/adapter-dom";
+      import { registry } from "/registry-client.mjs";
+      import { domComponents } from "/components.mjs";
+
+      registerRenderer("dom", createDomRenderer(domComponents));
+      configureAiSlot({ registry });
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="logo">老友商城</span>
+      <nav><span>首页</span><span>分类</span><span>限时秒杀</span><span>会员中心</span></nav>
+      <span class="search">搜索：降噪耳机、机械键盘…</span>
+    </header>
+
+    <div class="crumbs">首页 / 数码影音 / 耳机耳麦 / <b>降噪耳机 X100</b></div>
+
+    <div class="page">
+      <main class="product">
+        <div class="gallery">
+          <div class="photo"><svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></div>
+          <div class="thumbs"><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></span><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></svg></span><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/><path d="M8 10h8"/><path d="M8 18h8"/></svg></span></div>
+        </div>
+
+        <div class="info">
+          <!-- 老站原有标题区，一个字不改，直接包进 ai-slot -->
+          <ai-slot name="shop-hero" src="/ai-render/shop-hero" stream live>
+            <h1>降噪耳机 X100</h1>
+            <p>音质好，佩戴舒适。</p>
+          </ai-slot>
+
+          <div class="price-row">
+            <span class="price">¥199</span><s>¥249</s><span class="tag">限时优惠</span>
+          </div>
+          <div class="meta">
+            <span><i class="star">★</i> 4.9（12,847 条评价）</span>
+            <span>·</span><span>月销 2.3 万</span>
+            <span>·</span><span>浙江杭州发货</span>
+          </div>
+
+          <dl class="sku">
+            <dt>颜色</dt>
+            <dd><span class="on">曜石黑</span><span>月光白</span></dd>
+            <dt>版本</dt>
+            <dd><span class="on">标准版</span><span>Pro 版（+¥60）</span></dd>
+          </dl>
+
+          <div class="service">
+            <span><i>✓</i>7 天无理由退货</span><span><i>✓</i>一年质保</span><span><i>✓</i>顺丰包邮</span>
+          </div>
+
+          <div class="actions">
+            <button class="cart">加入购物车</button>
+            <button class="buy">立即购买</button>
+          </div>
+        </div>
+      </main>
+
+      <section class="reviews">
+        <h2>买家评价 <span style="color:#a1a1aa;font-size:13px;font-weight:400">（12,847）</span></h2>
+        <div class="review">
+          <div class="who"><span class="star">★★★★★</span> j***8 · 曜石黑 · 2026-09-28</div>
+          地铁通勤戴了一周，降噪一开世界就安静了。耳罩很软，夹持感适中，久戴不累。
+        </div>
+        <div class="review">
+          <div class="who"><span class="star">★★★★★</span> 陈*** · 月光白 · 2026-09-19</div>
+          续航实打实 40 小时，出差三天没充电。音质比上一代通透，这个价位没对手。
+        </div>
+      </section>
+
+      <!-- AI 推荐服务故障时，这个推荐位保持静态内容 -->
+      <ai-slot name="shop-rec" src="/ai-render/shop-rec" class="rec">
+        <h2>为您推荐</h2>
+        <p>耳塞套 · 收纳盒 · 延保服务</p>
+      </ai-slot>
+
+      <footer class="footer">老友商城 · 增值电信业务经营许可证 B2-20180001 · 隐私政策 · 联系客服</footer>
+    </div>
+  </body>
+</html>

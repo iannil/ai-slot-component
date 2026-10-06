@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "node server.mjs",
     "build": "echo 无需构建",
     "typecheck": "echo 无需类型检查",
     "test": "echo 单元测试见各包；e2e 请用 test:e2e",
