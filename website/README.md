@@ -11,7 +11,7 @@ npm run build      # 类型检查 + 产物构建（tsc -b && vite build）
 npm run preview    # 预览生产构建
 ```
 
-注意：`vite.config.ts` 把 `@ai-slot/*` 别名指向 `../packages/*/dist`，请先在本仓库根目录执行 `pnpm build`。
+注意：`vite.config.ts` 把 `@ai-slot/*` 别名直接指向 `../packages/*/src`，构建官网无需先构建 monorepo 包。
 
 ## 演示区（src/demo/）
 
