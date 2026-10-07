@@ -100,7 +100,7 @@ const dict = {
     ] as const,
     ctaTitle: 'Your pages already have visitors. Give them a safe way to receive AI content.',
     ctaStar: 'Star on GitHub',
-    footer: { docs: 'Docs', license: 'MIT License' },
+    footer: { docs: 'Docs', license: 'MIT License', links: 'More from the author' },
     cloneCmd: 'git clone https://github.com/iannil/ai-slot-component',
   },
   zh: {
@@ -179,7 +179,7 @@ const dict = {
     ] as const,
     ctaTitle: '你的页面已经有访客了。给它们一条安全接收 AI 内容的通道。',
     ctaStar: '在 GitHub 上 Star',
-    footer: { docs: '文档', license: 'MIT 许可证' },
+    footer: { docs: '文档', license: 'MIT 许可证', links: '更多来自作者' },
     cloneCmd: 'git clone https://github.com/iannil/ai-slot-component',
   },
 } as const
@@ -525,37 +525,51 @@ function CTA({ t }: { t: Dict }) {
 function Footer({ t }: { t: Dict }) {
   return (
     <footer className="border-t border-border/60">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-muted-foreground sm:flex-row">
-        <p className="font-mono">
-          <span className="text-primary">&lt;ai-slot&gt;</span> · {t.footer.license}
-        </p>
-        <nav className="flex items-center gap-6">
-          <a href={GITHUB} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
-            GitHub
-          </a>
-          <a href={NPM} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
-            npm
-          </a>
-          <a
-            href={`${GITHUB}#readme`}
-            target="_blank"
-            rel="noreferrer"
-            className="transition-colors hover:text-foreground"
-          >
-            {t.footer.docs}
-          </a>
-          <a href="https://iannil.com" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
-            IANNIL · 用 FDE 把真实问题做成产品
-          </a>
-          <a
-            href="https://zhurongshuo.com"
-            target="_blank"
-            rel="noreferrer"
-            className="transition-colors hover:text-foreground"
-          >
-            祝融说。 法不净空，觉无性也。
-          </a>
-        </nav>
+      <div className="mx-auto max-w-6xl px-6 py-10 text-sm text-muted-foreground">
+        <div className="flex flex-col items-center gap-3 border-b border-border/60 pb-6 sm:flex-row sm:justify-between">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground/60">
+            {t.footer.links}
+          </span>
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <a
+              href="https://iannil.com"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-foreground"
+            >
+              IANNIL · 用 FDE 把真实问题做成产品
+            </a>
+            <a
+              href="https://zhurongshuo.com"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-foreground"
+            >
+              祝融说。 法不净空，觉无性也。
+            </a>
+          </nav>
+        </div>
+        <div className="flex flex-col items-center justify-between gap-4 pt-6 sm:flex-row">
+          <p className="font-mono">
+            <span className="text-primary">&lt;ai-slot&gt;</span> · {t.footer.license}
+          </p>
+          <nav className="flex items-center gap-6">
+            <a href={GITHUB} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
+              GitHub
+            </a>
+            <a href={NPM} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
+              npm
+            </a>
+            <a
+              href={`${GITHUB}#readme`}
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-foreground"
+            >
+              {t.footer.docs}
+            </a>
+          </nav>
+        </div>
       </div>
     </footer>
   )
