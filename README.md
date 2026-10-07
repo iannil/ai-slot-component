@@ -262,6 +262,11 @@ Issues and PRs are welcome — see [AGENTS.md](AGENTS.md) for architecture, comm
 
 Bugs and feature requests: [GitHub Issues](https://github.com/iannil/ai-slot-component/issues).
 
+## Links
+
+- [IANNIL · 用 FDE 把真实问题做成产品](https://iannil.com)
+- [祝融说。 法不净空，觉无性也。](https://zhurongshuo.com)
+
 ## License
 
 Released under the [MIT License](./LICENSE).

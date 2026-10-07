@@ -262,6 +262,11 @@ v1 与 v1.1 已全部合入 master：props 全局护栏、缓存序列化 + CI �
 
 缺陷与功能请求：[GitHub Issues](https://github.com/iannil/ai-slot-component/issues)。
 
+## 相关链接
+
+- [IANNIL · 用 FDE 把真实问题做成产品](https://iannil.com)
+- [祝融说。 法不净空，觉无性也。](https://zhurongshuo.com)
+
 ## 许可证
 
 基于 [MIT 许可证](./LICENSE) 发布。

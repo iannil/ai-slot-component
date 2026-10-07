@@ -544,6 +544,17 @@ function Footer({ t }: { t: Dict }) {
           >
             {t.footer.docs}
           </a>
+          <a href="https://iannil.com" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">
+            IANNIL · 用 FDE 把真实问题做成产品
+          </a>
+          <a
+            href="https://zhurongshuo.com"
+            target="_blank"
+            rel="noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            祝融说。 法不净空，觉无性也。
+          </a>
         </nav>
       </div>
     </footer>
