@@ -5,5 +5,7 @@ export * from "./llm-client.js";
 export * from "./openai-client.js";
 export * from "./prewarm.js";
 export * from "./prompt-compiler.js";
+export * from "./provider.js";
 export * from "./rate-limit.js";
+export * from "./render-handler.js";
 export * from "./sanitize.js";
