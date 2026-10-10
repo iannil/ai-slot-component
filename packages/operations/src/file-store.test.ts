@@ -108,6 +108,28 @@ it('超限拒绝并保留旧状态', async () => {
   expect(await store.read()).toEqual(emptyState());
 });
 
+it('合法状态写入超过 64MiB 时拒绝，旧快照和重开读取仍完整', async () => {
+  const dir = await makeDir();
+  const store = await openStore(dir);
+  await store.transact(s => seed(s));
+  const oldBytes = await readFile(join(dir, 'state.json'));
+  const oldState = await store.read();
+  await expect(store.transact(s => {
+    const text = 'x'.repeat(62_000);
+    for (let i = 0; i < 1100; i++) {
+      const payload = { slotId: 'hero', tree: { component: 'Text', props: { text, index: i } },
+        sourceId: 'cms', sourceVersion: '1', registryVersion: '1', rendererVersion: '1', expiresAt: 100 };
+      const artifactHash = hash(payload);
+      s.artifacts[artifactHash] = { ...payload, hash: artifactHash };
+    }
+  })).rejects.toMatchObject({ code: 'storage_limit' });
+  expect(await readFile(join(dir, 'state.json'))).toEqual(oldBytes);
+  expect(await store.read()).toEqual(oldState);
+  await store.close();
+  const reopened = await openStore(dir);
+  expect(await reopened.read()).toEqual(oldState);
+});
+
 it('启动前先拒绝超过 64MiB 的快照，即使内容也不是 JSON', async () => {
   const dir = await makeDir();
   const file = await open(join(dir, 'state.json'), 'w');

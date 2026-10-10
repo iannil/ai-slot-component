@@ -48,6 +48,40 @@ describe('幂等发布与回滚', () => {
     } finally { await reopened.close(); }
   }));
 
+  it.each(['publish', 'rollback'] as const)('%s 来源读取期间批准到期，事务不改变任何发布状态', async action => withFixture(async f => {
+    if (action === 'rollback') {
+      await f.ops.publishDraft(f.agent, await approved(f, 'A', 0));
+      await f.ops.publishDraft(f.agent, await approved(f, 'B', 1));
+    }
+    const draft = action === 'publish'
+      ? await f.ops.createDraft(f.agent, { slotId: 'hero', tree: card('C'), baseRevision: 0, sourceVersion: 's1' })
+      : await f.ops.prepareRollback(f.agent, { slotId: 'hero', targetRevision: 1, expectedRevision: 2 });
+    let now = 1000;
+    f.env.now = () => now;
+    await f.ops.approveDraft(f.owner, { draftId: draft.id, artifactHash: draft.artifactHash, expiresAt: 1500 });
+    const before = await f.store.read();
+    let releaseSource!: () => void;
+    const gate = new Promise<void>(resolve => { releaseSource = resolve; });
+    let entered!: () => void;
+    const reading = new Promise<void>(resolve => { entered = resolve; });
+    f.env.readSource = async () => { entered(); await gate; now = 1600; return structuredClone(f.source); };
+    const input = { draftId: draft.id, artifactHash: draft.artifactHash,
+      expectedRevision: action === 'publish' ? 0 : 2, idempotencyKey: `expiry-${action}` };
+    const commit = action === 'publish' ? f.ops.publishDraft(f.agent, input) : f.ops.rollbackSlot(f.agent, input);
+    await reading;
+    releaseSource();
+    await expect(commit).rejects.toThrow('approval_expired');
+    expect(await f.store.read()).toEqual(before);
+  }));
+
+  it('成功收据在批准到期后仍可幂等重试', async () => withFixture(async f => {
+    const input = await approved(f, 'A', 0);
+    const receipt = await f.ops.publishDraft(f.agent, input);
+    f.env.now = () => 5000;
+    expect(await f.ops.publishDraft(f.agent, input)).toEqual(receipt);
+    expect((await f.store.read()).releases).toHaveLength(1);
+  }));
+
   it('通知失败不撤销已经提交的指针', async () => withFixture(async f => {
     f.env.notify = vi.fn().mockRejectedValue(Error('network'));
     const receipt = await f.ops.publishDraft(f.agent, await approved(f, 'A', 0));

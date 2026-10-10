@@ -76,7 +76,7 @@ Got it running? A GitHub star helps others find the project.
 
 - **Drop-in for the site you already have** — wrap existing markup in `<ai-slot>`; plain HTML, React and Vue all work, no rewrite required.
 - **Ship AI content like a static asset** — `prewarm.mjs` bakes developer prompts into `ai-cache.json` at build time, so production serves with no runtime LLM calls on cache hits.
-- **Content updates without a redeploy** — `live` subscribes to invalidation pushes and reconnects after interruption; a data-source change re-renders connected slots. 连接建立时，接入方可通过 `onConnect` 主动核对内容；不保证所有访客同时生效。
+- **Content updates without a redeploy** — `live` subscribes to invalidation pushes and reconnects after interruption; a data-source change re-renders connected slots. On connection, integrators can use `onConnect` to check current content; simultaneous delivery to every visitor is not guaranteed.
 - **Skeleton-first streaming** — `stream` fetches over SSE: a skeleton frame renders immediately, the final tree replaces it.
 - **Protocol-neutral** — native JSON today, [A2UI](https://github.com/a2ui-project/a2ui) tomorrow via `@ai-slot/a2ui`; the endpoint changes, the page does not.
 - **Visitor personalization is opt-in, per slot** — `editable` adds a one-line prompt box scoped to that slot: sanitized, rate-limited, short TTL.

@@ -17,6 +17,8 @@ async function assertPublishable(state: State, env: Environment, draft: Draft, i
   }
   if (approval.expiresAt <= env.now()) throw new OperationError('approval_expired');
   await assertCurrentArtifact(env, artifact);
+  // 来源读取可能跨过批准期限，提交前必须重新取时。
+  if (approval.expiresAt <= env.now()) throw new OperationError('approval_expired');
 }
 
 /** 原子 CAS 发布；幂等命中前仍检查当前授权。 */

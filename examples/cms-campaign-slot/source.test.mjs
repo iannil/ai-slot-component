@@ -58,6 +58,13 @@ describe('CMS 固定事实读取', () => {
     await expect(readBody()).rejects.toThrow('cms_timeout');
   });
 
+  it('链接可达 2048 字符，超过 CMS 合同上限拒绝', async () => {
+    const prefix = 'https://example.com/';
+    const accepted = prefix + 'a'.repeat(2048 - prefix.length);
+    expect((await reader({ ...facts(), link: accepted })()).data.link).toBe(accepted);
+    await expect(reader({ ...facts(), link: accepted + 'a' })()).rejects.toThrow('cms_facts_invalid');
+  });
+
   it('拒绝坏字段和过期；HTML 字符串只作为文本', async () => {
     for (const patch of [{ id: '' }, { title: 'x'.repeat(201) }, { price: 'x'.repeat(101) },
       { link: 'x'.repeat(2049) }, { link: 'javascript:alert(1)' }, { link: 'https://evil.example/' },

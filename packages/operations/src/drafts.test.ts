@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { card, makeFixture } from './test-fixture.js';
+import { openFileStore } from './file-store.js';
+import { createOperations } from './operations.js';
 
 async function withFixture(run: (f: Awaited<ReturnType<typeof makeFixture>>) => Promise<void>) {
   const f = await makeFixture();
@@ -18,6 +20,25 @@ describe('草稿、预览与批准', () => {
     expect((await f.store.read()).approvals[draft.id].approvedBy).toBe('owner');
     expect((await f.store.read()).pointers).toEqual({});
     expect((await f.store.read()).releases).toEqual([]);
+  }));
+
+  it.each([221, 2048])('允许域内 %i 字符链接经真实 FileStore 重启、批准并发布', async length => withFixture(async f => {
+    const link = 'https://example.com/' + 'a'.repeat(length - 'https://example.com/'.length);
+    f.setSource({ ...f.source, data: { ...f.source.data, link } });
+    const tree = card('');
+    tree.props!.link = link;
+    const draft = await f.ops.createDraft(f.agent, { slotId: 'hero', tree, baseRevision: 0, sourceVersion: 's1' });
+    await f.store.close();
+    const reopened = await openFileStore(f.directory);
+    try {
+      const ops = createOperations(reopened, f.env);
+      expect((await ops.previewDraft(f.owner, draft.id)).artifact.tree.props?.link).toBe(link);
+      expect((await ops.previewDraft(f.owner, draft.id)).artifact.tree.props?.title).toBe('');
+      await ops.approveDraft(f.owner, { draftId: draft.id, artifactHash: draft.artifactHash, expiresAt: 5000 });
+      const receipt = await ops.publishDraft(f.agent, { draftId: draft.id, artifactHash: draft.artifactHash,
+        expectedRevision: 0, idempotencyKey: `long-link-${length}` });
+      expect((await reopened.read()).pointers.hero).toEqual(receipt);
+    } finally { await reopened.close(); }
   }));
 
   it('输入对象和返回对象修改均不改变已存artifact', async () => withFixture(async f => {

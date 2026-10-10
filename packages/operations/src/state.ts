@@ -17,10 +17,10 @@ function requireTime(value: unknown): asserts value is number { if (!time(value)
 function requireRecord(value: unknown): asserts value is Record<string, unknown> { if (!record(value)) fail(); }
 function requireEnum(value: unknown, allowed: readonly string[]): void { if (!allowed.includes(value as string)) fail(); }
 
-/** 确保快照只含可安全序列化的 JSON 值，并限制键和字符串。 */
+/** 确保快照只含可安全序列化的 JSON 值；标识符另行严校。 */
 function json(value: unknown, active = new Set<object>(), depth = 0): void {
   if (depth > 256) fail();
-  if (typeof value === 'string') { requireString(value); return; }
+  if (typeof value === 'string') return;
   if (value === null || typeof value === 'boolean' || time(value)) return;
   if (typeof value !== 'object' || value === null) fail();
   const object = value as object;

@@ -1,6 +1,6 @@
 # 后续交付状态
 
-截至 2026-10-11，本表区分已部署的 Q/R、仅在隔离分支完成的 L/V/G/M/I 参考实现，以及仍需外部条件的验收。本记录基于已提交代码与验收文档、各子计划实施报告和 Git 历史汇总；本次文档整理没有重跑完整测试。最终跨计划广审、整合、推送和新版 SDK 发布仍待控制器实际执行与补记，不能将分支 HEAD 视为已上线。
+截至 2026-10-11，本表区分已部署的 Q/R、仅在隔离分支完成的 L/V/G/M/I 参考实现，以及仍需外部条件的验收。本记录基于已提交代码与验收文档、各子计划实施报告和 Git 历史汇总；本次文档整理没有重跑完整测试。最终跨计划广审及其定向修复已在隔离分支完成；整合、推送和新版 SDK 发布仍待控制器实际执行与补记，不能将分支 HEAD 视为已上线。
 
 状态含义：`verified` 表示该行限定范围有实际验收证据；`blocked_external` 表示剩余动作需要外部账号、客户端或真实客户条件。SHA 是本仓提交；部署 ID 只代表官网 Pages。
 
@@ -9,7 +9,7 @@
 | Q 官网质量 | verified；已进 master 并随官网部署 | `874b458`、`2fa58ab`；Pages 部署见 R | 官网 lint 从 8 项降至 0；`test:agent` 5/5、build、390px 英中首屏与演示浏览器检查通过 | 无 |
 | R1 数据交付包准备 | verified；仅本地制品 | `95c5f1b`；`@ai-slot/proxy@0.2.0` 待发布 | build/test/typecheck；真实 tgz 独立 npm 安装并无模型密钥返回 200；完整性见下 | npm 账号认证 |
 | R2 Git 与官网 | verified；已上线官网 | `origin/master=92f3229`（其中生产源码 `95c5f1b`）；生产 `e4d622fe-2405-4a4e-9abe-48f0a54d0975` | [发布记录](../releases/2026-10-10-data-provider.md)；预览和生产读通道、官方 MCP 读取、390px 浏览器检查 | 本轮没有生产签名健康正向探测 |
-| R3 npm 公开发布 | blocked_external；尚未发布 | 待发布 `@ai-slot/proxy@0.2.0` tgz | 2026-10-11 01:02 `npm whoami` 再次 E401（退出 1）；未执行 publish 或公网安装回读 | 本机 npm 登录及可能的 2FA |
+| R3 npm 公开发布 | blocked_external；尚未发布 | 待发布 `@ai-slot/proxy@0.2.0` tgz | 2026-10-11 01:41 `npm whoami` 最新重试仍 E401（退出 1，控制器证据）；未执行 publish 或公网安装回读 | 本机 npm 登录及可能的 2FA |
 | L 可靠交付 | verified；仅本地分支 | `f7b85e6..ff1bb61` | 重连/补偿读取、卸载隔离、命名槽位、可选 `fresh-only` 到期兜底；单测与真实浏览器故障路径，四任务复审通过 | 未整合推送/发 SDK |
 | V 持久版本存储 | verified；仅本地私有包 | `81393ef..326ede4` | 单写者锁、状态校验、原子写与坏库拒绝的定向测试，两个任务复审通过 | 崩溃后旧锁需管理员确认原进程退出 |
 | G 治理与交付 | verified；仅本地私有包 | `70eaf15..2fe90a4`（含 `a7b9333`、`f943439`） | 来源身份绑定、不可变草稿、人工批准、幂等发布/回滚与公开只读交付；单测/build/typecheck及四任务复审 | 未部署管理服务 |
@@ -50,11 +50,15 @@ L/V/G/M/I 的测试结果来自相应实施报告，不是本次状态整理重�
 | I | 公开 registry 保留既有非敏感 `allowedOrigins`，响应为 registry、registryVersion、rendererVersion、allowedOrigins | 多一个公开字段；不暴露 grants、令牌或完整 policy，也不另写一份域名限制 |
 | I | 重建独立临时 WordPress 环境，比较槽位外可见宿主 DOM 与节点身份，排除必需插件脚本 | 多一次本地环境搭建；只证明参考主题和所测更新，不外推所有插件/主题 |
 | I | I3 示例行缺少必填字段时以完整校验为准；API/CLI 共用 `pilot_id`、`attempt`、`wait_min` 等校验 | 内部调用者也须提供完整记录，避免统计口径分歧 |
+| 最终广审 F1 | 元数据字段及标识符继续非空、最长 200；注册表允许的 JSON props 内容可为空或超过 200，CMS link 合同保留 2048 上限 | 保留 JSON 原型/完整性检查、树 64KiB、状态 64MiB、release 1000 限制；见[最终广审](../../.superpowers/sdd/2026-10-10-ai-slot-next-delivery/final-review.md)与[修复报告](../../.superpowers/sdd/2026-10-10-ai-slot-next-delivery/final-fix-report.md) |
+| 最终广审 F2 | 发布及回滚在异步来源校验返回后，再次检查批准期限；成功幂等收据仍优先返回 | 来源延迟不能延长审批效力；已提交结果不会因事后到期被否认 |
 
 ## 剩余审查点与事件
 
-已记录但未定为阻断的 minor，留最终广审评估：R1 预期故障路径的 stderr 噪声；V 的合法大于 64MiB 状态拒写且旧快照可读的写向测试缺口（实现已有容量检查）；G 的幂等 publish 重试会再次通知同 revision（契约不要求通知恰好一次）；M 的固定 4194 端口可能碰撞、stdio 用例输出中的 `browserText` 为 expected 硬编码、`client.close` 抛错时可能跳过后续清理；I 的 `NO_COLOR`/`FORCE_COLOR` 提示与初次 WordPress 验收未留完整 raw 日志。M3 的 redirect 配置断言及批准后回滚正向路径已由 M4 补齐；I1 的手动/CMS 来源注释已在 I2 修订。这些点尚未经过总控最终广审结论。
+最终广审在 `f455f1f` 上发现 F1（持久层误拒合法 props）和 F2（来源读取跨越审批到期仍提交）；两项均已在隔离分支修复。定向红测曾分别得到 `corrupt_state` 和 publish/rollback 误成功，修复后 operations 64/64、CMS 来源 7/7、单项 stdio Playwright 1/1 均通过；operations build 与 typecheck 通过。V 写侧合法超 64MiB 拒写、旧快照及重开可读已补测试。M1 清理链、M2 各阶段实际 DOM `browserText`、M3 英文 README 同波完成；新 stdio 日志只代表本次观测，不覆盖历史日志。具体文件及命令见[最终修复报告](../../.superpowers/sdd/2026-10-10-ai-slot-next-delivery/final-fix-report.md)。
+
+其余 minor 裁决：R1 预期 stderr 噪声、M 固定 4194 端口碰撞、I `NO_COLOR`/`FORCE_COLOR` 提示可后续处理；G 幂等重试重复通知接受当前契约；M3 redirect 与批准后回滚已有补证，I1 来源注释已修。首次 WordPress raw 日志不补写假观测，已有 body 隔离证据仍只限所测主题，不覆盖 head 或完整 60 秒周期。
 
 R1 有一次已向用户披露的误操作：在 `/private/tmp` 执行了 `npm init -y`，输出称写入 `/private/tmp/package.json`，当时显示 `main=ifnil-task2-service-working.js`。该路径可能原已有内容；原始值和实际覆盖范围未知，未猜测恢复，也未删除文件。随后独立消费测试改在专用临时目录执行。此事不能记作已完全恢复。
 
-下一状态更新须以真实证据为准：总控最终广审、隔离分支整合及推送；npm 认证后对精确包重新核对并公网回读；外部 AI 客户端和真实 Owner 运营验收；取得客户授权后才做客户站点试点与总人工劳动评估。
+下一状态更新须以真实证据为准：隔离分支整合及推送；npm 认证后对精确包重新核对并公网回读；外部 AI 客户端和真实 Owner 运营验收；取得客户授权后才做客户站点试点与总人工劳动评估。

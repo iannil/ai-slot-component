@@ -35,6 +35,25 @@ it('拒绝格式、非 JSON 值与非法元数据', () => {
   corrupt(s => { (s.artifacts[Object.keys(s.artifacts)[0]].tree.props as Record<string, unknown>).bad = undefined; });
   corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].tree.children = [{} as never]; });
 });
+it('JSON props 允许注册表可接受的空文本和长文本，元数据继续限制', () => {
+  const state = validState();
+  const oldHash = Object.keys(state.artifacts)[0];
+  const artifact = state.artifacts[oldHash];
+  artifact.tree.props = { text: '', link: 'https://example.com/' + 'a'.repeat(2028) };
+  const { hash: _old, ...payload } = artifact;
+  const newHash = hash(payload);
+  artifact.hash = newHash;
+  delete state.artifacts[oldHash];
+  state.artifacts[newHash] = artifact;
+  state.drafts.d1.artifactHash = newHash;
+  state.approvals.d1.artifactHash = newHash;
+  state.releases[0].artifactHash = newHash;
+  state.pointers.hero.artifactHash = newHash;
+  state.idempotency.request.receipt.artifactHash = newHash;
+  expect(() => assertState(state)).not.toThrow();
+  corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].slotId = ''; });
+  corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].slotId = 'x'.repeat(201); });
+});
 it('拒绝篡改产物、悬空草稿与不匹配审批', () => {
   corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].sourceVersion = 'changed'; });
   corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].sourceId = 'other'; });

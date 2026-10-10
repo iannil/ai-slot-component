@@ -21,6 +21,7 @@ test('官方 Client 经真实 stdio、HTTP、Owner 页面完成发布和回滚',
   let running: Awaited<ReturnType<typeof startServer>> | undefined;
   let client: Client | undefined;
   let publicPage: Awaited<ReturnType<typeof browser.newPage>> | undefined;
+  let bodyError: unknown;
   try {
     running = await startServer({ AI_SLOT_DATA_DIR: join(directory, 'state'), AI_SLOT_SOURCE_FILE: sourceFile,
       AI_SLOT_OWNER_TOKEN: ownerToken, AI_SLOT_AGENT_TOKEN: agentToken });
@@ -72,13 +73,14 @@ test('官方 Client 经真实 stdio、HTTP、Owner 页面完成发布和回滚',
       expect(receipt.isError).toBe(false);
       expect(await call('publish_draft', input)).toEqual(receipt);
       await expect(slot.locator('h2')).toHaveText(title);
+      const browserText = await slot.locator('h2').innerText();
       const deliveryResponse = await request.get(`${base}/ai-render/hero`);
       expect(deliveryResponse.status()).toBe(200);
       const delivery = await deliveryResponse.json();
       expect(delivery.meta.revision).toBe(baseRevision + 1);
       expect(delivery.meta.artifactHash).toBe(draft.artifactHash);
       expect(delivery.tree.props.title).toBe(title);
-      return { draft, receipt: receipt.value, delivery };
+      return { draft, receipt: receipt.value, delivery, browserText };
     }
     const first = await publish('stdio 第一版', 0, 'stdio-publish-1');
     const second = await publish('stdio 第二版', 1, 'stdio-publish-2');
@@ -111,17 +113,34 @@ test('官方 Client 经真实 stdio、HTTP、Owner 页面完成发布和回滚',
     expect(restored.meta.artifactHash).toBe(first.draft.artifactHash);
     expect(restored.tree.props.title).toBe('stdio 第一版');
     await expect(slot.locator('h2')).toHaveText('stdio 第一版');
+    const rollbackBrowserText = await slot.locator('h2').innerText();
     console.log('STDIO_ACCEPTANCE_EVIDENCE ' + JSON.stringify({
       transportPid: transport.pid, tools, first: { draftId: first.draft.id, artifactHash: first.draft.artifactHash,
-        revision: first.receipt.revision, publicRevision: first.delivery.meta.revision, browserText: 'stdio 第一版' },
-      second: { draftId: second.draft.id, artifactHash: second.draft.artifactHash, revision: second.receipt.revision },
+        revision: first.receipt.revision, publicRevision: first.delivery.meta.revision, browserText: first.browserText },
+      second: { draftId: second.draft.id, artifactHash: second.draft.artifactHash,
+        revision: second.receipt.revision, browserText: second.browserText },
       rollback: { draftId: rollbackDraft.id, artifactHash: rollbackDraft.artifactHash,
-        revision: rolledBack.value.revision, publicRevision: restored.meta.revision, browserText: 'stdio 第一版' },
+        revision: rolledBack.value.revision, publicRevision: restored.meta.revision, browserText: rollbackBrowserText },
     }));
+  } catch (error) {
+    bodyError = error;
+    throw error;
   } finally {
-    await client?.close();
-    await publicPage?.close();
-    await running?.close();
-    await rm(directory, { recursive: true, force: true });
+    const cleanupErrors: unknown[] = [];
+    for (const close of [() => client?.close(), () => publicPage?.close()]) {
+      try { await close(); } catch (error) { cleanupErrors.push(error); }
+    }
+    let serviceClosed = !running;
+    try { await running?.close(); serviceClosed = true; }
+    catch (error) { cleanupErrors.push(error); }
+    // 服务未确认关闭时保留目录，避免运行中的 Store 读写被删除。
+    if (serviceClosed) {
+      try { await rm(directory, { recursive: true, force: true }); }
+      catch (error) { cleanupErrors.push(error); }
+    }
+    if (cleanupErrors.length) {
+      if (bodyError) console.error('STDIO_ACCEPTANCE_CLEANUP_ERRORS', cleanupErrors);
+      else throw new AggregateError(cleanupErrors, 'stdio acceptance cleanup failed');
+    }
   }
 });
