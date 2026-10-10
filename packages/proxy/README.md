@@ -10,6 +10,35 @@ PromptCompiler → LLM Client (retry, 8s timeout) → OutputValidator → Cache 
 
 中文文档：[仓库 CLAUDE.md](../../CLAUDE.md) · [总体设计](../../docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md)
 
+## 公开数据交付（`createRenderHandler`）
+
+`createRenderHandler` 面向公开、确定性的 GET 内容交付，不调用模型，也不需要 LLM 配置。服务端先用 `resolveSlot` 读取带版本的数据快照，再由 `provider.produce` 将快照映射为组件树；代理校验组件树后才返回。以下 `cms.example.com` 是说明域名，请替换为你固定的服务端数据源；不要把来访者提供的 URL 当成数据源。
+
+```ts
+import { defineRegistry } from "@ai-slot/registry";
+import { createRenderHandler } from "@ai-slot/proxy";
+
+const registry = defineRegistry({ components: {
+  title: { description: "标题", props: { text: "string" }, required: ["text"] },
+} });
+export const handler = createRenderHandler({
+  registry, registryVersion: "1", namespace: "public-homepage",
+  resolveSlot: async (id, signal) => {
+    if (id !== "hero") return null;
+    const response = await fetch("https://cms.example.com/public/hero.json", { signal });
+    if (!response.ok) throw new Error("数据源不可用");
+    const data = await response.json();
+    if (typeof data.version !== "string" || typeof data.title !== "string") throw new Error("数据源格式错误");
+    return { slotId: id, originalContent: "原始标题", contentVersion: data.version, data: { title: data.title } };
+  },
+  provider: { id: "title-map-v1", produce: ({ slot }) => ({ component: "title", props: { text: slot.data?.title } }) },
+});
+```
+
+此入口只接受 GET，且只用于公开内容；`resolveSlot` 与 `produce` 共用 8000ms 请求预算，并可通过 `AbortSignal` 取消。默认缓存新鲜期为 60000ms，默认 stale 窗口为 0。源内容变化时必须更新 `contentVersion`；映射逻辑变化时必须更新 `provider.id`。只有显式配置 `staleMs` 才会在生产失败时使用同一源版本的旧结果。传入的 registry 与配置应视为初始化后不变；需要修改时创建新 handler 并递增相应版本。数据源密钥只能保留在服务端，返回的 `data` 只应包含渲染所需的展示字段。
+
+既有 `createAiRenderHandler`、LLM 调用、用户提示词和缓存行为保持原样；数据交付使用独立的 `createRenderHandler` 入口。
+
 ## Quick start
 
 ```bash
