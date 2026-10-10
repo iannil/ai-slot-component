@@ -44,9 +44,18 @@ export class AiSlotElement extends HTMLElement {
   private liveSub: InvalidationSubscription | null = null;
   private loadSeq = 0;
   private mountSeq = 0;
+  private displayedExpiresAt: number | undefined;
+  private expirationTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly checkVisibleExpiration = (): void => {
+    if (document.visibilityState === "visible") this.checkExpiration();
+  };
 
   connectedCallback(): void {
     const mount = ++this.mountSeq;
+    if (this.hasAttribute("fresh-only")) {
+      document.addEventListener("visibilitychange", this.checkVisibleExpiration);
+      this.checkExpiration();
+    }
     // 同一实例可能反复挂载：只在首次捕获兜底，避免被 AI 内容或编辑条污染
     if (!this.fallbackCaptured) {
       this.fallbackHTML = this.innerHTML;
@@ -74,11 +83,15 @@ export class AiSlotElement extends HTMLElement {
     clearInterval(this.timer);
     this.liveSub?.close();
     this.liveSub = null;
+    document.removeEventListener("visibilitychange", this.checkVisibleExpiration);
+    if (this.hasAttribute("fresh-only")) this.restore();
   }
 
-  /** 拉取并渲染组件树；userPrompt 存在时走 POST 用户路径。失败时静默保留当前内容。 */
+  /** 拉取并渲染组件树；普通槽位失败时保留当前内容，fresh-only 失败时恢复兜底。 */
   async load(userPrompt?: string): Promise<void> {
     const seq = ++this.loadSeq;
+    const freshOnly = this.hasAttribute("fresh-only");
+    let expiresAt: number | undefined;
     // 终树已应用后置位：渲染较慢的骨架结果到达时不得覆盖终树
     let finalApplied = false;
     // 骨架帧已受理置位（渲染是异步的，可能晚于终树结果返回）：
@@ -86,15 +99,19 @@ export class AiSlotElement extends HTMLElement {
     let skeletonApplied = false;
     const src = this.getAttribute("src");
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
-    if (!src || !renderer) return;
+    if (!src || !renderer) {
+      if (freshOnly && this.isConnected && seq === this.loadSeq) this.restore();
+      return;
+    }
     const tree = await fetchComponentTree({
       src,
       userPrompt,
       registry: globalRegistry,
       onFailure: globalOnFailure,
       stream: this.hasAttribute("stream"),
+      onExpiration: (value) => { expiresAt = value; },
       onSkeleton: (skeleton) => {
-        if (!this.isConnected || seq !== this.loadSeq || finalApplied) return;
+        if (freshOnly || !this.isConnected || seq !== this.loadSeq || finalApplied) return;
         skeletonApplied = true;
         // 骨架帧：先渲染结构（文本占位），终树到达后再替换
         void renderTree(renderer, skeleton).then((el) => {
@@ -105,17 +122,33 @@ export class AiSlotElement extends HTMLElement {
     if (!tree) {
       // 终树缺失/损坏/校验失败：已渲染（或渲染在途）的骨架不能留给人看，恢复兜底。
       // restore 的 loadSeq 防护同时使在途骨架渲染失效
-      if (skeletonApplied && this.isConnected && seq === this.loadSeq) this.restore();
+      if ((freshOnly || skeletonApplied) && this.isConnected && seq === this.loadSeq) this.restore();
+      return;
+    }
+    if (freshOnly && (expiresAt === undefined || expiresAt <= Date.now())) {
+      if (this.isConnected && seq === this.loadSeq) this.restore();
       return;
     }
     try {
       const el = await renderTree(renderer, tree);
-      if (!el) return;
       if (!this.isConnected || seq !== this.loadSeq) return; // 已卸载或有更新的 load，丢弃过期响应
+      if (freshOnly && (expiresAt === undefined || expiresAt <= Date.now())) {
+        this.restore(); // 异步渲染越过截止时间，不能落地
+        return;
+      }
+      if (!el) {
+        if (freshOnly) this.restore();
+        return;
+      }
       finalApplied = true;
       this.setContent(el);
+      if (freshOnly) {
+        this.clearExpiration(); // 新树真正应用后才替换旧计时器
+        this.displayedExpiresAt = expiresAt;
+        this.checkExpiration();
+      }
     } catch {
-      // 渲染器抛错：静默回退兜底内容
+      if (freshOnly && this.isConnected && seq === this.loadSeq) this.restore();
     }
   }
 
@@ -132,8 +165,32 @@ export class AiSlotElement extends HTMLElement {
     });
   }
 
+  /** 计时器绑定当前显示产物；长于浏览器上限的间隔分段复核。 */
+  private checkExpiration(): void {
+    const deadline = this.displayedExpiresAt;
+    if (deadline === undefined || !this.isConnected) return;
+    this.clearExpirationTimer();
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      this.restore();
+      return;
+    }
+    this.expirationTimer = setTimeout(() => this.checkExpiration(), Math.min(remaining, 2147483647));
+  }
+
+  private clearExpirationTimer(): void {
+    if (this.expirationTimer !== undefined) clearTimeout(this.expirationTimer);
+    this.expirationTimer = undefined;
+  }
+
+  private clearExpiration(): void {
+    this.clearExpirationTimer();
+    this.displayedExpiresAt = undefined;
+  }
+
   /** 恢复为挂载时的原始兜底内容。 */
   restore(): void {
+    this.clearExpiration();
     this.loadSeq += 1; // 使在途 load 的响应失效：恢复后到达的结果不得覆盖兜底
     this.innerHTML = this.fallbackHTML;
     if (this.editor) this.appendChild(this.editor);

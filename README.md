@@ -201,6 +201,7 @@ export const handler = createAiRenderHandler({
 | `live` | Subscribe to invalidation pushes and re-render on change (`live-src` overrides the endpoint) |
 | `refresh-interval` | Re-fetch every N seconds |
 | `editable` | Adds a one-line prompt box that re-renders this slot |
+| `fresh-only` | For managed content, requires a valid future `meta.expiresAt` (Unix milliseconds) on each final tree; failures and expiry restore the original fallback |
 
 ## The delivery pipeline
 

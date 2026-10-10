@@ -13,6 +13,8 @@ export interface FetchTreeOptions {
   onSkeleton?: (tree: ComponentNode) => void;
   /** 可选失败观测：每个失败路径触发一次。回调异常被吞掉，绝不影响兜底。 */
   onFailure?: (failure: FetchFailure) => void;
+  /** 最终树校验通过后报告服务端截止时间（Unix 毫秒）；缺失或非法时传 undefined。 */
+  onExpiration?: (expiresAt: number | undefined) => void;
   /** 测试注入用 */
   fetchImpl?: typeof fetch;
 }
@@ -30,6 +32,15 @@ function safeReport(onFailure: ((failure: FetchFailure) => void) | undefined, fa
     onFailure(failure);
   } catch {
     // 观测回调异常不影响兜底
+  }
+}
+
+/** 元数据只用于可选新鲜度边界；观测回调异常不影响正常内容。 */
+function reportExpiration(value: unknown, callback: FetchTreeOptions["onExpiration"]): void {
+  try {
+    callback?.(typeof value === "number" && Number.isFinite(value) ? value : undefined);
+  } catch {
+    // 观测回调异常不影响默认槽位
   }
 }
 
@@ -60,7 +71,7 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
     if (opts.stream && res.headers?.get("content-type")?.includes("text/event-stream")) {
       return await readSSE(res, opts);
     }
-    const { tree, failure } = extractTree((await res.json()) as unknown);
+    const { tree, failure, expiresAt } = extractTree((await res.json()) as unknown);
     if (!tree) {
       // failure 由 extractTree 构造保证存在；?? 仅为类型完备
       safeReport(opts.onFailure, failure ?? { stage: "parse", message: "empty response" });
@@ -73,6 +84,7 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
         return null;
       }
     }
+    reportExpiration(expiresAt, opts.onExpiration);
     return tree;
   } catch (error) {
     safeReport(opts.onFailure, {
@@ -84,7 +96,7 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
 }
 
 /** 已解析 JSON → 组件树：先按注册顺序探测 wire formats，全部未命中走原生 AiRenderResponse。失败时附带观测事件。 */
-function extractTree(data: unknown): { tree: ComponentNode | null; failure?: FetchFailure } {
+function extractTree(data: unknown): { tree: ComponentNode | null; failure?: FetchFailure; expiresAt?: unknown } {
   const wire = parseWithWireFormats(data);
   if (wire.matched) {
     return wire.tree
@@ -93,7 +105,7 @@ function extractTree(data: unknown): { tree: ComponentNode | null; failure?: Fet
   }
   const body = data as AiRenderResponse;
   return body?.tree
-    ? { tree: body.tree }
+    ? { tree: body.tree, expiresAt: body.meta?.expiresAt }
     : { tree: null, failure: { stage: "parse", message: "response carried no component tree" } };
 }
 
@@ -103,6 +115,7 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
   const text = (await readBody(res)).replace(/\r\n/g, "\n");
   let finalTree: ComponentNode | null = null;
   let finalFailure: FetchFailure | undefined;
+  let finalExpiresAt: unknown;
   for (const chunk of text.split("\n\n")) {
     const event = chunk.match(/^event: (.+)$/m)?.[1];
     const raw = chunk.match(/^data: (.+)$/m)?.[1];
@@ -127,6 +140,7 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
       const extracted = extractTree(data);
       finalTree = extracted.tree;
       finalFailure = extracted.failure;
+      finalExpiresAt = extracted.expiresAt;
     }
   }
   if (finalTree === null) {
@@ -141,6 +155,7 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
       return null;
     }
   }
+  reportExpiration(finalExpiresAt, opts.onExpiration);
   return finalTree;
 }
 
