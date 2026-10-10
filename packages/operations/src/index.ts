@@ -3,3 +3,5 @@ export * from './canonical.js';
 export * from './state.js';
 export * from './file-store.js';
 export * from './policy.js';
+export * from './drafts.js';
+export * from './operations.js';

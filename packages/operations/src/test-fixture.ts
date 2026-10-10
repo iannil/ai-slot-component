@@ -28,3 +28,34 @@ export function policyFixture(): { env: Environment; source: Source; owner: Prin
   const agent: Principal = { id: 'agent', grants: { hero: ['read', 'draft', 'publish', 'rollback'] } };
   return { env, source, owner, agent };
 }
+
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { vi } from 'vitest';
+import { openFileStore } from './file-store.js';
+import { createOperations } from './operations.js';
+
+/** 每个测试使用独立的真实持久化 Store。 */
+export async function makeFixture() {
+  const directory = await mkdtemp(join(tmpdir(), 'ai-slot-operations-'));
+  let store: Awaited<ReturnType<typeof openFileStore>> | undefined;
+  try {
+    store = await openFileStore(directory);
+    const { env, source, owner, agent } = policyFixture();
+    let activeSource = structuredClone(source);
+    env.readSource = async () => structuredClone(activeSource);
+    env.notify = vi.fn();
+    const openedStore = store;
+    const ops = createOperations(openedStore, env);
+    return {
+      store: openedStore, env, source, owner, agent, ops,
+      setSource(next: Source) { activeSource = structuredClone(next); },
+      async cleanup() { await openedStore.close(); await rm(directory, { recursive: true, force: true }); },
+    };
+  } catch (error) {
+    if (store) await store.close();
+    await rm(directory, { recursive: true, force: true });
+    throw error;
+  }
+}
