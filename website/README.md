@@ -7,6 +7,7 @@ ai-slot 的项目网站（Cloudflare Pages：静态前端 + Agent Functions）�
 ```bash
 npm install
 npm run dev        # 本地开发（vite）
+npm run lint       # 检查官网代码
 npm run build      # 生成 Agent 内容 + 类型检查 + 产物构建
 npm run preview    # 预览生产构建
 ```
