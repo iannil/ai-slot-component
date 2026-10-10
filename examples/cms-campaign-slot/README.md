@@ -32,7 +32,7 @@
 
    这个辅助程序通过真实私有草稿、批准、发布接口发布一条参考内容。令牌仅放在本机进程环境。
 3. 运行 `AI_SLOT_TLS_KEY=/tmp/ai-slot-i2-tls/key.pem AI_SLOT_TLS_CERT=/tmp/ai-slot-i2-tls/cert.pem node examples/cms-campaign-slot/wordpress/local-tls-proxy.mjs`。其两个 HTTPS 入口分别是 WordPress `18882` 与交付 `4195`，只监听 `127.0.0.1`。浏览器验收仅在 Playwright context 设置 `ignoreHTTPSErrors`，不修改系统信任或全局 TLS 校验。
-4. 运行 `AI_SLOT_WP_PASSWORD="$(cat /tmp/ai-slot-i2-tls/wp-password)" pnpm --filter example-cms-campaign-slot test:host`。脚本检查前台、编辑器、预览、320/768/1280、键盘链接、脚本与 CSP 阻断、503、同页 registry 冲突、CMS 暂停和恢复；CMS 暂停有 `finally` 自动恢复。验收脚本假设前述专用站和端点已运行。`pnpm --filter example-cms-campaign-slot test:host-dom` 在同一真实 WordPress 文档中门控插件模块，精确比较授权槽位和插件 script 之外的完整 body DOM，并将无秘密摘要写到 `docs/validation/assets/cms-campaign/outside-dom-before-after.json`。
+4. 运行 `AI_SLOT_WP_PASSWORD="$(cat /tmp/ai-slot-i2-tls/wp-password)" pnpm --filter example-cms-campaign-slot test:host`。脚本检查前台、编辑器、预览、320/768/1280、键盘链接、脚本与 CSP 阻断、503、同页 registry 冲突、CMS 暂停和恢复；CMS 暂停有 `finally` 自动恢复。验收脚本假设前述专用站和端点已运行。`pnpm --filter example-cms-campaign-slot test:host-dom` 在同一真实 WordPress 文档中门控插件模块，精确比较授权槽位和插件 script 之外的完整 body DOM，并按原 `childNodes` 路径确认每个原始 Node 引用仍在原位（含“移走原节点、原位放同 HTML 克隆”的反例检查），将无秘密摘要写到 `docs/validation/assets/cms-campaign/outside-dom-before-after.json`。
 
 撤回时先把页面短代码改回静态片段，确认前台不再加载 `ai-slot.js`；再停用插件、删除临时编辑器账号、撤销并删除本机令牌、停止交付服务与 TLS 代理。若整个本地参考站不再使用，仅删除上述专用两个容器、两个卷和网络。不要按镜像名批量删除容器。撤回不会创建额外 CMS 文章或事实副本；Operations 的临时 Store 也应删除。
 
