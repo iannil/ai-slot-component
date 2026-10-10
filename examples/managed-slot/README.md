@@ -13,4 +13,4 @@ pnpm --filter example-managed-slot start
 
 令牌只保存在服务端环境和本机管理客户端中，不能写入网页、仓库或公共目录。可用 `AI_SLOT_DATA_DIR` 指定持久状态目录；默认位于用户缓存目录。`source.json` 是手工维护的来源快照，更新时须修改版本、价格事实和有效期。来源到期、读取失败或形状无效时，公开投递降级为原始内容。服务停止后状态保留，若异常退出留下 `writer.lock`，须由管理员确认无写者后手工移走。
 
-管理接口均为 JSON `POST /ops/*`，请求带 `Authorization: Bearer <令牌>`。owner 可读、建草稿、批准、发布、回滚；agent 不能批准。公开接口为 `/registry.json`、`/ai-render/hero` 与 `/ai-invalidate?slot=hero`。管理请求限制 64 KiB，拒绝跨源请求和非本机 Host。此服务没有绕过批准的发布入口。
+管理接口均为 JSON `POST /ops/*`，请求带 `Authorization: Bearer <令牌>`。owner 可读、建草稿、批准、发布、回滚；agent 不能批准。公开接口为 `/registry.json`、`/ai-render/hero` 与 `/ai-invalidate?slot=hero`。管理请求限制 64 KiB，拒绝跨源请求、缺失 Host 和非本机 Host。失效通道最多同时接受 64 个订阅，每条流最多保留 1 帧待消费消息；慢客户端被断开后由重连核对当前版本。此服务没有绕过批准的发布入口。

@@ -13,6 +13,7 @@ const agent = { id: 'agent', grants: { hero: ['read', 'draft', 'publish', 'rollb
 const tokens = new Map([['owner-test', owner], ['agent-test', agent]]);
 function request(path, body, token = 'agent-test', method = 'POST', headers = {}) {
   return new Request(`${origin}${path}`, { method, headers: {
+    host: '127.0.0.1:4194',
     ...(token ? { authorization: `Bearer ${token}` } : {}),
     ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...headers,
   }, ...(body !== undefined ? { body: typeof body === 'string' ? body : JSON.stringify(body) } : {}) });
@@ -50,9 +51,9 @@ test('公开端点不泄露草稿，错误按契约映射', async () => {
     const app = createApp(ops, tokens, { registry: env.registry, policy: env.policies.hero });
     const draft = await app(request('/ops/draft', { slotId: 'hero', tree: { component: 'card', props: { title: '测试', price: '¥99', link: 'https://example.com/' } }, baseRevision: 0, sourceVersion: 's1' }));
     assert.equal(draft.status, 200);
-    assert.equal((await app(new Request(`${origin}/ai-render/hero`))).status, 503);
-    assert.equal((await app(new Request(`${origin}/ops/read`))).status, 405);
-    const registry = await (await app(new Request(`${origin}/registry.json`))).text();
+    assert.equal((await app(new Request(`${origin}/ai-render/hero`, { headers: { host: '127.0.0.1:4194' } }))).status, 503);
+    assert.equal((await app(new Request(`${origin}/ops/read`, { headers: { host: '127.0.0.1:4194' } }))).status, 405);
+    const registry = await (await app(new Request(`${origin}/registry.json`, { headers: { host: '127.0.0.1:4194' } }))).text();
     assert.doesNotMatch(registry, /draft|token|lockedProps/);
     assert.equal((await app(request('/ops/draft', { slotId: 'hero', tree: {}, baseRevision: 9, sourceVersion: 's1' }))).status, 409);
   } finally { await store.close(); await rm(directory, { recursive: true, force: true }); }
@@ -73,13 +74,13 @@ test('真实 Operations 经管理路由批准发布后才公开投递', async ()
     assert.equal(approval.status, 200);
     const publish = await app(request('/ops/publish', { draftId: draft.id, artifactHash: draft.artifactHash, expectedRevision: 0, idempotencyKey: 'first' }));
     assert.equal(publish.status, 200);
-    const delivered = await app(new Request(`${origin}/ai-render/hero`));
+    const delivered = await app(new Request(`${origin}/ai-render/hero`, { headers: { host: '127.0.0.1:4194' } }));
     assert.equal(delivered.status, 200);
     assert.equal((await delivered.json()).tree.props.title, '已发布');
     const status = await app(request('/ops/status', { slotId: 'hero' }));
     assert.deepEqual(await status.json(), { desiredRevision: 1, readableRevision: 1, browserObservation: null });
     source.expiresAt = Date.now() - 1;
-    assert.equal((await app(new Request(`${origin}/ai-render/hero`))).status, 503);
+    assert.equal((await app(new Request(`${origin}/ai-render/hero`, { headers: { host: '127.0.0.1:4194' } }))).status, 503);
   } finally { await store.close(); await rm(directory, { recursive: true, force: true }); }
 });
 
@@ -112,13 +113,41 @@ test('Node SSE立即握手，停止时关闭活跃连接和Store', async () => {
     const frame = response.body.getReader().read();
     running.channel.invalidate('hero');
     assert.match(new TextDecoder().decode((await frame).value), /event: invalidate/);
+    const extra = Array.from({ length: 63 }, () => running.channel.handler(new Request(`${origin}/ai-invalidate?slot=hero`)));
+    assert.ok(extra.every(item => item.status === 200));
+    assert.equal(running.channel.handler(new Request(`${origin}/ai-invalidate?slot=hero`)).status, 503);
+    await Promise.all(extra.map(item => item.body.cancel()));
+    const slow = running.channel.handler(new Request(`${origin}/ai-invalidate?slot=hero`));
+    assert.equal(slow.status, 200);
+    running.channel.invalidate('hero');
+    running.channel.invalidate('hero');
+    assert.equal(running.channel.subscriberCount('hero'), 1); // HTTP 订阅仍活跃，慢流已清理
+    const slowReader = slow.body.getReader();
+    assert.match(new TextDecoder().decode((await slowReader.read()).value), /event: invalidate/);
+    assert.equal((await slowReader.read()).done, true);
     const { request: nodeRequest } = await import('node:http');
     const traversalStatus = await new Promise((resolve, reject) => {
       nodeRequest({ host: '127.0.0.1', port: 4194, path: '/%2e%2e/source.json' }, response => { response.resume(); resolve(response.statusCode); }).on('error', reject).end();
     });
     assert.equal(traversalStatus, 400);
+    const { createConnection } = await import('node:net');
+    const noHostStatus = await new Promise((resolve, reject) => {
+      const socket = createConnection(4194, '127.0.0.1');
+      let raw = '';
+      socket.on('connect', () => socket.write(`POST /ops/list HTTP/1.0\r\nAuthorization: Bearer ${'a'.repeat(64)}\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}`));
+      socket.on('data', chunk => { raw += chunk.toString(); if (raw.includes('\r\n')) { socket.destroy(); resolve(Number(raw.match(/^HTTP\/1\.[01] (\d+)/)?.[1])); } });
+      socket.on('error', reject);
+    });
+    assert.equal(noHostStatus, 403);
   } finally {
     await running.close();
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+
+test('无Host的私有请求不能由URL补成可信Host', async () => {
+  const app = createApp({ listSlots: async () => ['hero'] }, tokens);
+  const noHost = new Request(`${origin}/ops/list`, { method: 'POST', headers: { authorization: 'Bearer agent-test', 'content-type': 'application/json' }, body: '{}' });
+  assert.equal((await app(noHost)).status, 403);
 });

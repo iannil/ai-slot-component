@@ -66,7 +66,7 @@ function actorFor(request, tokens) {
 }
 function safeRequestUrl(request) {
   const url = new URL(request.url);
-  const host = request.headers.get('host') ?? url.host;
+  const host = request.headers.get('host');
   if (url.protocol !== 'http:' || !allowedHosts.has(url.host) || !allowedHosts.has(host) || host !== url.host) throw new OperationError('forbidden');
   const origin = request.headers.get('origin');
   if (origin && origin !== url.origin) throw new OperationError('forbidden');

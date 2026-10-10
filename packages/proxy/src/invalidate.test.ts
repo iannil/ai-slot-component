@@ -61,3 +61,51 @@ describe("createInvalidationChannel", () => {
     expect(chunk).toContain(": ping");
   });
 });
+
+
+describe("createInvalidationChannel 边界", () => {
+  it("限制全通道订阅数并在断开后释放名额", async () => {
+    const channel = createInvalidationChannel({ heartbeatMs: 60_000, maxSubscribers: 1, maxQueuedFrames: 1 });
+    const first = subscribe(channel, "hero");
+    expect(first.status).toBe(200);
+    expect(subscribe(channel, "footer").status).toBe(503);
+    await first.body!.cancel();
+    expect(channel.subscriberCount("hero")).toBe(0);
+    const second = subscribe(channel, "footer");
+    expect(second.status).toBe(200);
+    await second.body!.cancel();
+  });
+
+  it("慢消费者超过一帧时关闭流并移除订阅", async () => {
+    const channel = createInvalidationChannel({ heartbeatMs: 60_000, maxQueuedFrames: 1 });
+    const res = subscribe(channel, "hero");
+    channel.invalidate("hero");
+    channel.invalidate("hero");
+    expect(channel.subscriberCount("hero")).toBe(0);
+    const reader = res.body!.getReader();
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain("event: invalidate");
+    expect((await reader.read()).done).toBe(true);
+  });
+
+  it("默认模式保持原有多帧队列行为", async () => {
+    const channel = createInvalidationChannel({ heartbeatMs: 60_000 });
+    const res = subscribe(channel, "hero");
+    channel.invalidate("hero");
+    channel.invalidate("hero");
+    expect(channel.subscriberCount("hero")).toBe(1);
+    const reader = res.body!.getReader();
+    expect((await reader.read()).done).toBe(false);
+    expect((await reader.read()).done).toBe(false);
+    await reader.cancel();
+  });
+
+  it("心跳也受待消费帧上限约束", async () => {
+    const channel = createInvalidationChannel({ heartbeatMs: 10, maxQueuedFrames: 1 });
+    const res = subscribe(channel, "hero");
+    await new Promise(resolve => setTimeout(resolve, 35));
+    expect(channel.subscriberCount("hero")).toBe(0);
+    const reader = res.body!.getReader();
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain(": ping");
+    expect((await reader.read()).done).toBe(true);
+  });
+});

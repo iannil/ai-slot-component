@@ -22,6 +22,7 @@ const files = new Map([
   ['/vendor/runtime/index.js', fileURLToPath(new URL('../../packages/runtime/dist/index.js', import.meta.url))],
   ['/vendor/adapter-dom/index.js', fileURLToPath(new URL('../../packages/adapter-dom/dist/index.js', import.meta.url))],
 ]);
+const allowedHosts = new Set(['127.0.0.1:4194', 'localhost:4194']);
 const mime = path => path.endsWith('.html') ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8';
 
 function isTraversal(rawUrl) {
@@ -31,7 +32,7 @@ function isTraversal(rawUrl) {
   } catch { return true; }
 }
 function toRequest(req) {
-  const host = req.headers.host ?? '127.0.0.1:4194';
+  const host = req.headers.host;
   const url = new URL(req.url ?? '/', `http://${host}`);
   const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
   return new Request(url, { method: req.method, headers: req.headers,
@@ -57,7 +58,7 @@ async function send(res, response) {
 export async function startServer(envVars = process.env) {
   const tokens = tokensFromEnv(envVars);
   const directory = envVars.AI_SLOT_DATA_DIR ?? join(homedir(), '.cache', 'ai-slot', 'managed-slot');
-  const channel = createInvalidationChannel();
+  const channel = createInvalidationChannel({ maxSubscribers: 64, maxQueuedFrames: 1 });
   const env = createEnvironment({
     sourceFile: join(root, 'source.json'),
     notify: slotId => channel.invalidate(slotId),
@@ -66,6 +67,7 @@ export async function startServer(envVars = process.env) {
   const app = createApp(createOperations(store, env), tokens, { registry, policy, invalidation: channel });
   const server = createServer(async (req, res) => {
     try {
+      if (!allowedHosts.has(req.headers.host)) { res.writeHead(403).end(); return; }
       if (isTraversal(req.url ?? '/')) {
         res.writeHead(400).end('bad path');
         return;
@@ -74,7 +76,6 @@ export async function startServer(envVars = process.env) {
       if (files.has(path)) {
         if (req.method !== 'GET') { res.writeHead(405).end(); return; }
         // 固定文件也只接受本机 Host；静态页不承载 CORS。
-        if (!['127.0.0.1:4194', 'localhost:4194'].includes(req.headers.host)) { res.writeHead(403).end(); return; }
         try {
           const bytes = await readFile(files.get(path));
           res.writeHead(200, { 'content-type': mime(path), 'cache-control': 'no-store' }).end(bytes);
