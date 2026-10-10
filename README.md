@@ -17,7 +17,9 @@ English | [简体中文](./README.zh-CN.md)
 
 </div>
 
-Existing pages already have content, crawlers and users. What they lack is a safe way to *receive* AI-generated content. ai-slot is that layer: wrap a region of your page, and provide the initial HTML as a fallback. The runtime keeps a copy for recovery when it replaces the visible content:
+AI-SLOT adds local AI content and component composition to existing sites, CMSs and site builders. AI produces validated component-tree JSON using developer-registered components. Endpoints can also supply the same protocol without calling AI for every update. After initial integration, supported content updates do not require a host redeploy. Versioned publishing and management MCP are planned; the current website MCP reads documentation only.
+
+Wrap a region of your page and provide the initial HTML as fallback. The runtime keeps a copy for recovery when it replaces the visible content:
 
 ```html
 <ai-slot name="hero" src="/ai-render/hero">
