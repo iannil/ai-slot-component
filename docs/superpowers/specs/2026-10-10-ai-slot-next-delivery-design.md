@@ -29,7 +29,7 @@ Q/R 先做，不必等待后续功能；L 与 V 无代码依赖，执行时仍�
 
 新增 operations 为 Node 包；公开投递保持 version:1 线协议。治理全程使用同一个服务端注册表与 rendererVersion。每槽位配置 {slotId, registryVersion, rendererVersion, allowedComponents, sourceId, lockedProps, urlProps, allowedOrigins}。锁定规则采用 component+prop+sourceField，首期只支持顶层 prop 与源顶层字段，拒绝不支持的复杂路径。
 
-Source = {id,version,expiresAt,data}；version 必须代表整个不可变事实快照，不能只依赖低精度时间戳。草稿绑定 sourceVersion、registryVersion、rendererVersion、baseRevision、artifactHash。产物与草稿不允许就地修改；改动产生新草稿。批准绑定同一组字段且有到期时间；preview 返回 hash 是可核对的预览材料，不是假装人已审阅的证据。
+Source = {id,version,expiresAt,data}；version 必须代表整个不可变事实快照，不能只依赖低精度时间戳。不可变产物将sourceId纳入hash；草稿绑定 sourceId、sourceVersion、registryVersion、rendererVersion、baseRevision、artifactHash。产物与草稿不允许就地修改；改动产生新草稿。批准绑定同一组字段且有到期时间；preview 返回 hash 是可核对的预览材料，不是假装人已审阅的证据。
 
 管理动作 read/draft/approve/publish/rollback 对每个 principal 单独授予槽位权限；principal 来自服务端能力令牌映射，禁止请求体指定身份。Agent 默认可 read/draft，publish/rollback 必须配置授权；MCP 不暴露 approve。人工批准由单独的本地 owner UI 调用，令牌不传给 Agent。已批准并获授权的 Agent 可发布；没有授权不反复弹“确认”替代权限控制。后续低风险自动审批策略不包含在此轮。
 

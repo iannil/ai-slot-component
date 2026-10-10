@@ -53,7 +53,7 @@ export interface SlotPolicy {
  urlProps:{component:string;prop:string}[];allowedOrigins:string[];
 }
 export interface Artifact {
- hash:string;slotId:string;tree:ComponentNode;sourceVersion:string;
+ hash:string;slotId:string;tree:ComponentNode;sourceId:string;sourceVersion:string;
  registryVersion:string;rendererVersion:string;expiresAt:number;
 }
 export interface Draft {

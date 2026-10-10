@@ -100,7 +100,7 @@ for(const rule of policy.urlProps.filter(x=>x.component===node.component)){
 ### Task 2: 不可变草稿、预览和人工批准
 
 **Files:** drafts.ts、drafts.test.ts、operations.ts/index.ts；test-fixture.ts增加真实临时Store。
-**Interfaces:** 上方DraftInput与Operations前五项；`artifact.hash=hash(payload)`，payload含slot/tree/sourceVersion/registryVersion/rendererVersion/expiresAt。
+**Interfaces:** 上方DraftInput与Operations前五项；`artifact.hash=hash(payload)`，payload含slot/tree/sourceId/sourceVersion/registryVersion/rendererVersion/expiresAt。
 
 - [ ] test-fixture导出 `makeFixture():Promise<{store,env,owner,agent,ops,source,setSource,cleanup}>`；store来自V真实临时目录；env.notify=vi.fn；setSource替换读源快照。测试文件导入如下：
 
@@ -189,13 +189,13 @@ async function assertPublishable(state:State,env:Environment,draft:Draft,input:P
  const policy=env.policies[draft.slotId];
  if(artifact.registryVersion!==policy.registryVersion||artifact.rendererVersion!==policy.rendererVersion)throw new OperationError('contract_changed');
  const source=await env.readSource(draft.slotId);
- if(source.version!==artifact.sourceVersion)throw new OperationError('source_changed');
+ if(artifact.sourceId!==policy.sourceId||source.id!==artifact.sourceId||source.version!==artifact.sourceVersion)throw new OperationError('source_changed');
  validateArtifact(env,draft.slotId,artifact.tree,source);
  if(artifact.expiresAt<=env.now())throw new OperationError('expired');
 }
 ```
 
-- [ ] prepareRollback验证rollback权限、expectedRevision，查指定slot目标revision的release；取历史artifact并重读source/当前契约。只有仍有效且版本匹配时建立新Draft（intent='rollback', baseRevision=当前revision, 新id，artifactHash复用）；没有审批即不能调用rollbackSlot。不存在targetRevision→not_found。禁止把pointer直接指向旧revision。
+- [ ] prepareRollback验证rollback权限、expectedRevision，查指定slot目标revision的release；取历史artifact并重读source/当前契约。只有仍有效且来源身份（artifact/policy/source三方sourceId）及版本匹配时建立新Draft（intent='rollback', baseRevision=当前revision, 新id，artifactHash复用）；没有审批即不能调用rollbackSlot。不存在targetRevision→not_found。禁止把pointer直接指向旧revision。
 - [ ] 测试两个并发发布同base仅一个成功；重启后的幂等重试只返原receipt；授权撤销后重试forbidden；通知失败仍有新pointer；过期批准、源改变、rendererVersion改变均不发布；正常rollback到新revision且历史保留；过期旧源rollback拒绝。通过后提交 `feat: 实现幂等发布与受审版本回滚`。
 
 ### Task 4: 公开投递与状态证据
@@ -214,7 +214,7 @@ return new Response(JSON.stringify({version:1,slot:slotId,tree:artifact.tree,
 return new Response(JSON.stringify({error:'ai_unavailable'}),{status:503,headers:{'cache-control':'no-store'}});
 ```
 
-读取时再次validateArtifact，不通过则不交付；env.readSource发生在公开交付前，源故障不能stale复活旧活动。getStatus先authorize read，调用同样的可读性判定；browserObservation固定null，不能拿接口200填充浏览器成功。
+读取时再次validateArtifact，并核对artifact.sourceId===policy.sourceId===source.id及sourceVersion与契约版本，不通过则不交付；env.readSource发生在公开交付前，源故障不能stale复活旧活动。getStatus先authorize read，调用同样的可读性判定；browserObservation固定null，不能拿接口200填充浏览器成功。
 - [ ] 完成listSlots（只列有read grant且policy存在的slot）与readSlot（只返回本slot pointer和drafts，不跨slot列表）。README给出create→preview→approve→publish→deliver→prepareRollback→approve→rollback完整顺序。
 - [ ] `pnpm build && pnpm test && pnpm typecheck`；提交 `feat: 交付已发布产物并区分发布与可读状态`。
 
