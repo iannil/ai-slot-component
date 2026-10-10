@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": { "node": ">=22" },
-  "scripts": { "test": "vitest run", "test:host": "node wordpress/accept-local.mjs", "build": "node build-embed.mjs", "typecheck": "echo 无需类型检查" },
+  "scripts": { "test": "node build-embed.mjs && vitest run", "test:host": "node wordpress/accept-local.mjs", "test:host-dom": "node wordpress/accept-outside-dom.mjs", "build": "node build-embed.mjs", "typecheck": "echo 无需类型检查" },
   "dependencies": { "@ai-slot/operations": "workspace:*", "@ai-slot/runtime": "workspace:*", "@ai-slot/adapter-dom": "workspace:*", "@ai-slot/registry": "workspace:*" },
   "devDependencies": { "vitest": "^2.1.0", "esbuild": "0.27.7", "@playwright/test": "1.63.0" }
 }

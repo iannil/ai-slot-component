@@ -1,0 +1,23 @@
+{
+  "url": "https://127.0.0.1:18882/ai-slot%e6%8e%a5%e5%85%a5%e6%b5%8b%e8%af%95-i1/",
+  "method": "同一 WordPress 文档门控插件模块；对 body 克隆后将授权槽位与插件 script 替换为固定注释，再比较完整 outerHTML；另外核对增强前所有槽位外节点身份仍连在文档上",
+  "exclusions": [
+    "[data-ai-slot-endpoint], ai-slot（含其子树）",
+    "script[src*=\"/ai-slot.js\"]"
+  ],
+  "before": {
+    "slotTag": "DIV",
+    "slotText": "产品介绍暂不可用，请查看原站信息。",
+    "outsideDomBytes": 12628,
+    "outsideDomSha256": "2f47c525af330b398a618c8f8ecd25bfe1ab237022842ef7e61d5c87bea3d5d5",
+    "outsideNodeCount": 116
+  },
+  "after": {
+    "slotTag": "AI-SLOT",
+    "slotText": "产品介绍¥99查看商品",
+    "outsideDomBytes": 12628,
+    "outsideDomSha256": "2f47c525af330b398a618c8f8ecd25bfe1ab237022842ef7e61d5c87bea3d5d5",
+    "originalOutsideNodesConnected": 116
+  },
+  "exactOutsideDomMatch": true
+}

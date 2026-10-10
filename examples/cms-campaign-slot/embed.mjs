@@ -87,6 +87,8 @@ for (const host of hosts) {
     host.replaceWith(slot);
   } catch (error) {
     // 固定诊断避免把来源内容或 URL 写进控制台。原始 WordPress 壳继续显示。
-    console.warn(`[ai-slot] 槽位未启用：${error instanceof Error ? error.message : 'unknown_error'}`);
+    console.warn(error instanceof Error && error.message === 'registry_conflict'
+      ? '[ai-slot] 槽位未启用：注册表冲突'
+      : '[ai-slot] 槽位未启用：公开配置不可用或不兼容');
   }
 }
