@@ -17,7 +17,7 @@ English | [简体中文](./README.zh-CN.md)
 
 </div>
 
-AI-SLOT adds local AI content and component composition to existing sites, CMSs and site builders. AI produces validated component-tree JSON using developer-registered components. Endpoints can also supply the same protocol without calling AI for every update. After initial integration, supported content updates do not require a host redeploy. Versioned publishing and management MCP are planned; the current website MCP reads documentation only.
+AI-SLOT adds local AI content and component composition to existing sites, CMSs and site builders. AI produces validated component-tree JSON using developer-registered components. Endpoints can also supply the same protocol without calling AI for every update. After initial integration, supported content updates do not require a host redeploy. A local reference implementation now supports versioned publishing and management MCP; it has protocol tests, while external Agent use and customer deployment remain unverified. The website MCP still reads documentation only. See the [delivery status](./docs/validation/next-delivery-status.md).
 
 Wrap a region of your page and provide the initial HTML as fallback. The runtime keeps a copy for recovery when it replaces the visible content:
 
@@ -245,7 +245,7 @@ pnpm --filter example-plain-html test:e2e
 node examples/plain-html/prewarm.mjs
 ```
 
-Type checking is the only static gate — there is no ESLint/Prettier config.
+The workspace uses type checking; the website also has an ESLint gate.
 
 ## For AI coding agents
 
@@ -255,7 +255,7 @@ Type checking is the only static gate — there is no ESLint/Prettier config.
 
 ## Project status
 
-v1 and v1.1 are implemented and merged to master: global prop guardrails, cache serialization + CI pregeneration, SSE streaming, invalidation push, React/Vue adapters.
+v1 and v1.1 are merged to master. The website quality and first data-delivery release preparation are also on master; the prepared `@ai-slot/proxy@0.2.0` tarball has not been published to npm. Reliable reconnect, version storage, governance, local management MCP, and a WordPress reference integration are implemented on an isolated branch and are awaiting final integration and release. See the [evidence and external blockers](./docs/validation/next-delivery-status.md).
 
 Deliberately deferred: token-level LLM streaming and multi-instance rate-limit/cache stores. Explicitly out of scope: arbitrary HTML/CSS generation, client-side DOM patch protocols, in-browser inference, multi-tenant billing.
 

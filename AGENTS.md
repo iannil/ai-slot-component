@@ -6,12 +6,12 @@
 
 **ai-slot-component**：一个「存量页面的 AI 内容交付层」项目 —— 把任意存量页面的指定区域变成 AI 内容的安全上线通道：AI 返回**结构化组件树 JSON**（绝不返回 HTML），经校验后渲染为开发者的真实组件，失败/超时/校验不过一律静默回退原始内容。主场景是内容交付：构建期预生成（零运行时 LLM 成本）、失效推送让内容更新免重新部署、可接 A2UI/agent 端点；访客经提示词修改指定槽位（`editable`）是特性之一，不是主叙事。
 
-**当前阶段：v1 + v1.1 已实现并合入 master。** 七个包（registry / proxy / runtime / adapter-dom / adapter-react / adapter-vue / a2ui）+ 纯 HTML 端到端示例均已落地，单元测试与 Playwright e2e 全绿。v1.1 在 v1 之上新增：props 全局护栏、缓存序列化与 CI 预生成、SSE 流式（`stream` 属性，骨架→终树双帧）、失效推送（`live` 属性）、React/Vue 渲染适配器。设计文档：
+**已发布基线：v1 + v1.1 已实现并合入 master。** 七个包（registry / proxy / runtime / adapter-dom / adapter-react / adapter-vue / a2ui）+ 纯 HTML 端到端示例均已落地，单元测试与 Playwright e2e 全绿。v1.1 在 v1 之上新增：props 全局护栏、缓存序列化与 CI 预生成、SSE 流式（`stream` 属性，骨架→终树双帧）、失效推送（`live` 属性）、React/Vue 渲染适配器。设计文档：
 
 - `docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md` —— 总体设计（含技术选型与接入方式）
 - `docs/superpowers/plans/2026-09-24-ai-native-rendering-sdk.md` —— v1 实现计划（已执行完毕）
 
-任何实现工作都应以该设计文档为准。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟的事项中，SSE 流式渲染（骨架→终树双帧；token 级 LLM 增量流式仍推迟）、失效推送（SSE 通道；断开自动重连仍推迟）、CI 构建时预生成工具、React/Vue 渲染适配器均已在 v1.1 完成。剩余推迟项：token 级 LLM 增量流式、live 自动重连、多实例限流/缓存存储抽象。
+v1/v1.1 的历史设计以该文档为准；后续交付另见[设计](docs/superpowers/specs/2026-10-10-ai-slot-next-delivery-design.md)与[当前验收状态](docs/validation/next-delivery-status.md)。官网质量与首轮数据交付准备已在 master；可靠重连、私有版本治理与本地管理 MCP、WordPress 参考接入在隔离分支，尚待总控最终整合及发布。proxy 0.2.0 本地制品尚未发布 npm；外部 Agent 和客户试点尚未验证。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟的 SSE 流式渲染（骨架→终树双帧）、失效推送（SSE 通道）、CI 构建时预生成工具和 React/Vue 渲染适配器已在 v1.1 完成；断线自动重连已在后续隔离分支实现，尚待整合与发布。剩余推迟项：token 级 LLM 增量流式、多实例限流/缓存存储抽象。
 
 ## 语言约定
 
@@ -44,7 +44,7 @@
 - 运行全部测试：`pnpm test`（Vitest；runtime/adapter-dom 用 jsdom 环境）
 - 类型检查：`pnpm typecheck`
 - 单包命令：`pnpm --filter @ai-slot/<包名> test|build|typecheck`
-- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright，当前共 12 条；首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
+- 端到端示例：`pnpm --filter example-plain-html test:e2e`（Playwright；首次需 `pnpm --filter example-plain-html exec playwright install chromium`）
 - 示例站结构：`examples/plain-html` 的 `index.html` 是演示中心（行业选择），`shop/hotel/news/fin.html` 为四个行业的高保真页面（电商/酒店/新闻/理财），另有英文电商页 `shop-en.html` 供录制；槽位命名为 `<行业>-hero`（stream+live）与 `<行业>-rec`（mock 永远失败，演示兜底）。页面上没有输入框——卖点方向调整由 `admin.html` 运营控制台（`POST /admin/prompt`）完成并推送
 - CI 预生成（AI 静态化）：`examples/plain-html` 下 `node prewarm.mjs` 生成 `ai-cache.json`，`node server.mjs` 启动时自动水合
 - 真实 LLM：示例默认走确定性 mock；设置 `OPENAI_API_KEY` 后切换为 OpenAI 兼容端点（可选 `AI_BASE_URL`、`AI_MODEL_DEVELOPER` 默认 gpt-4o、`AI_MODEL_USER` 默认 gpt-4o-mini）

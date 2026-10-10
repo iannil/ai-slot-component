@@ -1,5 +1,7 @@
 # AI-SLOT 后续交付总控 Implementation Plan
 
+> 执行状态以[后续交付状态](../../validation/next-delivery-status.md)为准；下文保留 2026-10-10 制定时的基线与计划口径。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 按独立验收关卡完成用户列出的发布、后续开发与质量修复。
