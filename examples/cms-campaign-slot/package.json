@@ -1,0 +1,9 @@
+{
+  "name": "example-cms-campaign-slot",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "vitest run", "build": "echo 无需构建", "typecheck": "echo 无需类型检查" },
+  "dependencies": { "@ai-slot/operations": "workspace:*" },
+  "devDependencies": { "vitest": "^2.1.0" }
+}

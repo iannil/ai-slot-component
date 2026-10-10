@@ -151,3 +151,35 @@ test('无Host的私有请求不能由URL补成可信Host', async () => {
   const noHost = new Request(`${origin}/ops/list`, { method: 'POST', headers: { authorization: 'Bearer agent-test', 'content-type': 'application/json' }, body: '{}' });
   assert.equal((await app(noHost)).status, 403);
 });
+
+test('CMS 来源供草稿、发布和交付共同读取，事实变化使旧草稿失效', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'managed-slot-cms-'));
+  const store = await openFileStore(directory);
+  let title = '活动A';
+  let calls = 0;
+  const expiresAt = Date.now() + 600_000;
+  const fetchImpl = async () => {
+    calls++;
+    return Response.json({ id: 'campaign-12', title, price: '¥99', link: 'https://example.com/', expiresAt });
+  };
+  try {
+    const env = createEnvironment({ cmsUrl: 'https://cms.example.com/wp-json/ai-slot/v1/campaign/12', fetchImpl });
+    assert.equal(env.policies.hero.sourceId, 'campaign-12');
+    const app = createApp(createOperations(store, env), tokens, { registry: env.registry, policy: env.policies.hero });
+    const source = await env.readSource();
+    const tree = { component: 'card', props: { title: '活动A', price: '¥99', link: 'https://example.com/' } };
+    const draftResponse = await app(request('/ops/draft', { slotId: 'hero', tree, baseRevision: 0, sourceVersion: source.version }));
+    assert.equal(draftResponse.status, 200);
+    const draft = await draftResponse.json();
+    const approval = await app(request('/ops/approve', { draftId: draft.id, artifactHash: draft.artifactHash, expiresAt: Date.now() + 60_000 }, 'owner-test'));
+    assert.equal(approval.status, 200);
+    title = '活动B';
+    assert.equal((await app(request('/ops/publish', { draftId: draft.id, artifactHash: draft.artifactHash, expectedRevision: 0, idempotencyKey: 'cms-one' }))).status, 409);
+    title = '活动A';
+    assert.equal((await app(request('/ops/publish', { draftId: draft.id, artifactHash: draft.artifactHash, expectedRevision: 0, idempotencyKey: 'cms-two' }))).status, 200);
+    assert.equal((await app(request('/ai-render/hero', undefined, null, 'GET'))).status, 200);
+    title = '活动B';
+    assert.equal((await app(request('/ai-render/hero', undefined, null, 'GET'))).status, 503);
+    assert.ok(calls >= 5);
+  } finally { await store.close(); await rm(directory, { recursive: true, force: true }); }
+});

@@ -7,7 +7,7 @@ import { homedir } from 'node:os';
 import { createInvalidationChannel } from '@ai-slot/proxy';
 import { createOperations, openFileStore } from '@ai-slot/operations';
 import { tokensFromEnv } from './auth.mjs';
-import { createEnvironment, policy, registry } from './config.mjs';
+import { createEnvironment, registry } from './config.mjs';
 import { createApp } from './routes.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
@@ -61,10 +61,16 @@ export async function startServer(envVars = process.env) {
   const channel = createInvalidationChannel({ maxSubscribers: 64, maxQueuedFrames: 1 });
   const env = createEnvironment({
     sourceFile: envVars.AI_SLOT_SOURCE_FILE ?? join(root, 'source.json'),
+    cmsUrl: envVars.AI_SLOT_CMS_URL,
     notify: slotId => channel.invalidate(slotId),
   });
+  // CMS 启动前先读到一份有效事实，避免配置错误时开放一个不可用的管理端点。
+  if (envVars.AI_SLOT_CMS_URL) {
+    const initial = await env.readSource();
+    if (initial.id !== env.policies.hero.sourceId) throw new Error('cms_source_id_mismatch');
+  }
   const store = await openFileStore(directory);
-  const app = createApp(createOperations(store, env), tokens, { registry, policy, invalidation: channel });
+  const app = createApp(createOperations(store, env), tokens, { registry, policy: env.policies.hero, invalidation: channel });
   const server = createServer(async (req, res) => {
     try {
       if (!allowedHosts.has(req.headers.host)) { res.writeHead(403).end(); return; }
