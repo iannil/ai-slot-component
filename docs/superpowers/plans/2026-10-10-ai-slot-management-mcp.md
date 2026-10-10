@@ -99,7 +99,7 @@ const actions={
 - [ ] index.html包含中性兜底、显式registry配置和真实dom renderer：
 
 ```html
-<ai-slot name="hero" src="/ai-render/hero" live><h2>产品介绍暂不可用，请查看原站信息。</h2></ai-slot>
+<ai-slot name="hero" src="/ai-render/hero" live fresh-only><h2>产品介绍暂不可用，请查看原站信息。</h2></ai-slot>
 ```
 
 public/registry.mjs由同一服务registry序列化生成并导出registry；/registry.json返回相同注册表与版本，不维护第二份手抄定义；components.mjs使用textContent创建h2/p/a，URL同policy，拒绝不支持component（不默默跳过）。初期只card，新增组件需审查部署。
@@ -116,7 +116,7 @@ async function call(path,input){
 ```
 
 事件中捕获错误写textContent，不innerHTML、不把token写URL/存储。准备草稿后preview按钮取tree并 `validateComponentTree`，随后 `renderTree(createDomRenderer(components),artifact.tree)` 放到预览容器；基线/候选JSON用textContent并列展示。批准按钮必须绑定最后一次成功预览的draftId/hash/base，不读取可编辑textarea作为批准产物。草稿选择变化清空“已预览”状态；approve不会publish。提供320/768/1280宽度切换，报告rendererVersion。
-- [ ] 补E2E：未经预览批准按钮disabled；preview显示修改文本却公开页仍旧版；发布后故障保留中性兜底；用户改tree textarea不会改变已预览产物；页面源码/网络公开响应不含token；移动预览键盘可操作。
+- [ ] 补E2E：未经预览批准按钮disabled；preview显示修改文本却公开页仍旧版；发布后故障恢复中性兜底；到期即使没有新请求也恢复兜底（L Task4）；用户改tree textarea不会改变已预览产物；页面源码/网络公开响应不含token；移动预览键盘可操作。
 - [ ] 执行routes.test与workflow e2e，提交 `feat: 增加绑定产物的预览批准界面`。
 
 ### Task 3: 管理MCP薄适配

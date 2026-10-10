@@ -35,7 +35,7 @@ Source = {id,version,expiresAt,data}；version 必须代表整个不可变事实
 
 发布校验顺序：身份→动作/槽位权限→幂等结果查询→输入/审批hash→当前revision→当前注册表/renderer→重读来源并比对→锁定字段/链接/有效期→持久事务→尽力通知。幂等键按 principal+slot+action+key 分隔，同键异参拒绝；重试已成功发布不再次要求旧revision匹配，但当前权限仍必须通过。read/getStatus 不产生草稿或发布。
 
-回滚复用正常管线：先把历史产物作为新的候选草稿检查当前来源与契约，再人工批准，用 rollback 动作发布到新revision。源版本不匹配或过期则拒绝，不用旧优惠冒充当前事实。当前过期或源校验失败的公开读取返回503，浏览器使用中性原始兜底。status区分 desiredRevision、readableRevision、browserObservation:null；不能声称所有访客已生效。
+回滚复用正常管线：先把历史产物作为新的候选草稿检查当前来源与契约，再人工批准，用 rollback 动作发布到新revision。源版本不匹配或过期则拒绝，不用旧优惠冒充当前事实。当前过期或源校验失败的公开读取返回503，浏览器使用中性原始兜底。管理参考页和CMS嵌入显式启用runtime的fresh-only属性：成功响应meta.expiresAt为Unix毫秒；缺少有效期限、读取失败或当前产物到期均恢复原始兜底，新请求等待期间不得延长旧产物寿命。此行为可选，普通slot默认错误策略不变。使用本机时钟、分段定时器和可见性复核，不能承诺后台标签页或错误系统时钟下毫秒级撤回。status区分 desiredRevision、readableRevision、browserObservation:null；不能声称所有访客已生效。
 
 ## 持久化边界
 

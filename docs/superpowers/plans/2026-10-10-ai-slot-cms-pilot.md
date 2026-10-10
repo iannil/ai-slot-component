@@ -135,6 +135,7 @@ add_filter('script_loader_tag', function($tag,$handle){
 const slot=document.createElement('ai-slot');
 slot.setAttribute('name','hero');
 slot.setAttribute('src',endpoint);
+slot.setAttribute('fresh-only','');
 while(host.firstChild)slot.append(host.firstChild);
 host.replaceWith(slot);
 ```

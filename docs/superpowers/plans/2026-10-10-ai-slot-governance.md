@@ -201,14 +201,14 @@ async function assertPublishable(state:State,env:Environment,draft:Draft,input:P
 ### Task 4: 公开投递与状态证据
 
 **Files:** delivery.ts/delivery.test.ts、operations.ts/index.ts、README。
-**Interfaces:** `deliver(slotId)`返回version1 Response，成功meta包含revision/artifactHash/sourceVersion；Cache-Control:no-store。`getStatus` desired/readable/browserObservation字段固定。
+**Interfaces:** `deliver(slotId)`返回version1 Response，成功meta包含revision/artifactHash/sourceVersion/expiresAt（Unix毫秒，取artifact.expiresAt）；Cache-Control:no-store。`getStatus` desired/readable/browserObservation字段固定。
 
-- [ ] 写测试：有draft无发布deliver=503；发布后tree/hash精确一致；source过期/源失败=503；当前source改变为s2旧版不可读；状态desiredRevision保留但readableRevision=null；未知slot404；不返回审批人、源凭据、draft正文。
+- [ ] 写测试：有draft无发布deliver=503；发布后tree/hash/expiresAt精确一致；source过期/源失败=503；当前source改变为s2旧版不可读；状态desiredRevision保留但readableRevision=null；未知slot404；不返回审批人、源凭据、draft正文。
 - [ ] 实现成功响应与错误映射：
 
 ```ts
 return new Response(JSON.stringify({version:1,slot:slotId,tree:artifact.tree,
- meta:{revision:pointer.revision,artifactHash:artifact.hash,sourceVersion:artifact.sourceVersion}}),
+ meta:{revision:pointer.revision,artifactHash:artifact.hash,sourceVersion:artifact.sourceVersion,expiresAt:artifact.expiresAt}}),
  {headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
 // 源/契约校验失败
 return new Response(JSON.stringify({error:'ai_unavailable'}),{status:503,headers:{'cache-control':'no-store'}});

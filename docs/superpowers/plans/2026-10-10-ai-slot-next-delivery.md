@@ -31,7 +31,7 @@
 |---|---|---|---|
 | Q | [官网lint](2026-10-10-ai-slot-website-quality.md) | 官网质量基线 | lint/build/agent |
 | R | [发布](2026-10-10-ai-slot-release.md) | 当前官网与proxy公开版本 | Git SHA/Pages部署ID/npm完整性/外部安装 |
-| L | [可靠交付](2026-10-10-ai-slot-reliable-delivery.md) | 重连、卸载隔离、命名槽位 | runtime/DOM测试、故障e2e |
+| L | [可靠交付](2026-10-10-ai-slot-reliable-delivery.md) | 重连、卸载隔离、命名槽位、到期回退 | runtime/DOM测试、故障e2e |
 | V | [持久版本](2026-10-10-ai-slot-version-store.md) | 独立operations存储 | 崩溃、重启、并发、损坏 |
 | G | [审批回滚](2026-10-10-ai-slot-governance.md) | 完整领域发布闭环 | policy/CAS/审批/幂等/来源 |
 | M | [参考服务与MCP](2026-10-10-ai-slot-management-mcp.md) | 可操作本地闭环 | 真实runtime+官方MCP客户端 |
@@ -74,7 +74,7 @@
 |---|---|---|
 | 源码lint与生成物 | Q Task1–2 | 7项导出+1项纯度；.wrangler单独排除 |
 | 推送/部署/npm与恢复 | R Task1–3 | SHA、真实tarball、Pages main、npm完整性分别核对 |
-| 断线补偿/卸载/命名槽位 | L Task1–3 | onConnect、mountSeq、slotTargets有明确生产/消费点 |
+| 断线补偿/卸载/命名槽位 | L Task1–4 | onConnect、mountSeq、slotTargets和fresh-only有明确生产/消费点 |
 | 持久数据/原子提交/坏库 | V Task1–2 | State/Store/Artifact契约由G复用 |
 | 事实锁/草稿/批准/发布/回滚 | G Task1–4 | sourceVersion/hash/baseRevision一致，approve与publish分离 |
 | 人工预览/私有服务/stdio | M Task1–4 | MCP仅API客户端，不开第二文件锁；7工具无approve |

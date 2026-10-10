@@ -144,3 +144,25 @@ for (const [name,nodes] of Object.entries(ctx.slots)) {
 ## 自审
 
 Task1产生onConnect→Task2消费；Task3新增slotTargets不破坏children。没有把EOF成功当稳定连接，也没有把卸载仅isConnected检查误当代次隔离。原计划中的注册表缺省兼容保持，新参考模板显式传registry。
+
+### Task 4: 管理内容的可选到期回退
+
+**Files:** Modify `packages/runtime/src/fetch-tree.ts`、`ai-slot.ts`、对应测试与runtime README；Create `packages/runtime/src/ai-slot-freshness.test.ts`。
+**Interfaces:** FetchTreeOptions新增 `onExpiration?:(expiresAt:number|undefined)=>void`，仅经树结构校验通过的最终响应触发；不对skeleton触发。AiSlotElement新增可选布尔属性 `fresh-only`；原默认行为不变。线协议使用 `meta.expiresAt`（Unix毫秒）。原生JSON/SSE末帧均支持；未提供有效有限数字的响应在fresh-only下拒绝。
+
+- [ ] 编写失败测试：普通slot更新失败保留当前树；fresh-only slot缺deadline/已过期/HTTP503/非法树/renderer抛错都恢复原始兜底；合法未来deadline可显示；fake timer到期后恢复；异步renderer跨越截止时间不能落地；有效新树替换旧timer；断开/重挂载、visibilitychange不会复活过期内容。
+- [ ] 运行freshness测试为红。测试直接使用可控fetch、真实renderTree与自定义元素；注册表card只有title，不靠props携带过期时间。
+- [ ] fetchComponentTree对JSON完成registry验证后、以及SSE最终树完成验证后，安全调用onExpiration；传入值仅当typeof number且Number.isFinite，否则undefined；回调异常不得把正常默认slot渲染变成失败。wire格式没有原生expiresAt则undefined；旧调用者无回调不受影响。
+
+```ts
+function reportExpiration(value:unknown, callback:((expiresAt:number|undefined)=>void)|undefined):void {
+  try { callback?.(typeof value==='number' && Number.isFinite(value)?value:undefined); } catch {}
+}
+```
+
+- [ ] ai-slot.load捕获本次截止时间；fresh-only启用时fetch失败/缺截止时间/截止已到/最终渲染失败走restore，只有当前loadSeq才能改变内容。最终setContent前再次检查截止时间，避免慢渲染越界。成功应用后保存截止并启动timer；timer按 `Math.min(deadline-Date.now(),2147483647)` 分段，到期restore。旧内容的截止timer不能因为新load开始而取消；新树真正应用才替换timer，否则网络挂起期间旧树会无期限显示。timer与当前显示产物绑定，不仅与当前loadSeq绑定。
+- [ ] disconnectedCallback清timer与visibilitychange监听并对fresh-only恢复兜底；connectedCallback添加监听，页面回到可见立即复核截止；restore清截止状态并使旧异步结果失效。旧默认slot无需metadata且保留其既有错误策略。公开属性变化的支持边界与现有live一致，配置在挂载前完成。
+- [ ] fake timer测试补足：启动新load但未返回时旧deadline仍触发回退；新返回的内容必须通过当前seq及有效期才能显示；超过定时器最大延时的未来deadline不会立即回退；卸载后无残留timer或监听。观察回调异常不能影响默认路径。
+- [ ] runtime test/build/typecheck通过，README说明fresh-only须服务提供可信expiresAt、使用本机时钟并在可见时复核；后台标签页/错误系统时钟不能保证毫秒级撤回，不宣称所有访客立即消失。提交 `feat: 支持管理内容到期后恢复原始兜底`。
+
+该任务来自G/M/I跨阶段预检：服务端503本身不能让旧runtime主动删除已显示的过期内容。G成功响应加入meta.expiresAt，M参考公开页与I嵌入启用fresh-only；官网旧演示和普通SDK客户不自动启用。
