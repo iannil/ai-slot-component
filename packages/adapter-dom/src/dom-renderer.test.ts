@@ -72,6 +72,60 @@ describe("createDomRenderer", () => {
     warn.mockRestore();
   });
 
+  it("命名槽位分别挂入 header 与 body，默认 children 仍使用 childrenTarget", async () => {
+    const renderer = createDomRenderer({
+      card: {
+        tag: "article",
+        applyProps: (el) => {
+          const header = document.createElement("header");
+          const main = document.createElement("main");
+          el.append(header, main);
+        },
+        childrenTarget: (el) => el.querySelector("main") as HTMLElement,
+        slotTargets: {
+          header: (el) => el.querySelector("header") as HTMLElement,
+          body: (el) => el.querySelector("main") as HTMLElement,
+        },
+      },
+      text: { tag: "p", applyProps: (el, props) => { el.textContent = String(props.t ?? ""); } },
+    });
+    const el = await renderTree(renderer, {
+      component: "card",
+      children: [{ component: "text", props: { t: "默认" } }],
+      slots: {
+        header: [{ component: "text", props: { t: "标题" } }],
+        body: [{ component: "text", props: { t: "正文" } }],
+      },
+    });
+    expect([...el!.querySelectorAll("header p")].map((node) => node.textContent)).toEqual(["标题"]);
+    expect([...el!.querySelectorAll("main p")].map((node) => node.textContent)).toEqual(["默认", "正文"]);
+  });
+
+  it("未配置的命名槽位拒绝渲染", async () => {
+    const renderer = createDomRenderer({ card: { tag: "article" }, text: { tag: "p" } });
+    await expect(renderTree(renderer, {
+      component: "card", slots: { header: [{ component: "text" }] },
+    })).rejects.toThrow("unsupported_slot:header");
+  });
+
+  it("命名槽位目标不能指向组件外部节点", async () => {
+    const outside = document.createElement("div");
+    outside.id = "outside";
+    document.body.appendChild(outside);
+    try {
+      const renderer = createDomRenderer({
+        card: { tag: "article", slotTargets: { header: () => outside } },
+        text: { tag: "p", applyProps: (el) => { el.textContent = "未泄漏"; } },
+      });
+      await expect(renderTree(renderer, {
+        component: "card", slots: { header: [{ component: "text" }] },
+      })).rejects.toThrow("invalid_slot_target:header");
+      expect(outside.textContent).toBe("");
+    } finally {
+      outside.remove();
+    }
+  });
+
   it("childrenTarget 可指定子元素挂载点", async () => {
     const renderer = createDomRenderer({
       card: {

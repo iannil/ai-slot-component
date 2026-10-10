@@ -31,6 +31,8 @@ export const server = createServer(async (req, res) => {
   if (url.pathname === "/ai-invalidate") {
     const webRes = invalidation.handler(await toWebRequest(req));
     res.writeHead(webRes.status, Object.fromEntries(webRes.headers));
+    // 立即刷新响应头，让浏览器在首个心跳前确认连接并执行重连补偿核对。
+    if (webRes.headers.get("content-type")?.startsWith("text/event-stream")) res.flushHeaders();
     // SSE body 是长连接流：管道转发，不能 await text()
     if (webRes.body) {
       const reader = webRes.body.getReader();
