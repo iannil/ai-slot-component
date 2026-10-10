@@ -1,0 +1,13 @@
+{
+  "url": "https://127.0.0.1:18882/ai-slot%e6%8e%a5%e5%85%a5%e6%b5%8b%e8%af%95-i1/",
+  "title": "AI-SLOT接入测试-I1 – AI-SLOT-LOCAL-I1",
+  "slotCount": 1,
+  "slotText": "产品介绍\n\n¥99\n\n查看商品",
+  "cardTag": "ARTICLE",
+  "linkHref": "https://example.com/",
+  "outside": {
+    "headerCount": 1,
+    "footerCount": 1,
+    "siteTitle": "AI-SLOT-LOCAL-I1"
+  }
+}

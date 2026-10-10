@@ -14,10 +14,25 @@ importers:
 
   examples/cms-campaign-slot:
     dependencies:
+      '@ai-slot/adapter-dom':
+        specifier: workspace:*
+        version: link:../../packages/adapter-dom
       '@ai-slot/operations':
         specifier: workspace:*
         version: link:../../packages/operations
+      '@ai-slot/registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
+      '@ai-slot/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
     devDependencies:
+      '@playwright/test':
+        specifier: 1.63.0
+        version: 1.63.0
+      esbuild:
+        specifier: 0.27.7
+        version: 0.27.7
       vitest:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@26.6.2)(jsdom@25.0.1)

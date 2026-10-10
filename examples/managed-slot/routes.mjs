@@ -64,17 +64,26 @@ function actorFor(request, tokens) {
   if (!header?.startsWith('Bearer ') || header.length <= 7) return null;
   return tokens.get(header.slice(7)) ?? null;
 }
-function safeRequestUrl(request) {
+function safeRequestUrl(request, publicOrigins) {
   const url = new URL(request.url);
   const host = request.headers.get('host');
   if (url.protocol !== 'http:' || !allowedHosts.has(url.host) || !allowedHosts.has(host) || host !== url.host) throw new OperationError('forbidden');
   const origin = request.headers.get('origin');
-  if (origin && origin !== url.origin) throw new OperationError('forbidden');
+  if (origin && origin !== url.origin && !(publicOrigins.has(origin) && ['/registry.json', '/ai-render/hero'].includes(url.pathname))) throw new OperationError('forbidden');
   return url;
 }
 
 /** 固定路由表；Operations 是唯一状态入口，管理身份不进入公开响应。 */
-export function createApp(ops, tokens, { registry, policy, invalidation } = {}) {
+export function createApp(ops, tokens, { registry, policy, invalidation, publicOrigins = [] } = {}) {
+  const allowedPublicOrigins = new Set(publicOrigins);
+  const withPublicCors = (response, request, path) => {
+    const origin = request.headers.get('origin');
+    if (!origin || !allowedPublicOrigins.has(origin) || !['/registry.json', '/ai-render/hero'].includes(path)) return response;
+    const headers = new Headers(response.headers);
+    headers.set('access-control-allow-origin', origin);
+    headers.set('vary', 'Origin');
+    return new Response(response.body, { status: response.status, headers });
+  };
   const actions = {
     '/ops/list': actor => ops.listSlots(actor),
     '/ops/read': (actor, x) => ops.readSlot(actor, x.slotId),
@@ -89,7 +98,7 @@ export function createApp(ops, tokens, { registry, policy, invalidation } = {}) 
   return async request => {
     const requestId = randomUUID();
     try {
-      const url = safeRequestUrl(request);
+      const url = safeRequestUrl(request, allowedPublicOrigins);
       if (Object.hasOwn(specifications, url.pathname)) {
         if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
         if (url.search) return json({ error: 'invalid_input' }, 400);
@@ -101,12 +110,12 @@ export function createApp(ops, tokens, { registry, policy, invalidation } = {}) 
       if (url.pathname === '/registry.json') {
         if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
         if (url.search) return json({ error: 'invalid_input' }, 400);
-        return json({ registry, registryVersion: policy?.registryVersion, rendererVersion: policy?.rendererVersion, allowedOrigins: policy?.allowedOrigins });
+        return withPublicCors(json({ registry, registryVersion: policy?.registryVersion, rendererVersion: policy?.rendererVersion, allowedOrigins: policy?.allowedOrigins }), request, url.pathname);
       }
       if (url.pathname === '/ai-render/hero') {
         if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
         if (url.search) return json({ error: 'invalid_input' }, 400);
-        return ops.deliver('hero');
+        return withPublicCors(await ops.deliver('hero'), request, url.pathname);
       }
       if (url.pathname === '/ai-invalidate') {
         if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);

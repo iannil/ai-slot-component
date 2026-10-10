@@ -13,7 +13,7 @@ export const policy = {
   allowedOrigins: ['https://example.com'],
 };
 
-/** 来源快照须由运营手工更新版本和有效期；读取不会延长有效期。 */
+/** 手动快照须由运营更新版本和有效期；CMS 模式读取已批准事实，读取不会延长有效期。 */
 export function createEnvironment({ sourceFile, cmsUrl, fetchImpl, readSource, notify = () => {} } = {}) {
   let sourceId = policy.sourceId;
   if (cmsUrl) {

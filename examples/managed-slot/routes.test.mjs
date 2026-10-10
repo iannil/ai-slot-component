@@ -183,3 +183,22 @@ test('CMS 来源供草稿、发布和交付共同读取，事实变化使旧草�
     assert.ok(calls >= 5);
   } finally { await store.close(); await rm(directory, { recursive: true, force: true }); }
 });
+
+test('显式宿主 Origin 只获公开 registry 与交付 CORS，私有路由仍拒绝', async () => {
+  const hostOrigin = 'https://127.0.0.1:18882';
+  const app = createApp({ deliver: async () => Response.json({ tree: null }) }, tokens, {
+    registry: { components: {} }, policy: { registryVersion: 'r1', rendererVersion: 'v1', allowedOrigins: [] },
+    publicOrigins: [hostOrigin],
+  });
+  const publicRequest = path => request(path, undefined, null, 'GET', { origin: hostOrigin });
+  for (const path of ['/registry.json', '/ai-render/hero']) {
+    const response = await app(publicRequest(path));
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('access-control-allow-origin'), hostOrigin);
+    assert.equal(response.headers.get('vary'), 'Origin');
+  }
+  const privateResponse = await app(request('/ops/list', {}, 'agent-test', 'POST', { origin: hostOrigin }));
+  assert.equal(privateResponse.status, 403);
+  assert.equal(privateResponse.headers.get('access-control-allow-origin'), null);
+  assert.equal((await app(request('/registry.json', undefined, null, 'GET', { origin: 'https://attacker.example' }))).status, 403);
+});

@@ -32,3 +32,18 @@ add_action('rest_api_init', function () {
         },
     ]);
 });
+
+// 运营页面只放公开 HTTPS URL；管理令牌与事实读取均不进入页面。
+add_shortcode('ai_slot_campaign', function ($attrs) {
+    $a = shortcode_atts(['endpoint' => '', 'registry' => ''], $attrs);
+    foreach (['endpoint', 'registry'] as $key) {
+        if (wp_parse_url($a[$key], PHP_URL_SCHEME) !== 'https') {
+            return '<p>产品介绍暂不可用。</p>';
+        }
+    }
+    wp_enqueue_script('ai-slot-reference', plugins_url('assets/ai-slot.js', __FILE__), [], null, true);
+    return '<div data-ai-slot-endpoint="' . esc_url($a['endpoint']) . '" data-ai-slot-registry="' . esc_url($a['registry']) . '"><h2>产品介绍暂不可用，请查看原站信息。</h2></div>';
+});
+add_filter('script_loader_tag', function ($tag, $handle) {
+    return $handle === 'ai-slot-reference' ? str_replace('<script ', '<script type="module" ', $tag) : $tag;
+}, 10, 2);

@@ -58,6 +58,10 @@ async function send(res, response) {
 export async function startServer(envVars = process.env) {
   const tokens = tokensFromEnv(envVars);
   const directory = envVars.AI_SLOT_DATA_DIR ?? join(homedir(), '.cache', 'ai-slot', 'managed-slot');
+  const publicOrigin = envVars.AI_SLOT_PUBLIC_ORIGIN ? new URL(envVars.AI_SLOT_PUBLIC_ORIGIN) : null;
+  if (publicOrigin && (publicOrigin.protocol !== 'https:' || publicOrigin.username || publicOrigin.password || publicOrigin.href !== `${publicOrigin.origin}/`)) {
+    throw new Error('public_origin_invalid');
+  }
   const channel = createInvalidationChannel({ maxSubscribers: 64, maxQueuedFrames: 1 });
   const env = createEnvironment({
     sourceFile: envVars.AI_SLOT_SOURCE_FILE ?? join(root, 'source.json'),
@@ -70,7 +74,7 @@ export async function startServer(envVars = process.env) {
     if (initial.id !== env.policies.hero.sourceId) throw new Error('cms_source_id_mismatch');
   }
   const store = await openFileStore(directory);
-  const app = createApp(createOperations(store, env), tokens, { registry, policy: env.policies.hero, invalidation: channel });
+  const app = createApp(createOperations(store, env), tokens, { registry, policy: env.policies.hero, invalidation: channel, publicOrigins: publicOrigin ? [publicOrigin.origin] : [] });
   const server = createServer(async (req, res) => {
     try {
       if (!allowedHosts.has(req.headers.host)) { res.writeHead(403).end(); return; }
