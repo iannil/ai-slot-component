@@ -49,7 +49,7 @@ export async function makeFixture() {
     const openedStore = store;
     const ops = createOperations(openedStore, env);
     return {
-      store: openedStore, env, source, owner, agent, ops,
+      directory, store: openedStore, env, source, owner, agent, ops,
       setSource(next: Source) { activeSource = structuredClone(next); },
       async cleanup() { await openedStore.close(); await rm(directory, { recursive: true, force: true }); },
     };

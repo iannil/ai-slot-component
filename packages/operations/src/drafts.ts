@@ -6,9 +6,24 @@ import { OperationError, type Approval, type Artifact, type Draft, type Environm
 export interface DraftInput { slotId: string; tree: unknown; baseRevision: number; sourceVersion: string }
 export interface ApprovalInput { draftId: string; artifactHash: string; expiresAt: number }
 
-async function readSource(env: Environment, slotId: string): Promise<Source> {
+export async function readSource(env: Environment, slotId: string): Promise<Source> {
   try { return await env.readSource(slotId); }
   catch { throw new OperationError('source_invalid'); }
+}
+
+/** 发布、批准和回滚共同使用当前契约与来源快照校验。 */
+export async function assertCurrentArtifact(env: Environment, artifact: Artifact): Promise<void> {
+  const policy = Object.hasOwn(env.policies, artifact.slotId) ? env.policies[artifact.slotId] : undefined;
+  if (!policy || artifact.registryVersion !== policy.registryVersion || artifact.rendererVersion !== policy.rendererVersion) {
+    throw new OperationError('contract_changed');
+  }
+  if (artifact.sourceId !== policy.sourceId) throw new OperationError('source_changed');
+  const source = await readSource(env, artifact.slotId);
+  validateArtifact(env, artifact.slotId, artifact.tree, source);
+  if (source.id !== artifact.sourceId || source.version !== artifact.sourceVersion || source.expiresAt !== artifact.expiresAt) {
+    throw new OperationError('source_changed');
+  }
+  if (artifact.expiresAt <= env.now()) throw new OperationError('expired');
 }
 
 function requireDraftInput(input: DraftInput): void {
@@ -74,14 +89,7 @@ export function approveDraft(store: Store, env: Environment, actor: Principal, i
     if (draft.baseRevision !== (state.pointers[draft.slotId]?.revision ?? 0)) throw new OperationError('revision_conflict');
     const artifact = state.artifacts[draft.artifactHash];
     if (!artifact) throw new OperationError('corrupt_state');
-    const policy = Object.hasOwn(env.policies, draft.slotId) ? env.policies[draft.slotId] : undefined;
-    if (!policy || artifact.registryVersion !== policy.registryVersion || artifact.rendererVersion !== policy.rendererVersion) {
-      throw new OperationError('contract_changed');
-    }
-    if (artifact.sourceId !== policy.sourceId) throw new OperationError('source_changed');
-    const source = await readSource(env, draft.slotId);
-    validateArtifact(env, draft.slotId, artifact.tree, source);
-    if (source.id !== artifact.sourceId || source.version !== artifact.sourceVersion || source.expiresAt !== artifact.expiresAt) throw new OperationError('source_changed');
+    await assertCurrentArtifact(env, artifact);
     const now = env.now();
     if (!(input.expiresAt > now && input.expiresAt <= Math.min(now + 15 * 60_000, artifact.expiresAt))) {
       throw new OperationError('invalid_expiry');
@@ -92,5 +100,32 @@ export function approveDraft(store: Store, env: Environment, actor: Principal, i
     };
     state.approvals[draft.id] = approval;
     return approval;
+  });
+}
+
+export interface RollbackInput { slotId: string; targetRevision: number; expectedRevision: number }
+
+/** 历史内容重新进入草稿和审批链；线上指针保持原状。 */
+export function prepareRollback(store: Store, env: Environment, actor: Principal, input: RollbackInput): Promise<Draft> {
+  if (!input || typeof input.slotId !== 'string' || !input.slotId ||
+      !Number.isSafeInteger(input.targetRevision) || input.targetRevision < 1 ||
+      !Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 0) {
+    throw new OperationError('invalid_input');
+  }
+  return store.transact(async state => {
+    authorize(actor, input.slotId, 'rollback');
+    if (input.expectedRevision !== (state.pointers[input.slotId]?.revision ?? 0)) throw new OperationError('conflict');
+    const release = state.releases.find(r => r.slotId === input.slotId && r.revision === input.targetRevision);
+    if (!release) throw new OperationError('not_found');
+    const artifact = state.artifacts[release.artifactHash];
+    if (!artifact) throw new OperationError('corrupt_state');
+    await assertCurrentArtifact(env, artifact);
+    const draft: Draft = {
+      id: randomUUID(), artifactHash: artifact.hash, slotId: input.slotId,
+      baseRevision: input.expectedRevision, createdBy: actor.id,
+      intent: 'rollback', createdAt: env.now(),
+    };
+    state.drafts[draft.id] = draft;
+    return draft;
   });
 }
