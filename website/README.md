@@ -25,6 +25,8 @@ npx wrangler pages deploy dist --project-name=aislot --branch=main
 
 部署后用 `curl -s https://aislot.pages.dev/ | grep -o 'index-[^"]*\.js'` 对比 `dist/assets/` 里的产物哈希，确认线上已切换。
 
+2026-10-10 数据交付入口发布：先部署预览 `release-data-provider-preview`（`8f41b6c9-d395-46af-a05e-7aa2a48ca23d`），再从同一份 `dist` 部署生产 `main`（`e4d622fe-2405-4a4e-9abe-48f0a54d0975`）。`aislot.dev` 与 `aislot.pages.dev` 的脚本/样式资源名均与本地产物一致；读通道与 MCP 公网烟测结果见[发布证据](../docs/releases/2026-10-10-data-provider.md)。
+
 ## 演示区（src/demo/）
 
 Demo 区不是录屏：页面内嵌真实的 `@ai-slot/runtime` 与 `@ai-slot/adapter-dom`，
