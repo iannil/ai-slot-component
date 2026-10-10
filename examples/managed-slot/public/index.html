@@ -8,27 +8,13 @@
 </head>
 <body>
   <h1>受控内容交付示例</h1>
-  <ai-slot name="hero" src="/ai-render/hero" live>
-    <article><h2>原始商品介绍</h2><p>当前未交付可读发布内容。</p></article>
-  </ai-slot>
+  <ai-slot name="hero" src="/ai-render/hero" live fresh-only><h2>产品介绍暂不可用，请查看原站信息。</h2></ai-slot>
   <script type="module">
     import { configureAiSlot, registerRenderer } from '@ai-slot/runtime';
-    import { createDomRenderer } from '@ai-slot/adapter-dom';
-    const { registry } = await (await fetch('/registry.json')).json();
+    import { registry } from '/registry.mjs';
+    import { createStrictRenderer } from '/components.mjs';
     configureAiSlot({ registry });
-    registerRenderer('dom', createDomRenderer({ card: {
-      tag: 'article',
-      applyProps(element, props) {
-        const title = document.createElement('h2');
-        title.textContent = String(props.title ?? '');
-        const price = document.createElement('p');
-        price.textContent = String(props.price ?? '');
-        const link = document.createElement('a');
-        link.href = String(props.link ?? '');
-        link.textContent = '查看商品';
-        element.append(title, price, link);
-      },
-    } }));
+    registerRenderer('dom', createStrictRenderer());
   </script>
 </body>
 </html>

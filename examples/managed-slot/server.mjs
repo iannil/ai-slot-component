@@ -60,7 +60,7 @@ export async function startServer(envVars = process.env) {
   const directory = envVars.AI_SLOT_DATA_DIR ?? join(homedir(), '.cache', 'ai-slot', 'managed-slot');
   const channel = createInvalidationChannel({ maxSubscribers: 64, maxQueuedFrames: 1 });
   const env = createEnvironment({
-    sourceFile: join(root, 'source.json'),
+    sourceFile: envVars.AI_SLOT_SOURCE_FILE ?? join(root, 'source.json'),
     notify: slotId => channel.invalidate(slotId),
   });
   const store = await openFileStore(directory);

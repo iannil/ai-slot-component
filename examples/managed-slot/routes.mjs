@@ -101,7 +101,7 @@ export function createApp(ops, tokens, { registry, policy, invalidation } = {}) 
       if (url.pathname === '/registry.json') {
         if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
         if (url.search) return json({ error: 'invalid_input' }, 400);
-        return json({ registry, registryVersion: policy?.registryVersion, rendererVersion: policy?.rendererVersion });
+        return json({ registry, registryVersion: policy?.registryVersion, rendererVersion: policy?.rendererVersion, allowedOrigins: policy?.allowedOrigins });
       }
       if (url.pathname === '/ai-render/hero') {
         if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);

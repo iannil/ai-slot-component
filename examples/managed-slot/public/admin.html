@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>受控内容交付 · 人工批准</title>
+  <script type="importmap">{"imports":{"@ai-slot/registry":"/vendor/registry/index.js","@ai-slot/runtime":"/vendor/runtime/index.js","@ai-slot/adapter-dom":"/vendor/adapter-dom/index.js"}}</script>
+  <style>
+    :root { font: 16px system-ui, sans-serif; color: #15263b; background: #f4f6f8; }
+    body { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    fieldset, .panel { border: 1px solid #c9d2dd; border-radius: 8px; background: #fff; padding: 1rem; margin: 1rem 0; }
+    label { display: block; margin: .7rem 0; }
+    input, textarea, button { font: inherit; }
+    input:not([type=radio]), textarea { display: block; box-sizing: border-box; width: 100%; padding: .45rem; }
+    textarea { min-height: 9rem; font-family: ui-monospace, monospace; }
+    button { margin: .25rem; padding: .45rem .8rem; cursor: pointer; }
+    button:disabled { cursor: not-allowed; }
+    .columns { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 1rem; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f4f6f8; padding: .8rem; }
+    #preview-shell { overflow: auto; max-width: 100%; border: 1px solid #8091a5; }
+    #preview { box-sizing: border-box; padding: 1rem; background: white; }
+    #status { min-height: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>人工预览与批准</h1>
+  <p>只批准最后一次成功预览的产物。批准后仍须单独发布。</p>
+  <fieldset><legend>身份与草稿</legend>
+    <label for="token">Owner 令牌</label><input id="token" type="password" autocomplete="off">
+    <label for="tree">组件树 JSON</label><textarea id="tree" spellcheck="false">{"component":"card","props":{"title":"商品介绍","price":"¥99","link":"https://example.com/product"}}</textarea>
+    <label for="source-version">来源版本</label><input id="source-version" value="s1">
+    <label for="base-revision">基线修订</label><input id="base-revision" type="number" min="0" value="0">
+    <label for="draft-id">草稿 ID</label><input id="draft-id" autocomplete="off">
+    <label for="artifact-hash">产物 Hash</label><input id="artifact-hash" readonly>
+    <label for="expires-minutes">批准有效分钟（最多 15）</label><input id="expires-minutes" type="number" min="1" max="15" value="5">
+    <label for="target-revision">目标修订（回滚）</label><input id="target-revision" type="number" min="1" value="1">
+    <button id="create-draft" type="button">创建草稿</button>
+    <button id="prepare-rollback" type="button">准备回滚</button>
+    <button id="preview-button" type="button">预览</button>
+    <button id="approve-button" type="button" disabled>批准</button>
+    <button id="publish-button" type="button" disabled>发布</button>
+    <button id="rollback-button" type="button" disabled>回滚</button>
+  </fieldset>
+  <fieldset><legend>预览宽度</legend>
+    <label><input type="radio" name="width" value="320"> 320 px</label>
+    <label><input type="radio" name="width" value="768" checked> 768 px</label>
+    <label><input type="radio" name="width" value="1280"> 1280 px</label>
+  </fieldset>
+  <p id="renderer-version"></p>
+  <div id="preview-shell"><div id="preview" aria-label="候选组件预览"></div></div>
+  <div class="columns">
+    <section class="panel"><h2>基线 JSON</h2><pre id="baseline-json"></pre></section>
+    <section class="panel"><h2>候选 JSON</h2><pre id="candidate-json"></pre></section>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+  <script type="module" src="/admin.mjs"></script>
+</body>
+</html>
