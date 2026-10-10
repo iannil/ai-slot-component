@@ -1,5 +1,4 @@
 import {
-  deriveSkeleton,
   validateComponentTree,
   type AiRenderResponse,
   type ComponentNode,
@@ -17,6 +16,7 @@ import { withRetry } from "./llm-client.js";
 import { compilePrompt } from "./prompt-compiler.js";
 import { RateLimiter } from "./rate-limit.js";
 import { sanitizeUserPrompt } from "./sanitize.js";
+import { json, sse } from "./render-response.js";
 
 export interface SlotSource {
   slotId: string;
@@ -61,29 +61,6 @@ export interface UsageLogEntry {
   reason: "developer-prompt" | "user-prompt";
   usage?: LLMResponse["usage"];
   at: number;
-}
-
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8" },
-  });
-}
-
-/** SSE 双帧响应：先发骨架（文本占位），再发完整组件树。 */
-function sse(response: AiRenderResponse): Response {
-  const skeleton: AiRenderResponse = {
-    ...response,
-    tree: deriveSkeleton(response.tree),
-    meta: { ...response.meta, phase: "skeleton" },
-  };
-  const body =
-    `event: skeleton\ndata: ${JSON.stringify(skeleton)}\n\n` +
-    `event: tree\ndata: ${JSON.stringify(response)}\n\n`;
-  return new Response(body, {
-    status: 200,
-    headers: { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache" },
-  });
 }
 
 /** 无状态渲染代理：GET 开发者路径（长缓存）/ POST 用户路径（实时 + 限流 + 短 TTL）。 */
