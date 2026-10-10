@@ -26,6 +26,8 @@ npm install @ai-slot/runtime
 
 Element attributes: `src`, `name`, `renderer` (default `dom`), `editable`, `stream` (SSE skeleton → tree), `live` + `live-src` (invalidation push), `refresh-interval`.
 
+卸载元素时，在途的加载结果会被忽略；同一实例重新挂载后会重新核对内容。`live` 通道每次成功连接也会核对一次，因此初次挂载的加载与连接后的核对可能并发读取，由最新一次加载结果决定显示内容。
+
 Wire format APIs: `registerWireFormat(id, format)` / `unregisterWireFormat(id)` plug alternative wire formats into the fetch pipeline. Failures are observed via `onFailure` as `FetchFailure { stage: "http-non-ok" | "parse" | "validate" | "fetch-error", message }` — set it globally in `configureAiSlot` or per call on `fetchComponentTree`. The silent-fallback behavior never changes; the hook is observation only.
 
 > Registration must happen synchronously in the same module graph that imports the runtime — custom element upgrade is synchronous.

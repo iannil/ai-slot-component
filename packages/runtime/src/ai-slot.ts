@@ -43,8 +43,10 @@ export class AiSlotElement extends HTMLElement {
   private timer: ReturnType<typeof setInterval> | undefined;
   private liveSub: InvalidationSubscription | null = null;
   private loadSeq = 0;
+  private mountSeq = 0;
 
   connectedCallback(): void {
+    const mount = ++this.mountSeq;
     // 同一实例可能反复挂载：只在首次捕获兜底，避免被 AI 内容或编辑条污染
     if (!this.fallbackCaptured) {
       this.fallbackHTML = this.innerHTML;
@@ -59,7 +61,7 @@ export class AiSlotElement extends HTMLElement {
     // 可能尚未执行——同步 load() 会因找不到渲染器而静默放弃，同步 mountEditor()
     // 会错过 configureAiSlot 配置的 editorLabels。
     queueMicrotask(() => {
-      if (!this.isConnected) return;
+      if (!this.isConnected || mount !== this.mountSeq) return;
       if (this.hasAttribute("editable")) this.mountEditor();
       void this.load();
       if (this.hasAttribute("live")) this.mountLive();
@@ -67,6 +69,8 @@ export class AiSlotElement extends HTMLElement {
   }
 
   disconnectedCallback(): void {
+    this.mountSeq++;
+    this.loadSeq++;
     clearInterval(this.timer);
     this.liveSub?.close();
     this.liveSub = null;
@@ -90,24 +94,24 @@ export class AiSlotElement extends HTMLElement {
       onFailure: globalOnFailure,
       stream: this.hasAttribute("stream"),
       onSkeleton: (skeleton) => {
-        if (seq !== this.loadSeq || finalApplied) return;
+        if (!this.isConnected || seq !== this.loadSeq || finalApplied) return;
         skeletonApplied = true;
         // 骨架帧：先渲染结构（文本占位），终树到达后再替换
         void renderTree(renderer, skeleton).then((el) => {
-          if (el && !finalApplied && seq === this.loadSeq) this.setContent(el);
+          if (el && this.isConnected && !finalApplied && seq === this.loadSeq) this.setContent(el);
         }).catch(() => {});
       },
     });
     if (!tree) {
       // 终树缺失/损坏/校验失败：已渲染（或渲染在途）的骨架不能留给人看，恢复兜底。
       // restore 的 loadSeq 防护同时使在途骨架渲染失效
-      if (skeletonApplied && seq === this.loadSeq) this.restore();
+      if (skeletonApplied && this.isConnected && seq === this.loadSeq) this.restore();
       return;
     }
     try {
       const el = await renderTree(renderer, tree);
       if (!el) return;
-      if (seq !== this.loadSeq) return; // 已有更新的 load 发起，丢弃过期响应
+      if (!this.isConnected || seq !== this.loadSeq) return; // 已卸载或有更新的 load，丢弃过期响应
       finalApplied = true;
       this.setContent(el);
     } catch {
@@ -124,6 +128,7 @@ export class AiSlotElement extends HTMLElement {
       src,
       slot,
       onInvalidate: () => void this.load(),
+      onConnect: () => void this.load(),
     });
   }
 

@@ -491,11 +491,11 @@ describe("<ai-slot live> 失效推送", () => {
       "/ai-invalidate?slot=hero",
       expect.objectContaining({ headers: { accept: "text/event-stream" } }),
     );
-    expect(el.querySelector(".hero-banner")?.textContent).toBe("第 1 版");
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("第 2 版"); // 首次加载 + live 连接补偿核对
     // 推送失效信号 → 静默重新加载
     push(`event: invalidate\ndata: ${JSON.stringify({ slot: "hero" })}\n\n`);
     await flush();
-    expect(el.querySelector(".hero-banner")?.textContent).toBe("第 2 版");
+    expect(el.querySelector(".hero-banner")?.textContent).toBe("第 3 版");
   });
 
   it("live-src 覆盖默认订阅地址", async () => {
