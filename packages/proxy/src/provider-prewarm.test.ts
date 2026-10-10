@@ -14,11 +14,15 @@ it("预热恢复可复用，非法缓存值必须重新生产", async () => {
   const store = new MemoryCacheStore();
   expect(await prewarm(createRenderHandler({ ...options, store }), ["hero"])).toEqual({ ok: ["hero"], failed: [] });
   const restored = MemoryCacheStore.load(store.dump(), 0);
-  await prewarm(createRenderHandler({ ...options, store: restored }), ["hero"]);
+  const restoredHandler = createRenderHandler({ ...options, store: restored });
+  expect(await prewarm(restoredHandler, ["hero"])).toEqual({ ok: ["hero"], failed: [] });
+  const restoredResponse = await restoredHandler(new Request("https://example.test/ai-render/hero"));
+  expect((await restoredResponse.json()).tree).toEqual({ component: "text", props: { value: "已生成" } });
   expect(produce).toHaveBeenCalledTimes(1);
   const corrupt = JSON.parse(store.dump());
   for (const entry of Object.values(corrupt) as Array<{ value: { tree: unknown } }>) entry.value.tree = { component: "evil" };
-  await prewarm(createRenderHandler({ ...options, store: MemoryCacheStore.load(JSON.stringify(corrupt), 0) }), ["hero"]);
+  const corruptHandler = createRenderHandler({ ...options, store: MemoryCacheStore.load(JSON.stringify(corrupt), 0) });
+  expect(await prewarm(corruptHandler, ["hero"])).toEqual({ ok: ["hero"], failed: [] });
   expect(produce).toHaveBeenCalledTimes(2);
 });
 
@@ -41,4 +45,16 @@ it("仅显式允许同版本 stale；新源版本失败不复用旧结果", asyn
   expect((await handler(request())).status).toBe(503);
   version = "1"; time = 111;
   expect((await handler(request())).status).toBe(503);
+
+  let defaultTime = 0;
+  let defaultFail = false;
+  const defaultStaleHandler = createRenderHandler({
+    registry, registryVersion: "1", namespace: "site", ttlMs: 10,
+    now: () => defaultTime,
+    resolveSlot: () => ({ slotId: "hero", originalContent: "原文", contentVersion: "1" }),
+    provider: { id: "cms", produce: async () => { if (defaultFail) throw Error("down"); return { component: "text" }; } },
+  });
+  expect((await defaultStaleHandler(request())).status).toBe(200);
+  defaultTime = 11; defaultFail = true;
+  expect((await defaultStaleHandler(request())).status).toBe(503);
 });
