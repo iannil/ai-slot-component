@@ -1,0 +1,66 @@
+{
+  "startedAt": "2026-10-10T04:32:21.984Z",
+  "finishedAt": "2026-10-10T04:32:23.907Z",
+  "checks": [
+    {
+      "kind": "signed_health",
+      "status": 200,
+      "ready": true
+    },
+    {
+      "path": "/agents/",
+      "status": 200
+    },
+    {
+      "path": "/api/agent/search?q=React&limit=1",
+      "status": 200
+    },
+    {
+      "path": "/api/agent/content?id=adapter-react",
+      "status": 200
+    },
+    {
+      "path": "/agent/catalog.json",
+      "status": 200
+    },
+    {
+      "path": "/agent/openapi.json",
+      "status": 200
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200
+    },
+    {
+      "path": "/agent/skills/ai-slot-guide/SKILL.md",
+      "status": 200
+    },
+    {
+      "path": "/agent/ai-slot-guide.zip",
+      "status": 200
+    },
+    {
+      "path": "/agent/feed.xml",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/agent/feed.xml",
+      "method": "HEAD",
+      "status": 200
+    },
+    {
+      "path": "/agent/feed.xml",
+      "method": "GET",
+      "status": 304
+    },
+    {
+      "kind": "mcp",
+      "initialize": true,
+      "list": true,
+      "search": true,
+      "read": true,
+      "resource": true
+    }
+  ]
+}

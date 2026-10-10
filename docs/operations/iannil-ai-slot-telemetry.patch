@@ -1,0 +1,43 @@
+--- a/worker-agent-analytics/index.ts
++++ b/worker-agent-analytics/index.ts
+@@ -4,7 +4,7 @@
+ import { signBatch, verifySignedRequest, type SigningKey } from '../src/lib/agent-telemetry/signature';
+ import { cleanup, persistEvents } from './store';
+ import { parseFilters, report } from './query';
+-export interface Env { TELEMETRY_KEYS?:string; TELEMETRY_EXTERNAL_KEYS?:string; TELEMETRY_HEALTH_TARGETS?:string; TELEMETRY_EXTERNAL_HEALTH_TARGETS?:string; ANALYTICS_READ_TOKEN?:string; AGENT_EVENTS?:Queue; ANALYTICS_DB?:D1Database; }
++export interface Env { TELEMETRY_KEYS?:string; TELEMETRY_EXTERNAL_KEYS?:string; TELEMETRY_AI_SLOT_KEYS?:string; TELEMETRY_HEALTH_TARGETS?:string; TELEMETRY_EXTERNAL_HEALTH_TARGETS?:string; TELEMETRY_AI_SLOT_HEALTH_TARGETS?:string; ANALYTICS_READ_TOKEN?:string; AGENT_EVENTS?:Queue; ANALYTICS_DB?:D1Database; }
+ interface Envelope {schemaVersion:1;productId:string;environment:'production'|'test';receivedAt:string;batch:unknown;}
+ const MAX_BODY=128*1024;
+ const quotas=new Map<string,{minute:number;events:number}>();
+@@ -24,7 +24,7 @@
+ }
+ function keysFrom(env:Env):SigningKey[] {
+  // Preserve existing encrypted configuration; external products are additive.
+- const keys=[...configuredArray(env.TELEMETRY_KEYS),...configuredArray(env.TELEMETRY_EXTERNAL_KEYS)] as SigningKey[];
++ const keys=[...configuredArray(env.TELEMETRY_KEYS),...configuredArray(env.TELEMETRY_EXTERNAL_KEYS),...configuredArray(env.TELEMETRY_AI_SLOT_KEYS)] as SigningKey[];
+  if(!Array.isArray(keys)||keys.length<1||keys.length>64)throw Error('Keys unavailable');
+  const ids=new Set<string>();
+  for(const k of keys){if(!k||typeof k.keyId!=='string'||typeof k.secret!=='string'||k.secret.length<32||!productById(k.productId)||!['production','test'].includes(k.environment)||ids.has(k.keyId))throw Error('Invalid key config');ids.add(k.keyId);}
+@@ -80,9 +80,9 @@
+  }
+ }
+ export async function probeHealth(env:Env,send:typeof fetch=fetch):Promise<void> {
+- if(!env.TELEMETRY_HEALTH_TARGETS&&!env.TELEMETRY_EXTERNAL_HEALTH_TARGETS)return;
++ if(!env.TELEMETRY_HEALTH_TARGETS&&!env.TELEMETRY_EXTERNAL_HEALTH_TARGETS&&!env.TELEMETRY_AI_SLOT_HEALTH_TARGETS)return;
+  if(!env.ANALYTICS_DB)throw Error('Analytics database unavailable');
+- const targets=[...configuredArray(env.TELEMETRY_HEALTH_TARGETS),...configuredArray(env.TELEMETRY_EXTERNAL_HEALTH_TARGETS)] as {productId:string;siteId:string;url:string;keyId:string}[],keys=keysFrom(env);
++ const targets=[...configuredArray(env.TELEMETRY_HEALTH_TARGETS),...configuredArray(env.TELEMETRY_EXTERNAL_HEALTH_TARGETS),...configuredArray(env.TELEMETRY_AI_SLOT_HEALTH_TARGETS)] as {productId:string;siteId:string;url:string;keyId:string}[],keys=keysFrom(env);
+  if(!Array.isArray(targets)||targets.length>32)throw Error('Invalid health target configuration');
+  for(const target of targets){
+   const product=productById(target.productId),key=keys.find(k=>k.keyId===target.keyId),url=new URL(target.url);
+--- a/src/lib/agent-telemetry/registry.ts
++++ b/src/lib/agent-telemetry/registry.ts
+@@ -5,7 +5,7 @@
+ export interface TelemetryProduct { id: string; name: string; domains: string[]; sites: string[]; telemetrySites: string[]; channels: Record<Transport,ChannelState>; resources: readonly string[]; }
+ const verified = (): Record<Transport,ChannelState> => ({mcp:'verified',api:'verified',rss:'verified',skill:'verified',discovery:'verified',web_agent:'unconfigured'});
+ const unconfigured = (): Record<Transport,ChannelState> => ({mcp:'unconfigured',api:'unconfigured',rss:'unconfigured',skill:'unconfigured',discovery:'unconfigured',web_agent:'unconfigured'});
+-const externalProducts=new Set(['ai-random-animal','hintcard','onlybarcode','what-to-pack-for-trip']);
++const externalProducts=new Set(['ai-random-animal','hintcard','onlybarcode','what-to-pack-for-trip','ai-slot']);
+ export const RESOURCE_NAMES = ['catalog','guide','feed','skill_file','skill_zip','checksums','openapi','llms','index'] as const;
+ export const PRODUCTS: TelemetryProduct[] = [
+  {id:'iannil',name:'IANNIL',domains:['iannil.com','skills.iannil.com'],sites:['main','skills'],telemetrySites:['main'],channels:verified(),resources:[...RESOURCE_NAMES,...publicResources]},

@@ -71,7 +71,7 @@ TELEMETRY_ENDPOINT=https://iannil.com/api/agent-telemetry/v1/events
 3. 检查首页入口、四通道、OpenAPI、Skill ZIP，并用官方客户端真实连接；启用中央生产健康目标，等待真实心跳与日汇总。
 4. 保留旧部署 ID 与配置；回滚使用 Pages 已有部署版本，不删除中央历史数据。
 
-当前已完成实现、生产发布和正式域名烟测。中央 Secret 配置、真实心跳和日汇总仍待执行；没有把中央验收状态改为 verified。搜索引擎自主发现与不同客户端的 Skill 安装也不能由接口测试代替。
+当前已完成实现、生产发布和正式域名烟测。中央 Secret、真实事件、日汇总和定时心跳已验收，详见[中央接线记录](operations/ai-slot-telemetry-rollout.md)。搜索引擎自主发现与不同客户端的 Skill 安装也不能由接口测试代替。
 
 协议参考：[MCP HTTP 传输规范](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)、[Agent Skills 规范](https://agentskills.io/specification)。
 
@@ -83,7 +83,7 @@ TELEMETRY_ENDPOINT=https://iannil.com/api/agent-telemetry/v1/events
 - Pages 本机模拟器（兼容日期 2026-10-01，端口 8791）+ `node tests/agent-http.mjs`：11 个页面/接口/文件返回预期 200，未知 Agent 路由 404，RSS 条件请求 304，官方 MCP 客户端连接与工具调用通过。
 - Python XML 解析器：RSS 9 条真实公开文档条目解析通过。
 - `git diff --check`：通过。SDK 七包核心代码未改，本次未重复运行其完整测试。
-- 初次本地验收未执行生产发布（已由下方发布记录补验）；中央真实事件投递/落库、心跳、日汇总、自主搜索发现和客户端 Skill 安装仍未验收。测试签名密钥仅为本地 fixture，不是有效生产凭据。
+- 初次本地验收未执行生产发布（已由下方发布记录补验）；中央采集已由接线记录补验；自主搜索发现和客户端 Skill 安装仍未验收。测试签名密钥仅为本地 fixture，不是有效生产凭据。
 
 ### 接入页视觉一致性
 
@@ -99,4 +99,4 @@ TELEMETRY_ENDPOINT=https://iannil.com/api/agent-telemetry/v1/events
 - 正式域名首页已匹配本次产物 `index-DKDUDsjv.js`；接入页已返回共享深色主题与四通道内容。
 - API 搜索、正文、目录、OpenAPI 均返回有效 JSON；RSS 200 与条件请求 304 通过；Skill 文件与 ZIP 校验值匹配本次构建。
 - 官方 MCP 客户端完成生产端点初始化、工具发现和搜索调用。
-- 未配置或验收中央生产密钥、真实心跳、日汇总；四通道上线不等于中央统计 verified。
+- 此次四通道发布时尚未接通中央；后续已完成[中央接线与验收](operations/ai-slot-telemetry-rollout.md)，两次发布证据分开记录。

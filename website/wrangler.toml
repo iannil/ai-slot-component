@@ -1,0 +1,19 @@
+name = "aislot"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-10-01"
+
+# 仅生产启用采集；本地与预览环境保持关闭。
+[vars]
+TELEMETRY_ENABLED = "false"
+
+[env.production.vars]
+TELEMETRY_ENABLED = "true"
+TELEMETRY_PRODUCT_ID = "ai-slot"
+TELEMETRY_SITE_ID = "main"
+TELEMETRY_ENVIRONMENT = "production"
+TELEMETRY_KEY_ID = "ai-slot-production-20261010-v1"
+TELEMETRY_ENDPOINT = "https://iannil.com/api/agent-telemetry/v1/events"
+
+# TELEMETRY_SECRET 只通过 Pages Secret 配置，禁止写入源码。
+[env.preview.vars]
+TELEMETRY_ENABLED = "false"
