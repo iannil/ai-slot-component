@@ -57,3 +57,10 @@ node server.mjs    # 启动时自动水合 ai-cache.json
 - `admin.html`：运营控制台——改卖点方向（提示词）或发布内容更新，失效推送到所有打开的页面
 - `POST /admin/prompt?slot=<槽位名>&prompt=<新提示词>`：替换该槽位的开发者提示词，bump 内容版本并推送失效
 - `POST /admin/publish?slot=<槽位名>`：模拟该槽位的数据源变更，bump 内容版本并推送失效信号（缺省 `shop-hero`）
+
+## 本地数据源驱动的局部页面
+
+在仓库根目录运行 `pnpm build`，再启动 `node examples/plain-html/server.mjs`，打开 http://localhost:4173/data.html。
+修改 `cms-data.json` 的 `title`，同时将 `version` 改为新值；点击“刷新局部”观察变化，无需重新构建。
+文件必须是完整合法 JSON。原始兜底保留；此示例不调用模型，也不提供编辑权限、自动重连或持久发布历史。
+数据由本地 Node 服务提供，未接入 `worker.mjs` / `build-public.mjs` 的托管演示发布。

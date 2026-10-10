@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { adminState, applyPrompt, createHandler, downLLM, invalidation, publishUpdate } from "./ai.mjs";
+import { dataHandler } from "./data-source.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const pkgRoot = (name) => fileURLToPath(new URL(`../../packages/${name}/dist`, import.meta.url));
@@ -65,7 +66,8 @@ export const server = createServer(async (req, res) => {
     return;
   }
   if (url.pathname.startsWith("/ai-render/")) {
-    const webRes = await handler(await toWebRequest(req));
+    const activeHandler = url.pathname === "/ai-render/data-hero" ? dataHandler : handler;
+    const webRes = await activeHandler(await toWebRequest(req));
     // 透传 handler 的 content-type：SSE 协商成功时是 text/event-stream，错误路径仍是 JSON
     res.writeHead(webRes.status, {
       "content-type": webRes.headers.get("content-type") ?? "application/json; charset=utf-8",
