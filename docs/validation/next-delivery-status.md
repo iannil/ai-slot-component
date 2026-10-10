@@ -50,12 +50,12 @@ L/V/G/M/I 的测试结果来自相应实施报告，不是本次状态整理重�
 | I | 公开 registry 保留既有非敏感 `allowedOrigins`，响应为 registry、registryVersion、rendererVersion、allowedOrigins | 多一个公开字段；不暴露 grants、令牌或完整 policy，也不另写一份域名限制 |
 | I | 重建独立临时 WordPress 环境，比较槽位外可见宿主 DOM 与节点身份，排除必需插件脚本 | 多一次本地环境搭建；只证明参考主题和所测更新，不外推所有插件/主题 |
 | I | I3 示例行缺少必填字段时以完整校验为准；API/CLI 共用 `pilot_id`、`attempt`、`wait_min` 等校验 | 内部调用者也须提供完整记录，避免统计口径分歧 |
-| 最终广审 F1 | 元数据字段及标识符继续非空、最长 200；注册表允许的 JSON props 内容可为空或超过 200，CMS link 合同保留 2048 上限 | 保留 JSON 原型/完整性检查、树 64KiB、状态 64MiB、release 1000 限制；见[最终广审](../../.superpowers/sdd/2026-10-10-ai-slot-next-delivery/final-review.md)与[修复报告](../../.superpowers/sdd/2026-10-10-ai-slot-next-delivery/final-fix-report.md) |
+| 最终广审 F1 | 元数据字段及标识符继续非空、最长 200；注册表允许的 JSON props 内容可为空或超过 200，CMS link 合同保留 2048 上限 | 保留 JSON 原型/完整性检查、树 64KiB、状态 64MiB、release 1000 限制；见[最终广审](next-delivery-final-review.md)与[最终修复报告](next-delivery-final-fixes.md) |
 | 最终广审 F2 | 发布及回滚在异步来源校验返回后，再次检查批准期限；成功幂等收据仍优先返回 | 来源延迟不能延长审批效力；已提交结果不会因事后到期被否认 |
 
 ## 剩余审查点与事件
 
-最终广审在 `f455f1f` 上发现 F1（持久层误拒合法 props）和 F2（来源读取跨越审批到期仍提交）；两项均已在隔离分支修复。定向红测曾分别得到 `corrupt_state` 和 publish/rollback 误成功，修复后 operations 64/64、CMS 来源 7/7、单项 stdio Playwright 1/1 均通过；operations build 与 typecheck 通过。V 写侧合法超 64MiB 拒写、旧快照及重开可读已补测试。M1 清理链、M2 各阶段实际 DOM `browserText`、M3 英文 README 同波完成；新 stdio 日志只代表本次观测，不覆盖历史日志。具体文件及命令见[最终修复报告](../../.superpowers/sdd/2026-10-10-ai-slot-next-delivery/final-fix-report.md)。
+最终广审在 `f455f1f` 上发现 F1（持久层误拒合法 props）和 F2（来源读取跨越审批到期仍提交）；两项均已在隔离分支修复。定向红测曾分别得到 `corrupt_state` 和 publish/rollback 误成功，修复后 operations 64/64、CMS 来源 7/7、单项 stdio Playwright 1/1 均通过；operations build 与 typecheck 通过。V 写侧合法超 64MiB 拒写、旧快照及重开可读已补测试。M1 清理链、M2 各阶段实际 DOM `browserText`、M3 英文 README 同波完成；新 stdio 日志只代表本次观测，不覆盖历史日志。具体文件及命令见[最终广审](next-delivery-final-review.md)与[最终修复报告](next-delivery-final-fixes.md)。
 
 其余 minor 裁决：R1 预期 stderr 噪声、M 固定 4194 端口碰撞、I `NO_COLOR`/`FORCE_COLOR` 提示可后续处理；G 幂等重试重复通知接受当前契约；M3 redirect 与批准后回滚已有补证，I1 来源注释已修。首次 WordPress raw 日志不补写假观测，已有 body 隔离证据仍只限所测主题，不覆盖 head 或完整 60 秒周期。
 

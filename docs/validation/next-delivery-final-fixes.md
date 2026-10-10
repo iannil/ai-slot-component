@@ -1,6 +1,6 @@
 # AI-SLOT 后续交付最终统一修复报告
 
-日期：2026-10-11。基线 `f455f1f`；依据[最终广审](final-review.md)。本波仅处理 F1、F2、V 写侧容量回归及 M1/M2/M3；未重跑整仓浏览器矩阵。代码仍在隔离分支，整合、推送和新版 SDK 发布不属于本报告的完成证据。
+日期：2026-10-11。基线 `f455f1f`；依据[最终广审](next-delivery-final-review.md)。本波仅处理 F1、F2、V 写侧容量回归及 M1/M2/M3；未重跑整仓浏览器矩阵。代码仍在隔离分支，整合、推送和新版 SDK 发布不属于本报告的完成证据。
 
 ## 逐项结果
 
@@ -31,4 +31,4 @@
 
 复核了状态 JSON 遍历和显式元数据字段的分工：`json` 仍拒绝非 JSON 值、稀疏数组、非普通原型和循环，键仍要求非空且不超过 200；artifact hash 与引用完整性仍校验。树 64KiB 由 `validateArtifact` 在建稿和异步来源复核中执行，FileStore 保留 64MiB 快照及 1000 release 上限。批准重检位于所有异步来源检查之后、首次状态写入之前；幂等收据分支仍先核对授权并直接返回已提交结果。stdio 日志的文本由各阶段独立读取，清理失败不会遮盖先前的主断言错误。
 
-当前剩余关注点依[最终广审](final-review.md)裁决：R1 预期 stderr 噪声、固定 4194 端口碰撞、I 色彩变量提示可后续；G 重试重复通知符合当前契约；WordPress 证据只覆盖所测主题的 body DOM。R3 npm 最新 01:41 `npm whoami` 仍 E401，系控制器记录，本波未重试认证或发布。M 仍为 `protocol_verified / agent_unverified`，I 仍无真实客户试点。未改写或补造既有验收日志，也未宣称隔离分支已整合推送。
+当前剩余关注点依[最终广审](next-delivery-final-review.md)裁决：R1 预期 stderr 噪声、固定 4194 端口碰撞、I 色彩变量提示可后续；G 重试重复通知符合当前契约；WordPress 证据只覆盖所测主题的 body DOM。R3 npm 最新 01:41 `npm whoami` 仍 E401，系控制器记录，本波未重试认证或发布。M 仍为 `protocol_verified / agent_unverified`，I 仍无真实客户试点。未改写或补造既有验收日志，也未宣称隔离分支已整合推送。
