@@ -76,7 +76,7 @@ Got it running? A GitHub star helps others find the project.
 
 - **Drop-in for the site you already have** — wrap existing markup in `<ai-slot>`; plain HTML, React and Vue all work, no rewrite required.
 - **Ship AI content like a static asset** — `prewarm.mjs` bakes developer prompts into `ai-cache.json` at build time, so production serves with no runtime LLM calls on cache hits.
-- **Content updates without a redeploy** — `live` subscribes to invalidation pushes; a data-source change re-renders the slot on every open tab.
+- **Content updates without a redeploy** — `live` subscribes to invalidation pushes and reconnects after interruption; a data-source change re-renders connected slots. 连接建立时，接入方可通过 `onConnect` 主动核对内容；不保证所有访客同时生效。
 - **Skeleton-first streaming** — `stream` fetches over SSE: a skeleton frame renders immediately, the final tree replaces it.
 - **Protocol-neutral** — native JSON today, [A2UI](https://github.com/a2ui-project/a2ui) tomorrow via `@ai-slot/a2ui`; the endpoint changes, the page does not.
 - **Visitor personalization is opt-in, per slot** — `editable` adds a one-line prompt box scoped to that slot: sanitized, rate-limited, short TTL.
@@ -256,7 +256,7 @@ Type checking is the only static gate — there is no ESLint/Prettier config.
 
 v1 and v1.1 are implemented and merged to master: global prop guardrails, cache serialization + CI pregeneration, SSE streaming, invalidation push, React/Vue adapters.
 
-Deliberately deferred: token-level LLM streaming, `live` auto-reconnect, multi-instance rate-limit/cache stores. Explicitly out of scope: arbitrary HTML/CSS generation, client-side DOM patch protocols, in-browser inference, multi-tenant billing.
+Deliberately deferred: token-level LLM streaming and multi-instance rate-limit/cache stores. Explicitly out of scope: arbitrary HTML/CSS generation, client-side DOM patch protocols, in-browser inference, multi-tenant billing.
 
 ## Contributing
 
