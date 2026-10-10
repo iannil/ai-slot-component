@@ -84,7 +84,7 @@ export async function fetchComponentTree(opts: FetchTreeOptions): Promise<Compon
         return null;
       }
     }
-    reportExpiration(expiresAt, opts.onExpiration);
+    reportExpiration(opts.registry ? expiresAt : undefined, opts.onExpiration);
     return tree;
   } catch (error) {
     safeReport(opts.onFailure, {
@@ -155,7 +155,7 @@ async function readSSE(res: Response, opts: FetchTreeOptions): Promise<Component
       return null;
     }
   }
-  reportExpiration(finalExpiresAt, opts.onExpiration);
+  reportExpiration(opts.registry ? finalExpiresAt : undefined, opts.onExpiration);
   return finalTree;
 }
 

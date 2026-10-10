@@ -48,6 +48,33 @@ describe("管理内容到期回退", () => {
     vi.useRealTimers();
   });
 
+  it.each(["JSON", "SSE"])("缺 registry 的 fresh-only %s 响应即使带未来期限也恢复兜底", async (format) => {
+    configureAiSlot({});
+    const payload = body("未校验树", start + 1000);
+    const stream = `event: tree\ndata: ${JSON.stringify(payload)}\n\n`;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(format === "JSON"
+      ? response(payload)
+      : { ok: true, headers: new Headers({ "content-type": "text/event-stream" }), text: async () => stream }));
+    const el = document.createElement("ai-slot") as AiSlotElement;
+    el.setAttribute("src", "/ai-render/s");
+    el.setAttribute("renderer", "fresh-card");
+    el.setAttribute("fresh-only", "");
+    if (format === "SSE") el.setAttribute("stream", "");
+    el.innerHTML = "<h1>原始兜底</h1>";
+    document.body.appendChild(el);
+    await settle();
+    expect(fallback(el)).toBe("原始兜底");
+    expect(title(el)).toBeUndefined();
+  });
+
+  it("普通槽位缺 registry 仍可显示无期限树", async () => {
+    configureAiSlot({});
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response(body("普通内容"))));
+    const el = mount(false);
+    await settle();
+    expect(title(el)).toBe("普通内容");
+  });
+
   it("普通槽位更新失败保留已显示的树，且无需期限元数据", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(response(body("当前"))).mockResolvedValueOnce({ ok: false, status: 503 }));
     const el = mount(false);
@@ -168,6 +195,18 @@ describe("管理内容到期回退", () => {
 
 describe("onExpiration 只观测已校验的最终树", () => {
   afterEach(() => { vi.unstubAllGlobals(); unregisterWireFormat("fresh-wire"); });
+  it.each(["JSON", "SSE"])("缺 registry 的 %s 树保持旧兼容，但不交付可信期限", async (format) => {
+    const payload = body("未校验树", start + 1000);
+    const stream = `event: tree\ndata: ${JSON.stringify(payload)}\n\n`;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(format === "JSON"
+      ? response(payload)
+      : { ok: true, headers: new Headers({ "content-type": "text/event-stream" }), text: async () => stream }));
+    const seen: unknown[] = [];
+    const tree = await fetchComponentTree({ src: "/x", stream: format === "SSE", onExpiration: (value) => seen.push(value) });
+    expect(tree).toEqual(payload.tree);
+    expect(seen).toEqual([undefined]);
+  });
+
   it("JSON 有限数字透传，缺失或非法值给 undefined，回调异常不影响树", async () => {
     const seen: unknown[] = [];
     for (const value of [1234, "1234", Infinity, undefined]) {
