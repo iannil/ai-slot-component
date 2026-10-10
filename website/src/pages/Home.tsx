@@ -38,24 +38,24 @@ const dict = {
     codeH1: 'X100 Noise-Canceling Headphones',
     codeFooter: 'validated → rendered as your components',
     demoKicker: 'demo',
-    demoTitle: 'Pick an industry, then drive every delivery mode yourself.',
+    demoTitle: 'Complete a local update on an existing page.',
     demoSub:
-      'E-commerce, travel, news and finance — four realistic legacy pages running the actual <ai-slot> runtime and validator in your browser. No auto-playing recordings: a highlight points at the next control, and you do the clicking.',
+      'Choose an industry to try content updates, a new message and failure fallback. Data and backend behavior are simulated; the component runtime and rendering are real.',
     modesKicker: 'delivery',
     modesTitle: 'Content reaches a slot three ways.',
     modesSub:
-      'Visitor personalization is only one of them. The main event is delivery: build-time pregeneration and invalidation push.',
+      'Pregenerate or update on demand. Visitor prompts are optional and enabled per slot.',
     modes: [
       {
         name: 'Pregenerated',
         trigger: 'your build',
-        body: 'prewarm.mjs bakes developer prompts into ai-cache.json at build time. Production serves from cache — zero runtime LLM calls, zero marginal cost.',
+        body: 'Pregenerated component trees are stored as JSON cache. Cache hits avoid model calls; hosting and delivery still have costs.',
         tag: 'ship AI content like a static asset',
       },
       {
         name: 'Live',
         trigger: 'a data-source change',
-        body: 'Invalidation push re-renders the slot on every open tab. Content updates without a redeploy — no publish pipeline for a one-line change.',
+        body: 'Data changes can trigger invalidation so connected pages reload the slot. Initial installation and new component code may still require a host release.',
         tag: 'update content, not code',
       },
       {
@@ -68,15 +68,15 @@ const dict = {
     safetyKicker: 'safety',
     safetyTitle: 'Bounded generation is the kind that gets signed off.',
     safetySub:
-      'AI output is always treated as untrusted input. Every layer validates before anything reaches the DOM.',
+      'The server validates component trees; clients validate again when a registry is configured. Component authors must still handle properties safely.',
     safety: [
       {
         title: 'The model never writes markup',
         body: 'It returns component-tree JSON whose names must exist in the registry you declared — validated against prop schemas, slot rules, depth and node-count limits before anything renders.',
       },
       {
-        title: 'Silent fallback, always',
-        body: 'Network failure, timeout, rate limit or invalid output — the original content inside <ai-slot> stays. No blank screen, no error shown to visitors. SEO and accessibility degrade gracefully.',
+        title: 'Fallback for handled failures',
+        body: 'Fetch or validation failures preserve original content. Authors should provide useful initial HTML; this does not guarantee indexing, rankings or page-wide accessibility compliance.',
       },
       {
         title: 'Secrets stay on the server',
@@ -84,7 +84,7 @@ const dict = {
       },
       {
         title: 'Protocol-neutral by design',
-        body: 'Native JSON today; Google’s A2UI works too via @ai-slot/a2ui. The endpoint changes, the page does not. Slot protocol, delivery runtime and lifecycle infra stay separate.',
+        body: 'Native component-tree delivery and an A2UI adapter are available. Supported message versions and coverage are documented in the package.',
       },
     ],
     qsKicker: 'quick start',
@@ -119,23 +119,23 @@ const dict = {
     codeH1: '降噪耳机 X100',
     codeFooter: '校验通过 → 渲染为你的组件',
     demoKicker: '演示',
-    demoTitle: '先选行业，再亲手操作四种交付方式。',
+    demoTitle: '在已有页面完成一次局部更新。',
     demoSub:
-      '电商、酒店、新闻、理财四个贴近真实业务的存量页面，浏览器里跑的是真实 <ai-slot> 运行时与校验。没有自动播放的录屏——高亮指向下一个控件，操作由你完成。',
+      '选择一个行业，体验内容更新、方向调整和失败兜底。示例数据与后端为模拟，组件运行时与渲染真实执行。',
     modesKicker: '交付',
     modesTitle: '内容通过三种方式到达槽位。',
-    modesSub: '访客个性化只是其中之一。主角是交付：构建期预生成与失效推送。',
+    modesSub: '可预生成，也可按需更新。访客提示词是按槽位开启的可选能力。',
     modes: [
       {
         name: '预生成',
         trigger: '你的构建流程',
-        body: 'prewarm.mjs 在构建期把开发者提示词固化进 ai-cache.json。生产环境命中缓存直接返回——零运行时 LLM 调用，边际成本为零。',
+        body: '预生成组件树保存为 JSON 缓存。命中缓存时无需模型调用，仍有托管与交付成本。',
         tag: '像静态资源一样交付 AI 内容',
       },
       {
         name: '实时推送',
         trigger: '数据源变更',
-        body: '失效推送让所有打开的页面原地重渲染该槽位。改一句文案不再需要走发布流程。',
+        body: '数据变更可触发失效通知，让连接正常的页面重新加载槽位。首次安装或新增组件代码仍可能需要宿主发布。',
         tag: '更新内容，而不是代码',
       },
       {
@@ -147,15 +147,15 @@ const dict = {
     ],
     safetyKicker: '安全',
     safetyTitle: '有边界的生成，才是能被签字放行的那种。',
-    safetySub: 'AI 输出永远被视为不可信输入。每一层都先校验，再接近 DOM。',
+    safetySub: '服务端校验组件树；客户端配置注册表后再次校验。组件作者仍需安全处理属性。',
     safety: [
       {
         title: '模型从不输出标记',
         body: '它返回组件树 JSON，组件名必须存在于你声明的注册表中——渲染前依次校验 props Schema、slots 嵌套规则、深度与节点数上限。',
       },
       {
-        title: '永远静默回退',
-        body: '网络失败、超时、限流或输出非法——<ai-slot> 内的原始内容保持不动。不白屏，不向访客报错，SEO 与无障碍平滑降级。',
+        title: '已处理的错误保留兜底',
+        body: '获取或校验失败时保留原始内容。初始 HTML 应由作者提供可用内容；这不保证收录、排名或整个页面无障碍合规。',
       },
       {
         title: '密钥只留在服务端',
@@ -163,7 +163,7 @@ const dict = {
       },
       {
         title: '协议中立',
-        body: '今天用原生 JSON，明天可接 Google 的 A2UI（@ai-slot/a2ui）。端点可以换，页面不用动。槽位协议、交付运行时与生命周期设施三层分离。',
+        body: '原生组件树协议与 A2UI 适配包均已提供。具体消息版本和兼容范围以包文档与测试为准。',
       },
     ],
     qsKicker: '快速上手',
