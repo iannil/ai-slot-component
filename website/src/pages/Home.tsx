@@ -12,7 +12,6 @@ import {
   KeyRound,
   FileCode2,
   Undo2,
-  ArrowRight,
 } from 'lucide-react'
 import DemoSection from '../demo/DemoSection'
 
@@ -25,16 +24,16 @@ const dict = {
   en: {
     badge: 'Open source · MIT · framework-agnostic',
     nav: { delivery: 'Delivery', safety: 'Safety', quickstart: 'Quick start', star: 'Star' },
-    heroTitle: 'The AI content delivery layer for the pages you already have.',
-    heroSubBefore: 'Wrap a region of your page in',
-    heroSubMid: '. AI returns a validated component tree — ',
+    heroTitle: 'Bring AI-generated content and component layouts to your existing site.',
+    heroSubBefore: 'Keep your CMS and site builder. Add',
+    heroSubMid: 'to a region of your page. AI returns validated component-tree JSON — ',
     heroSubNever: 'never HTML',
-    heroSubRendered: ' — rendered as ',
-    heroSubReal: 'your real components',
-    heroSubAfter: '. If anything fails, your original markup silently stays.',
-    getStarted: 'Get started',
-    codeComment1: '<!-- your page, unchanged -->',
-    codeComment2: '<!-- fallback: SEO & a11y safe -->',
+    heroSubRendered: ' — using ',
+    heroSubReal: 'your registered components',
+    heroSubAfter: '. After initial integration, supported content updates can ship without rebuilding the host site.',
+    getStarted: 'Try a local update',
+    codeComment1: '<!-- integrate this region once -->',
+    codeComment2: '<!-- keep original fallback content -->',
     codeH1: 'X100 Noise-Canceling Headphones',
     codeFooter: 'validated → rendered as your components',
     demoKicker: 'demo',
@@ -88,7 +87,7 @@ const dict = {
       },
     ],
     qsKicker: 'quick start',
-    qsTitle: 'Running in two minutes. No API key needed.',
+    qsTitle: 'Run the example without an API key.',
     qsSubBefore: 'The demo ships with a deterministic mock LLM. Set',
     qsSubAfter: 'to switch to any OpenAI-compatible endpoint.',
     qsComment: '# Node ≥ 18, pnpm (corepack enable)',
@@ -98,7 +97,7 @@ const dict = {
       ['Zero deps', '<ai-slot> runtime is a dependency-free Web Component'],
       ['Tested', 'unit + Playwright e2e, adversarial validator fixtures'],
     ] as const,
-    ctaTitle: 'Your pages already have visitors. Give them a safe way to receive AI content.',
+    ctaTitle: 'Start with one region of the site you already maintain.',
     ctaStar: 'Star on GitHub',
     footer: { docs: 'Docs', license: 'MIT License', links: 'More from the author' },
     cloneCmd: 'git clone https://github.com/iannil/ai-slot-component',
@@ -106,16 +105,16 @@ const dict = {
   zh: {
     badge: '开源 · MIT · 框架无关',
     nav: { delivery: '交付模式', safety: '安全性', quickstart: '快速上手', star: 'Star' },
-    heroTitle: '为你已有的页面，装上 AI 内容交付层。',
-    heroSubBefore: '把页面的一个区域包进',
-    heroSubMid: '。AI 返回经过校验的组件树——',
+    heroTitle: '为已有网站接入 AI 内容与组件布局更新。',
+    heroSubBefore: '保留你的 CMS 与建站工具，为页面局部接入',
+    heroSubMid: '。AI 返回经过校验的组件树 JSON——',
     heroSubNever: '绝不输出 HTML',
-    heroSubRendered: '——渲染为',
-    heroSubReal: '你的真实组件',
-    heroSubAfter: '。出现任何失败，原始内容静默保留。',
-    getStarted: '开始使用',
-    codeComment1: '<!-- 你的页面，无需改动 -->',
-    codeComment2: '<!-- 兜底内容：SEO 与无障碍安全 -->',
+    heroSubRendered: '——使用',
+    heroSubReal: '已注册的真实组件',
+    heroSubAfter: '。首次接入后，支持范围内的内容更新无需重新构建宿主网站。',
+    getStarted: '体验一次局部更新',
+    codeComment1: '<!-- 首次接入这个区域 -->',
+    codeComment2: '<!-- 保留原始兜底内容 -->',
     codeH1: '降噪耳机 X100',
     codeFooter: '校验通过 → 渲染为你的组件',
     demoKicker: '演示',
@@ -167,7 +166,7 @@ const dict = {
       },
     ],
     qsKicker: '快速上手',
-    qsTitle: '两分钟跑起来，不需要 API Key。',
+    qsTitle: '无需 API Key，运行完整示例。',
     qsSubBefore: '示例内置确定性 mock LLM。设置',
     qsSubAfter: '即可切换到任意 OpenAI 兼容端点。',
     qsComment: '# Node ≥ 18，pnpm（corepack enable）',
@@ -177,7 +176,7 @@ const dict = {
       ['零依赖', '<ai-slot> 运行时是无依赖 Web Component'],
       ['全测试', '单测 + Playwright e2e，含对抗性校验样例'],
     ] as const,
-    ctaTitle: '你的页面已经有访客了。给它们一条安全接收 AI 内容的通道。',
+    ctaTitle: '从你正在维护的网站中，选择一个区域开始。',
     ctaStar: '在 GitHub 上 Star',
     footer: { docs: '文档', license: 'MIT 许可证', links: '更多来自作者' },
     cloneCmd: 'git clone https://github.com/iannil/ai-slot-component',
@@ -195,10 +194,9 @@ function useLang(): [Lang, () => void] {
   useEffect(() => {
     localStorage.setItem('aislot-lang', lang)
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en'
-    document.title =
-      lang === 'zh'
-        ? 'ai-slot — 为已有页面准备的 AI 内容交付层'
-        : 'ai-slot — The AI content delivery layer for the pages you already have'
+    document.title = lang === 'zh'
+      ? 'AI-SLOT — 为已有网站接入 AI 局部更新'
+      : 'AI-SLOT — AI updates for your existing site'
   }, [lang])
   return [lang, () => setLang((l) => (l === 'en' ? 'zh' : 'en'))]
 }
@@ -299,15 +297,11 @@ function Hero({ t }: { t: Dict }) {
             {t.heroSubAfter}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <CopyCommand command="pnpm add @ai-slot/runtime" />
-            <a
-              href={GITHUB}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
-            >
+            <a href="#demo" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
               {t.getStarted}
-              <ArrowRight className="h-4 w-4" />
+            </a>
+            <a href="#quickstart" className="rounded-lg border border-border px-5 py-2.5 text-sm">
+              {t.nav.quickstart}
             </a>
           </div>
         </div>
@@ -360,7 +354,7 @@ function Hero({ t }: { t: Dict }) {
 
 function Demo({ t, lang }: { t: Dict; lang: Lang }) {
   return (
-    <section className="border-t border-border/60">
+    <section id="demo" className="scroll-mt-20 border-t border-border/60">
       <div className="mx-auto max-w-6xl px-6 py-24">
         <p className="font-mono text-sm text-primary">{t.demoKicker}</p>
         <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
