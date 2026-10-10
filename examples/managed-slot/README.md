@@ -18,3 +18,9 @@ pnpm --filter example-managed-slot start
 浏览器打开 `/admin.html`，输入 owner 令牌后创建草稿，再预览真实 DOM 组件及并列 JSON；批准仅绑定最后一次成功预览的草稿、产物哈希与基线，发布须另点一次。准备回滚也会产生新草稿，必须再次预览、批准和提交。令牌只留在当前页面的模块内存中，刷新后重新输入。管理页的 320/768/1280 像素切换可用键盘操作。
 
 公开 `/index.html` 使用 `live fresh-only`，在来源不可读或过期时显示中性原始内容。`/registry.json` 与浏览器 `/registry.mjs` 来自同一服务端注册表；新增组件需同步审查组件映射、URL 策略与渲染器版本。运行端到端测试：`pnpm --filter example-managed-slot test:e2e`。测试自动创建临时 Store 与来源文件；需要手动隔离来源时，可通过服务端变量 `AI_SLOT_SOURCE_FILE` 指定快照路径。
+
+## 本地 MCP 管理入口
+
+`@ai-slot/mcp` 的 stdio 子进程使用绝对路径 `packages/mcp/dist/server.js`，仅接收 `AI_SLOT_AGENT_TOKEN`，并固定连接本服务的 `127.0.0.1:4194`。工具不含 approve；Owner 在 `/admin.html` 独立预览和批准后，Agent 才可发布或提交回滚。配置与边界见[管理 MCP 说明](../../docs/managed-slot-mcp.md)。
+
+`pnpm --filter example-managed-slot test:e2e` 中的 `mcp-stdio.spec.ts` 通过官方 Client 启动实际子进程，使用临时 Store/来源与真实 HTTP 服务，核对工具发现、授权、批准、发布、幂等、回滚和浏览器文本。它是可复跑的协议验收；外部 AI 客户端与真实人工运营的连接仍待单独验收。

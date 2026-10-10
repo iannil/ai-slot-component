@@ -100,3 +100,7 @@ TELEMETRY_ENDPOINT=https://iannil.com/api/agent-telemetry/v1/events
 - API 搜索、正文、目录、OpenAPI 均返回有效 JSON；RSS 200 与条件请求 304 通过；Skill 文件与 ZIP 校验值匹配本次构建。
 - 官方 MCP 客户端完成生产端点初始化、工具发现和搜索调用。
 - 此次四通道发布时尚未接通中央；后续已完成[中央接线与验收](operations/ai-slot-telemetry-rollout.md)，两次发布证据分开记录。
+
+## 本地参考管理 MCP（与官网只读 MCP 分开）
+
+官网 `https://aislot.dev/mcp` 使用 Streamable HTTP，只提供公开文档的 `search_docs`、`read_doc` 与 guide 资源，无管理令牌，也不能创建草稿或发布内容。[本地参考管理 MCP](managed-slot-mcp.md) 使用本机 stdio 命令与独立的本地 HTTP 参考服务；Agent 令牌只允许已授权槽位的建稿、预览、发布和回滚，Owner 在独立页面批准。两者的命令、授权和能力范围不能互换。本地参考管理 MCP 已通过协议验收，外部 AI 客户端与真实人工运营闭环尚未验收；不代表官网已上线远程生产管理权限。

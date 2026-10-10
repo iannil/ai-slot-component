@@ -86,6 +86,9 @@ test('客户端拒绝非 loopback 地址、重定向和 200 假成功', async ()
   expect(() => createManagementClient({ baseUrl: 'https://example.com', token: 'x' })).toThrow();
   const originalFetch = globalThis.fetch;
   globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ error: 'forbidden' }), { status: 200, headers: { 'content-type': 'application/json' } })) as typeof fetch;
-  try { await expect(createManagementClient({ baseUrl, token: 'x' }).call('/ops/list', {})).rejects.toMatchObject({ code: 'forbidden' }); }
+  try {
+    await expect(createManagementClient({ baseUrl, token: 'x' }).call('/ops/list', {})).rejects.toMatchObject({ code: 'forbidden' });
+    expect(globalThis.fetch).toHaveBeenCalledWith(new URL('/ops/list', baseUrl), expect.objectContaining({ redirect: 'error' }));
+  }
   finally { globalThis.fetch = originalFetch; }
 });
