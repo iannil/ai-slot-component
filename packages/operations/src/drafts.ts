@@ -31,7 +31,7 @@ export function createDraft(store: Store, env: Environment, actor: Principal, in
     const tree = validateArtifact(env, input.slotId, input.tree, source);
     if (source.version !== input.sourceVersion) throw new OperationError('source_changed');
     const payload = {
-      slotId: input.slotId, tree, sourceVersion: source.version,
+      slotId: input.slotId, tree, sourceId: source.id, sourceVersion: source.version,
       registryVersion: policy.registryVersion, rendererVersion: policy.rendererVersion,
       expiresAt: source.expiresAt,
     };
@@ -78,9 +78,10 @@ export function approveDraft(store: Store, env: Environment, actor: Principal, i
     if (!policy || artifact.registryVersion !== policy.registryVersion || artifact.rendererVersion !== policy.rendererVersion) {
       throw new OperationError('contract_changed');
     }
+    if (artifact.sourceId !== policy.sourceId) throw new OperationError('source_changed');
     const source = await readSource(env, draft.slotId);
     validateArtifact(env, draft.slotId, artifact.tree, source);
-    if (source.version !== artifact.sourceVersion || source.expiresAt !== artifact.expiresAt) throw new OperationError('source_changed');
+    if (source.id !== artifact.sourceId || source.version !== artifact.sourceVersion || source.expiresAt !== artifact.expiresAt) throw new OperationError('source_changed');
     const now = env.now();
     if (!(input.expiresAt > now && input.expiresAt <= Math.min(now + 15 * 60_000, artifact.expiresAt))) {
       throw new OperationError('invalid_expiry');

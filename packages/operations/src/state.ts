@@ -77,6 +77,7 @@ export function assertState(input: unknown): asserts input is State {
     const stored = own(artifact, 'hash'); requireHash(stored);
     requireString(own(artifact, 'slotId'));
     requireTree(own(artifact, 'tree'));
+    requireString(own(artifact, 'sourceId'));
     requireString(own(artifact, 'sourceVersion'));
     requireString(own(artifact, 'registryVersion'));
     requireString(own(artifact, 'rendererVersion'));

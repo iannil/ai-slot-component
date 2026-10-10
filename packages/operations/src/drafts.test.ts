@@ -98,6 +98,14 @@ describe('草稿、预览与批准', () => {
     await expect(f.ops.approveDraft(f.owner, { draftId: draft.id, artifactHash: draft.artifactHash, expiresAt: 5000 })).rejects.toThrow('contract_changed');
   }));
 
+  it('策略与来源同时切换仍拒绝批准旧草稿', async () => withFixture(async f => {
+    const draft = await f.ops.createDraft(f.agent, { slotId: 'hero', tree: card('A'), baseRevision: 0, sourceVersion: 's1' });
+    f.env.policies.hero.sourceId = 'other-cms';
+    f.setSource({ ...f.source, id: 'other-cms' });
+    await expect(f.ops.approveDraft(f.owner, { draftId: draft.id, artifactHash: draft.artifactHash, expiresAt: 5000 })).rejects.toThrow('source_changed');
+    expect((await f.store.read()).approvals).toEqual({});
+  }));
+
   it('未授权用户不能读取草稿，公开指针不受草稿影响', async () => withFixture(async f => {
     const draft = await f.ops.createDraft(f.agent, { slotId: 'hero', tree: card('A'), baseRevision: 0, sourceVersion: 's1' });
     const stranger = { id: 'stranger', grants: {} };

@@ -5,7 +5,7 @@ import type { State } from './types.js';
 
 function validState(): State {
   const state = emptyState();
-  const payload = { slotId: 'hero', tree: { component: 'Text', props: { text: 'Welcome' } }, sourceVersion: 's1', registryVersion: 'r1', rendererVersion: 'v1', expiresAt: 100 };
+  const payload = { slotId: 'hero', tree: { component: 'Text', props: { text: 'Welcome' } }, sourceId: 'cms', sourceVersion: 's1', registryVersion: 'r1', rendererVersion: 'v1', expiresAt: 100 };
   const artifactHash = hash(payload);
   state.artifacts[artifactHash] = { ...payload, hash: artifactHash };
   state.drafts.d1 = { id: 'd1', artifactHash, slotId: 'hero', baseRevision: 0, createdBy: 'author', intent: 'publish', createdAt: 1 };
@@ -37,6 +37,8 @@ it('拒绝格式、非 JSON 值与非法元数据', () => {
 });
 it('拒绝篡改产物、悬空草稿与不匹配审批', () => {
   corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].sourceVersion = 'changed'; });
+  corrupt(s => { s.artifacts[Object.keys(s.artifacts)[0]].sourceId = 'other'; });
+  corrupt(s => { delete (s.artifacts[Object.keys(s.artifacts)[0]] as Partial<State['artifacts'][string]>).sourceId; });
   corrupt(s => { s.drafts.d1.artifactHash = 'a'.repeat(64); });
   corrupt(s => { s.approvals.d1.baseRevision = 1; });
 });

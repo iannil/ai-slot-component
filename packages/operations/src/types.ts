@@ -17,6 +17,7 @@ export interface Artifact {
   hash: string;
   slotId: string;
   tree: ComponentNode;
+  sourceId: string;
   sourceVersion: string;
   registryVersion: string;
   rendererVersion: string;

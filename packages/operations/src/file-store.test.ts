@@ -20,7 +20,7 @@ afterEach(async () => {
   for (const dir of dirs.splice(0)) await rm(dir, { recursive: true, force: true });
 });
 function seed(state: State) {
-  const artifact = { slotId: 'hero', tree: { component: 'Text', props: { text: 'hello' } }, sourceVersion: '1', registryVersion: '1', rendererVersion: '1', expiresAt: 100 };
+  const artifact = { slotId: 'hero', tree: { component: 'Text', props: { text: 'hello' } }, sourceId: 'cms', sourceVersion: '1', registryVersion: '1', rendererVersion: '1', expiresAt: 100 };
   const artifactHash = hash(artifact);
   state.artifacts[artifactHash] = { ...artifact, hash: artifactHash };
   state.drafts.d1 = { id: 'd1', artifactHash, slotId: 'hero', baseRevision: 0, createdBy: 'operator', intent: 'publish', createdAt: 1 };
