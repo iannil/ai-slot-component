@@ -12,6 +12,28 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  examples/managed-slot:
+    dependencies:
+      '@ai-slot/adapter-dom':
+        specifier: workspace:*
+        version: link:../../packages/adapter-dom
+      '@ai-slot/operations':
+        specifier: workspace:*
+        version: link:../../packages/operations
+      '@ai-slot/proxy':
+        specifier: workspace:*
+        version: link:../../packages/proxy
+      '@ai-slot/registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
+      '@ai-slot/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.47.0
+        version: 1.63.0
+
   examples/plain-html:
     dependencies:
       '@ai-slot/adapter-dom':

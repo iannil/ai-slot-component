@@ -1,0 +1,21 @@
+{
+  "name": "example-managed-slot",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test routes.test.mjs",
+    "test:e2e": "playwright test",
+    "build": "echo 无需构建",
+    "typecheck": "echo 无需类型检查"
+  },
+  "dependencies": {
+    "@ai-slot/operations": "workspace:*",
+    "@ai-slot/proxy": "workspace:*",
+    "@ai-slot/registry": "workspace:*",
+    "@ai-slot/runtime": "workspace:*",
+    "@ai-slot/adapter-dom": "workspace:*"
+  },
+  "devDependencies": { "@playwright/test": "^1.47.0" }
+}

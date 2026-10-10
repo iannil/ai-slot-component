@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>受控内容交付示例</title>
+  <script type="importmap">{"imports":{"@ai-slot/registry":"/vendor/registry/index.js","@ai-slot/runtime":"/vendor/runtime/index.js","@ai-slot/adapter-dom":"/vendor/adapter-dom/index.js"}}</script>
+</head>
+<body>
+  <h1>受控内容交付示例</h1>
+  <ai-slot name="hero" src="/ai-render/hero" live>
+    <article><h2>原始商品介绍</h2><p>当前未交付可读发布内容。</p></article>
+  </ai-slot>
+  <script type="module">
+    import { configureAiSlot, registerRenderer } from '@ai-slot/runtime';
+    import { createDomRenderer } from '@ai-slot/adapter-dom';
+    const { registry } = await (await fetch('/registry.json')).json();
+    configureAiSlot({ registry });
+    registerRenderer('dom', createDomRenderer({ card: {
+      tag: 'article',
+      applyProps(element, props) {
+        const title = document.createElement('h2');
+        title.textContent = String(props.title ?? '');
+        const price = document.createElement('p');
+        price.textContent = String(props.price ?? '');
+        const link = document.createElement('a');
+        link.href = String(props.link ?? '');
+        link.textContent = '查看商品';
+        element.append(title, price, link);
+      },
+    } }));
+  </script>
+</body>
+</html>
