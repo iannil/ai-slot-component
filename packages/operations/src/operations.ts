@@ -1,12 +1,13 @@
 import { authorize } from './policy.js';
 import { approveDraft, createDraft, prepareRollback, previewDraft, type ApprovalInput, type DraftInput, type RollbackInput } from './drafts.js';
+import { deliver, getStatus } from './delivery.js';
 import { commitDraft, type PublishInput } from './publishing.js';
-import { type Approval, type Artifact, type Draft, type Environment, type Principal, type Receipt, type Store } from './types.js';
+import { OperationError, type Approval, type Artifact, type Draft, type Environment, type Principal, type Receipt, type Store } from './types.js';
 
 export type { DraftInput, ApprovalInput, RollbackInput } from './drafts.js';
 export type { PublishInput } from './publishing.js';
 
-/** 治理操作入口；交付操作由后续阶段补齐。 */
+/** 管理操作与公开投递的唯一入口。 */
 export interface Operations {
   listSlots(actor: Principal): Promise<string[]>;
   readSlot(actor: Principal, slotId: string): Promise<{ pointer: Receipt | null; drafts: Draft[] }>;
@@ -16,6 +17,8 @@ export interface Operations {
   publishDraft(actor: Principal, input: PublishInput): Promise<Receipt>;
   prepareRollback(actor: Principal, input: RollbackInput): Promise<Draft>;
   rollbackSlot(actor: Principal, input: PublishInput): Promise<Receipt>;
+  getStatus(actor: Principal, slotId: string): Promise<{ desiredRevision: number; readableRevision: number | null; browserObservation: null }>;
+  deliver(slotId: string): Promise<Response>;
 }
 
 export function createOperations(store: Store, env: Environment): Operations {
@@ -28,6 +31,7 @@ export function createOperations(store: Store, env: Environment): Operations {
     },
     async readSlot(actor, slotId) {
       authorize(actor, slotId, 'read');
+      if (!Object.hasOwn(env.policies, slotId)) throw new OperationError('not_found');
       const state = await store.read();
       return structuredClone({
         pointer: state.pointers[slotId] ?? null,
@@ -40,5 +44,7 @@ export function createOperations(store: Store, env: Environment): Operations {
     publishDraft: (actor, input) => commitDraft(store, env, actor, input, 'publish'),
     prepareRollback: (actor, input) => prepareRollback(store, env, actor, input),
     rollbackSlot: (actor, input) => commitDraft(store, env, actor, input, 'rollback'),
+    getStatus: (actor, slotId) => getStatus(store, env, actor, slotId),
+    deliver: slotId => deliver(store, env, slotId),
   };
 }

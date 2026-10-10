@@ -41,7 +41,7 @@ describe('草稿、预览与批准', () => {
   it('非法树与来源异常不产生草稿', async () => withFixture(async f => {
     await expect(f.ops.createDraft(f.agent, { slotId: 'hero', tree: { component: 'evil' }, baseRevision: 0, sourceVersion: 's1' })).rejects.toThrow();
     f.env.readSource = async () => { throw Error('internal detail'); };
-    await expect(f.ops.createDraft(f.agent, { slotId: 'hero', tree: card('A'), baseRevision: 0, sourceVersion: 's1' })).rejects.toThrow('source_invalid');
+    await expect(f.ops.createDraft(f.agent, { slotId: 'hero', tree: card('A'), baseRevision: 0, sourceVersion: 's1' })).rejects.toThrow('source_unavailable');
     expect((await f.store.read()).drafts).toEqual({});
   }));
 

@@ -8,7 +8,7 @@ export interface ApprovalInput { draftId: string; artifactHash: string; expiresA
 
 export async function readSource(env: Environment, slotId: string): Promise<Source> {
   try { return await env.readSource(slotId); }
-  catch { throw new OperationError('source_invalid'); }
+  catch { throw new OperationError('source_unavailable'); }
 }
 
 /** 发布、批准和回滚共同使用当前契约与来源快照校验。 */
