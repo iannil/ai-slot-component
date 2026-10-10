@@ -244,7 +244,7 @@ pnpm --filter example-plain-html test:e2e
 node examples/plain-html/prewarm.mjs
 ```
 
-类型检查是唯一的静态门禁——仓库没有 ESLint/Prettier 配置。
+工作区使用类型检查；官网还设有 ESLint 门禁。
 
 ## 面向 AI 编程代理
 
