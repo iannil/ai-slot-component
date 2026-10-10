@@ -109,7 +109,7 @@ MCP 本身不会定时执行任务。持续管理还需要宿主事件、调度�
 
 - [官网实施计划](../plans/2026-10-10-ai-slot-website-update.md)
 - [组件实施计划](../plans/2026-10-10-ai-slot-component-evolution.md)
-- [既有商业研究](../../research/2026-10-10-ai-slot-platform-enhancement/REPORT.md)
+- 商业研究依据：沿用此前对客户与付费假设的内部讨论；对应研究报告未收录于本仓库，本设计不以该讨论作为新增客户或付款证据。
 - [原始技术设计](2026-09-24-ai-native-rendering-sdk-design.md)
 - [交付边界](../../delivery-boundaries.md)、[官网 Agent 接入](../../agent-access.md)
 

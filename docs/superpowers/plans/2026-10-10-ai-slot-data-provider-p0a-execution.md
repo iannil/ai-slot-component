@@ -1,6 +1,6 @@
 # AI-SLOT 数据交付 P0a Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 不配置 LLM 也能把版本化数据映射为经过校验的组件树，更新已有页面的单个槽位。
 
@@ -55,12 +55,12 @@ Task 1 → Task 2 → Task 3 → Task 4。实现前读原始 SDK 设计与上方
 - Consumes: `AiRenderResponse`、`deriveSkeleton(response.tree)`，均来自 registry。
 - Produces: `json(body:unknown,status:number):Response`、`sse(response:AiRenderResponse):Response`。
 
-- [ ] **Step 1: 运行已有特征测试**。
+- [x] **Step 1: 运行已有特征测试**。
 
 Run: `pnpm --filter @ai-slot/proxy exec vitest run src/handler.test.ts src/handler-sse.test.ts`。
 Expected: PASS。此任务是无行为变化提取，不制造无意义的失败断言。
 
-- [ ] **Step 2: 创建响应模块**。
+- [x] **Step 2: 创建响应模块**。
 
 ```ts
 import { deriveSkeleton, type AiRenderResponse } from "@ai-slot/registry";
@@ -88,7 +88,7 @@ export function sse(response: AiRenderResponse): Response {
 }
 ```
 
-- [ ] **Step 3: 修改旧 handler**。删除其中两个同名私有函数、移除 deriveSkeleton import，增加：
+- [x] **Step 3: 修改旧 handler**。删除其中两个同名私有函数、移除 deriveSkeleton import，增加：
 
 ```ts
 import { json, sse } from "./render-response.js";
@@ -96,8 +96,8 @@ import { json, sse } from "./render-response.js";
 
 不修改旧缓存 key、提示词清洗、LLM retry 或用量回调。
 
-- [ ] **Step 4: 重跑 Step 1 命令**，预期 PASS，既有精确响应断言不改。
-- [ ] **Step 5: 提交**。
+- [x] **Step 4: 重跑 Step 1 命令**，预期 PASS，既有精确响应断言不改。
+- [x] **Step 5: 提交**。
 
 ```sh
 git add packages/proxy/src/render-response.ts packages/proxy/src/handler.ts
@@ -116,7 +116,7 @@ git commit -m "refactor: 共用组件树响应编码"
 - Consumes: `SlotSource`（既有 handler 导出的 slotId/originalContent/contentVersion/promptVersion/data）；`MemoryCacheStore`、`lookup`；`validateComponentTree`；Task 1 响应函数。
 - Produces: 下列完整类型和 `createRenderHandler(options:RenderHandlerOptions):(req:Request)=>Promise<Response>`。provider 不接受任意请求 URL；只有服务端 resolveSlot 能访问外部数据。
 
-- [ ] **Step 1: 创建失败测试文件**。
+- [x] **Step 1: 创建失败测试文件**。
 
 ```ts
 import { defineRegistry } from "@ai-slot/registry";
@@ -246,12 +246,12 @@ describe("公开数据交付", () => {
 });
 ```
 
-- [ ] **Step 2: 运行失败测试**。
+- [x] **Step 2: 运行失败测试**。
 
 Run: `pnpm --filter @ai-slot/proxy exec vitest run src/render-handler.test.ts`。
 Expected: FAIL，render-handler 模块不存在。
 
-- [ ] **Step 3: 创建 provider.ts**。
+- [x] **Step 3: 创建 provider.ts**。
 
 ```ts
 import type { Registry } from "@ai-slot/registry";
@@ -281,7 +281,7 @@ export interface RenderHandlerOptions {
 }
 ```
 
-- [ ] **Step 4: 创建 render-handler.ts 的配置与响应部分**。
+- [x] **Step 4: 创建 render-handler.ts 的配置与响应部分**。
 
 ```ts
 import { validateComponentTree, type AiRenderResponse, type ComponentNode } from "@ai-slot/registry";
@@ -315,7 +315,7 @@ export function createRenderHandler(opts: RenderHandlerOptions): (req: Request) 
     let timer: ReturnType<typeof setTimeout> | undefined;
 ```
 
-- [ ] **Step 5: 在同一个返回函数内接续数据读取和缓存逻辑**。
+- [x] **Step 5: 在同一个返回函数内接续数据读取和缓存逻辑**。
 
 ```ts
     const work = async (): Promise<Response> => {
@@ -348,7 +348,7 @@ export function createRenderHandler(opts: RenderHandlerOptions): (req: Request) 
     };
 ```
 
-- [ ] **Step 6: 接续预算控制并结束函数**。
+- [x] **Step 6: 接续预算控制并结束函数**。
 
 ```ts
     const deadline = new Promise<Response>(resolve => {
@@ -367,7 +367,7 @@ export function createRenderHandler(opts: RenderHandlerOptions): (req: Request) 
 
 不得把管理发布逻辑塞入这个读取入口。超时后 work 可能仍在外部运行，但 abort 检查阻止其写缓存；实际网络读取应遵从 signal。
 
-- [ ] **Step 7: 导出新 API**。
+- [x] **Step 7: 导出新 API**。
 
 ```ts
 // packages/proxy/src/index.ts 追加
@@ -375,8 +375,8 @@ export * from "./provider.js";
 export * from "./render-handler.js";
 ```
 
-- [ ] **Step 8: 运行测试**。执行 Step 2 命令，预期 PASS；再运行 `pnpm --filter @ai-slot/proxy test`，旧 AI 精确响应与缓存前置测试均应保持通过。
-- [ ] **Step 9: 提交**。
+- [x] **Step 8: 运行测试**。执行 Step 2 命令，预期 PASS；再运行 `pnpm --filter @ai-slot/proxy test`，旧 AI 精确响应与缓存前置测试均应保持通过。
+- [x] **Step 9: 提交**。
 
 ```sh
 git add packages/proxy/src/provider.ts packages/proxy/src/render-handler.ts packages/proxy/src/render-handler.test.ts packages/proxy/src/index.ts
@@ -394,7 +394,7 @@ git commit -m "feat: 增加无需模型的数据组件树交付入口"
 - Consumes: Task 2 的 createRenderHandler；既有 `prewarm(handler,slotIds)`、`MemoryCacheStore.dump/load`。
 - Produces: 已验证的序列化/版本边界与接入说明；不增加第二种预热函数。
 
-- [ ] **Step 1: 创建测试**。
+- [x] **Step 1: 创建测试**。
 
 ```ts
 import { defineRegistry } from "@ai-slot/registry";
@@ -443,12 +443,12 @@ it("仅显式允许同版本 stale；新源版本失败不复用旧结果", asyn
 });
 ```
 
-- [ ] **Step 2: 运行行为验证**。
+- [x] **Step 2: 运行行为验证**。
 
 Run: `pnpm --filter @ai-slot/proxy exec vitest run src/provider-prewarm.test.ts src/prewarm.test.ts`。
 Expected: PASS，因为复用的是既有预热 API；若失败，只修正 Task 2 逻辑，不更改缓存数据结构或放宽断言。
 
-- [ ] **Step 3: 在 proxy README 增加以下 API 说明和完整示例**。
+- [x] **Step 3: 在 proxy README 增加以下 API 说明和完整示例**。
 
 ```ts
 import { defineRegistry } from "@ai-slot/registry";
@@ -473,7 +473,7 @@ export const handler = createRenderHandler({
 
 在示例前说明 cms.example.com 是需替换为用户固定服务端数据源的说明域名，不能把来访 URL 当数据源。文档列明 GET-only、公开内容、8000ms、默认 ttl 60000/stale 0、源变化必须更新版本、映射变化必须更新 provider.id、原 AI API 不变。传入 registry 和配置视为初始化后不变；若改变则创建新 handler 并递增版本。密钥只能留服务端，输出 data 只选展示字段。
 
-- [ ] **Step 4: 提交**。
+- [x] **Step 4: 提交**。
 
 ```sh
 git add packages/proxy/src/provider-prewarm.test.ts packages/proxy/README.md
@@ -492,7 +492,7 @@ git commit -m "test: 验证数据预热恢复与降级边界"
 - Consumes: Task 2 的 createRenderHandler；现有 registry、domComponents、configureAiSlot、registerRenderer。
 - Produces: `createDataHandler(readSource)`；`dataHandler`；GET `/ai-render/data-hero`；`/data.html` 本地示例。readSource 为 `()=>Promise<{version:string,title:string}>`。
 
-- [ ] **Step 1: 创建端到端失败测试**。
+- [x] **Step 1: 创建端到端失败测试**。
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -524,8 +524,8 @@ test("数据组件树局部更新不替换页面其他节点，失败初载显�
 });
 ```
 
-- [ ] **Step 2: 运行失败测试**。`pnpm --filter example-plain-html exec playwright test e2e/data-source.spec.ts`，预期因 data-source.mjs 尚不存在失败。确保无旧的 4173 服务复用；CI 模式下由配置启动新的服务。
-- [ ] **Step 3: 创建 data-source.mjs 与数据文件**。
+- [x] **Step 2: 运行失败测试**。`pnpm --filter example-plain-html exec playwright test e2e/data-source.spec.ts`，预期因 data-source.mjs 尚不存在失败。确保无旧的 4173 服务复用；CI 模式下由配置启动新的服务。
+- [x] **Step 3: 创建 data-source.mjs 与数据文件**。
 
 ```js
 import { readFile } from "node:fs/promises";
@@ -553,7 +553,7 @@ export const dataHandler = createDataHandler(async () =>
 {"version":"1","title":"数据驱动的产品介绍"}
 ```
 
-- [ ] **Step 4: 接入 server.mjs**。增加 import；在原 `/ai-render/` 分支内部，仅替换 handler 选择语句，其他静态文件与 SSE 路由不变。
+- [x] **Step 4: 接入 server.mjs**。增加 import；在原 `/ai-render/` 分支内部，仅替换 handler 选择语句，其他静态文件与 SSE 路由不变。
 
 ```js
 import { dataHandler } from "./data-source.mjs";
@@ -562,7 +562,7 @@ const activeHandler = url.pathname === "/ai-render/data-hero" ? dataHandler : ha
 const webRes = await activeHandler(await toWebRequest(req));
 ```
 
-- [ ] **Step 5: 创建 data.html**。
+- [x] **Step 5: 创建 data.html**。
 
 ```html
 <!doctype html>
@@ -601,13 +601,13 @@ const webRes = await activeHandler(await toWebRequest(req));
 </html>
 ```
 
-- [ ] **Step 6: 构建后验证新示例**。运行 `pnpm build`，再 `pnpm --filter example-plain-html exec playwright test e2e/data-source.spec.ts`，预期 PASS。测试无真实模型请求；生产示例读取本地文件，测试使用同一个 factory 的内存源，不声称已对接商业 CMS。
-- [ ] **Step 7: 在示例 README 加入操作说明**。
+- [x] **Step 6: 构建后验证新示例**。运行 `pnpm build`，再 `pnpm --filter example-plain-html exec playwright test e2e/data-source.spec.ts`，预期 PASS。测试无真实模型请求；生产示例读取本地文件，测试使用同一个 factory 的内存源，不声称已对接商业 CMS。
+- [x] **Step 7: 在示例 README 加入操作说明**。
 
 “运行 pnpm build 后启动 node examples/plain-html/server.mjs，打开 http://localhost:4173/data.html。修改 cms-data.json 的 title，同时将 version 改为新值；点击刷新局部观察变化。文件必须是完整合法 JSON。原始兜底保留，不调用模型，不提供编辑权限、自动重连或持久发布历史。该示例由本地 Node 服务提供，未接入 worker.mjs/build-public 的托管演示发布。”
 
-- [ ] **Step 8: 全体验收**。运行 `pnpm test`、`pnpm typecheck`、`pnpm --filter example-plain-html test:e2e`。手动编辑数据文件验证一次，随后恢复 fixture 初始值；检查其他页面元素和 Git 差异。只有出现新问题才重复完整测试。
-- [ ] **Step 9: 提交**。
+- [x] **Step 8: 全体验收**。运行 `pnpm test`、`pnpm typecheck`、`pnpm --filter example-plain-html test:e2e`。手动编辑数据文件验证一次，随后恢复 fixture 初始值；检查其他页面元素和 Git 差异。只有出现新问题才重复完整测试。
+- [x] **Step 9: 提交**。
 
 ```sh
 git add examples/plain-html/data-source.mjs examples/plain-html/cms-data.json examples/plain-html/data.html examples/plain-html/e2e/data-source.spec.ts examples/plain-html/server.mjs examples/plain-html/README.md

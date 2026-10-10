@@ -1,6 +1,6 @@
 # AI-SLOT 官网 W0 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 让官网准确说明 AI-SLOT 如何增强已有网站，并引导访客完成一个真实运行时的局部更新演示。
 
@@ -48,8 +48,8 @@
 - Consumes: 现有 `Lang = 'en' | 'zh'`、`Dict`、`Hero({t})`、`Demo({t,lang})`。
 - Produces: `#demo` 与已有 `#quickstart`；不改变 props 接口。
 
-- [ ] **Step 1: 记录基线**。启动 `npm run dev -- --host 127.0.0.1`，查看中英文首屏；记录目前主按钮跳转 GitHub，演示区没有 #demo。
-- [ ] **Step 2: 更新词典首屏字段**。下列对象字段分别合入现有 en/zh，其他词典字段保留。
+- [x] **Step 1: 记录基线**。启动 `npm run dev -- --host 127.0.0.1`，查看中英文首屏；记录目前主按钮跳转 GitHub，演示区没有 #demo。
+- [x] **Step 2: 更新词典首屏字段**。下列对象字段分别合入现有 en/zh，其他词典字段保留。
 
 ```tsx
 // en
@@ -80,7 +80,7 @@ qsTitle: '无需 API Key，运行完整示例。',
 ctaTitle: '从你正在维护的网站中，选择一个区域开始。',
 ```
 
-- [ ] **Step 3: 修改 Hero 行动区域**。替换现有 CopyCommand 与 GitHub 按钮所在 div；主按钮使用现有 t.getStarted，第二按钮复用 t.nav.quickstart。
+- [x] **Step 3: 修改 Hero 行动区域**。替换现有 CopyCommand 与 GitHub 按钮所在 div；主按钮使用现有 t.getStarted，第二按钮复用 t.nav.quickstart。
 
 ```tsx
 <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -95,7 +95,7 @@ ctaTitle: '从你正在维护的网站中，选择一个区域开始。',
 
 若 ArrowRight 在整文件没有其他用途，移除其 import。把 Demo 的 section 改为 `<section id="demo" className="scroll-mt-20 border-t border-border/60">`。
 
-- [ ] **Step 4: 替换 useLang 的 document.title 赋值**。
+- [x] **Step 4: 替换 useLang 的 document.title 赋值**。
 
 ```tsx
 document.title = lang === 'zh'
@@ -103,8 +103,8 @@ document.title = lang === 'zh'
   : 'AI-SLOT — AI updates for your existing site'
 ```
 
-- [ ] **Step 5: 验收与构建**。运行 `npm run build`，预期成功。中英文分别点击主/次按钮，预期滚动到演示/上手；刷新保持语言；Tab 可聚焦两个入口；390px 不横向溢出。
-- [ ] **Step 6: 提交**。
+- [x] **Step 5: 验收与构建**。运行 `npm run build`，预期成功。中英文分别点击主/次按钮，预期滚动到演示/上手；刷新保持语言；Tab 可聚焦两个入口；390px 不横向溢出。
+- [x] **Step 6: 提交**。
 
 ```sh
 git add website/src/pages/Home.tsx
@@ -122,7 +122,7 @@ git commit -m "docs: 调整官网首屏定位与任务入口"
 - Consumes: `lang: 'en' | 'zh'`。
 - Produces: `SlotResponsibilities({lang}: {lang:'en'|'zh'})` React 组件；无远程请求。
 
-- [ ] **Step 1: 创建组件**。
+- [x] **Step 1: 创建组件**。
 
 ```tsx
 const copy = {
@@ -175,7 +175,7 @@ export default function SlotResponsibilities({ lang }: { lang: 'en' | 'zh' }) {
 }
 ```
 
-- [ ] **Step 2: 挂载区块**。Home.tsx 增加 import，在 `<Demo t={t} lang={lang} />` 后添加组件。
+- [x] **Step 2: 挂载区块**。Home.tsx 增加 import，在 `<Demo t={t} lang={lang} />` 后添加组件。
 
 ```tsx
 import SlotResponsibilities from '../components/SlotResponsibilities'
@@ -183,8 +183,8 @@ import SlotResponsibilities from '../components/SlotResponsibilities'
 <SlotResponsibilities lang={lang} />
 ```
 
-- [ ] **Step 3: 验收**。运行 `npm run build`；切换语言，预期三张卡片与职责同时切换，管理卡始终标为规划中；390px 卡片竖排。页面不出现不存在的管理按钮。
-- [ ] **Step 4: 提交**。
+- [x] **Step 3: 验收**。运行 `npm run build`；切换语言，预期三张卡片与职责同时切换，管理卡始终标为规划中；390px 卡片竖排。页面不出现不存在的管理按钮。
+- [x] **Step 4: 提交**。
 
 ```sh
 git add website/src/components/SlotResponsibilities.tsx website/src/pages/Home.tsx
@@ -202,7 +202,7 @@ git commit -m "docs: 说明宿主共存职责与 AI 能力状态"
 - Consumes: 当前 modes 的 name/trigger/body/tag；safety 的 title/body；demo ui.steps 的 title/hint。
 - Produces: 相同数组长度和字段；不改变 backendFor、状态机、订阅、DOM 更新行为。
 
-- [ ] **Step 1: 替换 Home 双语说明**。使用下表精确替换对应 body/说明字段，不更改组件结构。
+- [x] **Step 1: 替换 Home 双语说明**。使用下表精确替换对应 body/说明字段，不更改组件结构。
 
 | 字段 | 中文 | 英文 |
 |---|---|---|
@@ -216,7 +216,7 @@ git commit -m "docs: 说明宿主共存职责与 AI 能力状态"
 | safety[1].body | 获取或校验失败时保留原始内容。初始 HTML 应由作者提供可用内容；这不保证收录、排名或整个页面无障碍合规。 | Fetch or validation failures preserve original content. Authors should provide useful initial HTML; this does not guarantee indexing, rankings or page-wide accessibility compliance. |
 | safety[3].body | 原生组件树协议与 A2UI 适配包均已提供。具体消息版本和兼容范围以包文档与测试为准。 | Native component-tree delivery and an A2UI adapter are available. Supported message versions and coverage are documented in the package. |
 
-- [ ] **Step 2: 修正 DemoSection 词典**。保留步骤 title 和控制按钮文本；按顺序替换四个 hint 以及 doneHint。
+- [x] **Step 2: 修正 DemoSection 词典**。保留步骤 title 和控制按钮文本；按顺序替换四个 hint 以及 doneHint。
 
 ```tsx
 // zh 的四个 hint
@@ -237,8 +237,8 @@ git commit -m "docs: 说明宿主共存职责与 AI 能力状态"
 
 把 zh doneTitle 改为“局部更新演示完成”，en doneTitle 改为“Local update demo complete”，消除三种/四种方式混用。
 
-- [ ] **Step 3: 人工回归**。每种语言至少完整运行一个行业；其他行业分别加载一次。检查原内容、发布更新、预设方向、故障兜底；切语言/换行业后旧状态不泄漏。运行 `npm run lint` 与 `npm run build`。
-- [ ] **Step 4: 提交**。
+- [x] **Step 3: 人工回归**。每种语言至少完整运行一个行业；其他行业分别加载一次。检查原内容、发布更新、预设方向、故障兜底；切语言/换行业后旧状态不泄漏。运行 `npm run lint` 与 `npm run build`。
+- [x] **Step 4: 提交**。
 
 ```sh
 git add website/src/pages/Home.tsx website/src/demo/DemoSection.tsx
@@ -257,7 +257,7 @@ git commit -m "docs: 校准交付成本与演示能力说明"
 - Consumes: build-agent.mjs 从两份 README 和七个包 README 构建现有索引。
 - Produces: 不变的文档 ID、只读工具名、静态元信息；不创建新的公开管理 API。
 
-- [ ] **Step 1: 更新 index.html 的 title、description、og:title、og:description**。两个 description 都用下列内容；保留图像 URL、favicon 和域名。
+- [x] **Step 1: 更新 index.html 的 title、description、og:title、og:description**。两个 description 都用下列内容；保留图像 URL、favicon 和域名。
 
 ```html
 <title>AI-SLOT — AI updates for your existing site</title>
@@ -266,24 +266,24 @@ git commit -m "docs: 校准交付成本与演示能力说明"
 <meta property="og:description" content="Keep your CMS and site builder. Generate content and layouts with registered components, deliver local updates, and preserve original fallback content." />
 ```
 
-- [ ] **Step 2: 用下列段落替换两份 README 的产品简介**。保留安装、示例与 API 正文。
+- [x] **Step 2: 用下列段落替换两份 README 的产品简介**。保留安装、示例与 API 正文。
 
 中文：“AI-SLOT 为已有网站、CMS 与建站工具增加局部 AI 内容和组件组合能力。AI 输出经过校验的组件树 JSON，使用开发者注册的真实组件。也可接入返回同一协议的数据端点；数据更新不必每次调用 AI。首次接入后，支持范围内的内容更新无需重新部署宿主。版本化发布和管理型 MCP 属于后续规划，当前官网 MCP 只读文档。”
 
 英文：“AI-SLOT adds local AI content and component composition to existing sites, CMSs and site builders. AI produces validated component-tree JSON using developer-registered components. Endpoints can also supply the same protocol without calling AI for every update. After initial integration, supported content updates do not require a host redeploy. Versioned publishing and management MCP are planned; the current website MCP reads documentation only.”
 
-- [ ] **Step 3: 更新 Skill 第 5 条之后的说明**。加入：“优先保留用户现有 CMS 与宿主工作流。先确认脚本接入权限、注册组件与数据端点。不要把当前公开 MCP 当成槽位发布工具，也不要把新组件代码生成当成免部署内容更新。”
-- [ ] **Step 4: 更新边界文档**。website/README.md 演示章节加入“首屏以局部任务为入口；运营、数据源与生成结果为模拟，不能用它证明生产发布治理能力”。docs/delivery-boundaries.md 加入“首次安装槽位、修改宿主模板或新增组件代码仍可能需要发布；只有已部署能力内的内容更新可独立交付”。
-- [ ] **Step 5: 提交源文档**。build-agent 使用 Git 最近提交时间，先提交源内容，再生成并验收；不手改 generated 文件。
+- [x] **Step 3: 更新 Skill 第 5 条之后的说明**。加入：“优先保留用户现有 CMS 与宿主工作流。先确认脚本接入权限、注册组件与数据端点。不要把当前公开 MCP 当成槽位发布工具，也不要把新组件代码生成当成免部署内容更新。”
+- [x] **Step 4: 更新边界文档**。website/README.md 演示章节加入“首屏以局部任务为入口；运营、数据源与生成结果为模拟，不能用它证明生产发布治理能力”。docs/delivery-boundaries.md 加入“首次安装槽位、修改宿主模板或新增组件代码仍可能需要发布；只有已部署能力内的内容更新可独立交付”。
+- [x] **Step 5: 提交源文档**。build-agent 使用 Git 最近提交时间，先提交源内容，再生成并验收；不手改 generated 文件。
 
 ```sh
 git add website/index.html README.md README.zh-CN.md website/public/agent/skills/ai-slot-guide/SKILL.md website/README.md docs/delivery-boundaries.md
 git commit -m "docs: 同步官网与 Agent 产品能力边界"
 ```
 
-- [ ] **Step 6: 自动验收**。在 website 执行 `npm run test:agent`、`npm run build`、`npx wrangler pages functions build --outdir /tmp/ai-slot-w0-functions`；预期全部成功。查看 git status；若构建产生已跟踪产物，核对差异后只提交与本任务对应的生成物。
-- [ ] **Step 7: 本机 HTTP 验收**。在 website 启动 `npx wrangler pages dev dist --port 8791 --compatibility-date 2026-10-01`，另一终端执行 `node tests/agent-http.mjs`。预期四通道正常、未知路由 404、RSS 304、MCP 仍只有 search_docs/read_doc。
-- [ ] **Step 8: 最终人工验收**。390px 和桌面各检查中英文；检查 title、CTA、演示、页脚、Agent 页面。打开现有 OG 图确认没有与新定位冲突的绝对承诺；若有，记录为独立素材修订，不生成虚构成效图。执行 `git diff --check`，输出变更与验证记录，不部署。
+- [x] **Step 6: 自动验收**。在 website 执行 `npm run test:agent`、`npm run build`、`npx wrangler pages functions build --outdir /tmp/ai-slot-w0-functions`；预期全部成功。查看 git status；若构建产生已跟踪产物，核对差异后只提交与本任务对应的生成物。
+- [x] **Step 7: 本机 HTTP 验收**。在 website 启动 `npx wrangler pages dev dist --port 8791 --compatibility-date 2026-10-01`，另一终端执行 `node tests/agent-http.mjs`。预期四通道正常、未知路由 404、RSS 304、MCP 仍只有 search_docs/read_doc。
+- [x] **Step 8: 最终人工验收**。390px 和桌面各检查中英文；检查 title、CTA、演示、页脚、Agent 页面。打开现有 OG 图确认没有与新定位冲突的绝对承诺；若有，记录为独立素材修订，不生成虚构成效图。执行 `git diff --check`，输出变更与验证记录，不部署。
 
 ## 自审覆盖
 
