@@ -14,6 +14,7 @@ import {
   Undo2,
 } from 'lucide-react'
 import DemoSection from '../demo/DemoSection'
+import SlotResponsibilities from '../components/SlotResponsibilities'
 
 const GITHUB = 'https://github.com/iannil/ai-slot-component'
 const NPM = 'https://www.npmjs.com/package/@ai-slot/runtime'
@@ -578,6 +579,7 @@ export default function Home() {
       <Nav t={t} lang={lang} toggle={toggle} />
       <Hero t={t} />
       <Demo t={t} lang={lang} />
+      <SlotResponsibilities lang={lang} />
       <Modes t={t} />
       <Safety t={t} />
       <QuickStart t={t} />
