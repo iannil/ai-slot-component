@@ -48,9 +48,13 @@ export function createRenderHandler(opts: RenderHandlerOptions): (req: Request) 
       try {
         const output = await opts.provider.produce({ slot, signal: controller.signal });
         if (controller.signal.aborted) return unavailable();
-        if (!validateComponentTree(opts.registry, output).ok) throw new Error("invalid_tree");
+        // 先生成实际交付的 JSON 快照，再校验它；toJSON 可能改变树结构。
+        const serialized = JSON.stringify(output);
+        if (serialized === undefined) throw new Error("invalid_tree");
+        const tree: unknown = JSON.parse(serialized);
+        if (!validateComponentTree(opts.registry, tree).ok) throw new Error("invalid_tree");
         const response: AiRenderResponse = {
-          version: 1, slot: slotId, tree: output as ComponentNode,
+          version: 1, slot: slotId, tree: tree as ComponentNode,
           meta: { reason: "data-source", sourceVersion: slot.contentVersion, registryVersion: opts.registryVersion },
         };
         store.set(key, response, ttl, stale, now());

@@ -56,6 +56,50 @@ describe("公开数据交付", () => {
     expect(produce).toHaveBeenCalledTimes(2);
   });
 
+  it("循环 prop 不能留下无法序列化的缓存", async () => {
+    const f = setup();
+    const store = new MemoryCacheStore();
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    const objectRegistry = defineRegistry({ components: {
+      hero: { description: "介绍区", props: { payload: "object" }, required: ["payload"] },
+    } });
+    const produce = vi.fn(async () => ({ component: "hero", props: { payload: circular } }));
+    const handler = createRenderHandler({ ...f.options, registry: objectRegistry, store,
+      provider: { id: "circular", produce } });
+    expect((await handler(request())).status).toBe(503);
+    expect(store.dump()).toBe("{}");
+    expect((await handler(request())).status).toBe(503);
+    expect(produce).toHaveBeenCalledTimes(2);
+  });
+
+  it("toJSON 改写为非法组件时拒绝交付且不缓存", async () => {
+    const f = setup();
+    const store = new MemoryCacheStore();
+    const produce = vi.fn(async () => ({
+      ...tree("原本有效"),
+      toJSON: () => ({ component: "evil", props: { title: "非法" } }),
+    }));
+    const handler = createRenderHandler({ ...f.options, store,
+      provider: { id: "rewritten", produce } });
+    expect((await handler(request())).status).toBe(503);
+    expect(store.dump()).toBe("{}");
+    expect((await handler(request())).status).toBe(503);
+    expect(produce).toHaveBeenCalledTimes(2);
+  });
+
+  it("provider 返回对象后续变化不修改已缓存快照", async () => {
+    const f = setup();
+    const output = tree("初始标题");
+    const produce = vi.fn(async () => output);
+    const handler = createRenderHandler({ ...f.options,
+      provider: { id: "mutable", produce } });
+    expect((await (await handler(request())).json()).tree).toEqual(tree("初始标题"));
+    output.props.title = "后续修改";
+    expect((await (await handler(request())).json()).tree).toEqual(tree("初始标题"));
+    expect(produce).toHaveBeenCalledTimes(1);
+  });
+
   it("共享 store 不串 namespace、provider 或 registry 版本", async () => {
     const f = setup();
     const store = new MemoryCacheStore();
