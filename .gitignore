@@ -7,3 +7,11 @@ ai-cache.json
 docs/business
 examples/plain-html/public/
 examples/plain-html/.wrangler/
+
+# 官网 Agent 构建产物与本地配置
+website/server/generated-content.mjs
+website/public/agent/ai-slot-guide.zip
+website/public/agent/checksums.json
+website/.wrangler/
+website/.dev.vars*
+website/server/generated-agent-style.mjs

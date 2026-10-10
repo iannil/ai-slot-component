@@ -1,0 +1,1 @@
+{"version":1,"include":["/mcp","/api/agent/*","/api/agent-telemetry/v1/health","/agent/*","/agents","/agents/","/llms.txt"],"exclude":[]}

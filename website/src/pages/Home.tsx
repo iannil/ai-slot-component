@@ -568,6 +568,7 @@ function Footer({ t }: { t: Dict }) {
             >
               {t.footer.docs}
             </a>
+            <a href="/agents/" className="transition-colors hover:text-foreground">Agent · MCP / API / RSS / Skill</a>
           </nav>
         </div>
       </div>
