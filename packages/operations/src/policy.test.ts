@@ -85,6 +85,24 @@ describe('组件树和来源策略', () => {
     expect(() => validateArtifact(env, 'hero', valid(), { ...source, expiresAt: 1000 })).toThrow('expired');
   });
 
+  it('来源字段运行时类型非法时统一返回 source_invalid', () => {
+    const { env, source } = policyFixture();
+    const malformed: unknown[] = [
+      null, undefined, 42, [],
+      { ...source, id: 7 },
+      { ...source, version: 7 },
+      { ...source, version: { trim: null } },
+      { ...source, expiresAt: Number.NaN },
+      { ...source, expiresAt: Number.POSITIVE_INFINITY },
+      { ...source, data: null },
+    ];
+    for (const value of malformed) {
+      const run = () => validateArtifact(env, 'hero', valid(), value as typeof source);
+      expect(run).toThrow(OperationError);
+      expect(run).toThrow('source_invalid');
+    }
+  });
+
   it('拒绝未知槽位、循环和非 JSON 树以及超过 64KiB 的树', () => {
     const { env, source } = policyFixture();
     expect(() => validateArtifact(env, 'missing', valid(), source)).toThrow('forbidden');

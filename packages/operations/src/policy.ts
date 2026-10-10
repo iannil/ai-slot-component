@@ -30,12 +30,14 @@ export function validateArtifact(env: Environment, slotId: string, tree: unknown
   const policy = Object.hasOwn(env.policies, slotId) ? env.policies[slotId] : undefined;
   if (!policy) throw new OperationError('forbidden');
   const activePolicy = policy;
-  if (!source || source.id !== policy.sourceId || !source.id?.trim() || !source.version?.trim() ||
-      !Number.isFinite(source.expiresAt)) throw new OperationError('source_invalid');
-  if (source.expiresAt <= env.now()) throw new OperationError('expired');
-  if (!source.data || typeof source.data !== 'object' || Array.isArray(source.data)) {
+  if (!source || typeof source !== 'object' || Array.isArray(source) ||
+      typeof source.id !== 'string' || !source.id.trim() || source.id !== policy.sourceId ||
+      typeof source.version !== 'string' || !source.version.trim() ||
+      !Number.isFinite(source.expiresAt) ||
+      !source.data || typeof source.data !== 'object' || Array.isArray(source.data)) {
     throw new OperationError('source_invalid');
   }
+  if (source.expiresAt <= env.now()) throw new OperationError('expired');
 
   let snapshot: unknown;
   try {
