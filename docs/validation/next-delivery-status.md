@@ -8,13 +8,13 @@
 | --- | --- | --- | --- | --- |
 | Q 官网质量 | verified；已进 master 并随官网部署 | `874b458`、`2fa58ab`；Pages 部署见 R | 官网 lint 从 8 项降至 0；`test:agent` 5/5、build、390px 英中首屏与演示浏览器检查通过 | 无 |
 | R1 数据交付包准备 | verified；仅本地制品 | `95c5f1b`；`@ai-slot/proxy@0.2.0` 待发布 | build/test/typecheck；真实 tgz 独立 npm 安装并无模型密钥返回 200；完整性见下 | npm 账号认证 |
-| R2 Git 与官网 | verified；已上线官网 | `origin/master=92f3229`（其中生产源码 `95c5f1b`）；生产 `e4d622fe-2405-4a4e-9abe-48f0a54d0975` | [发布记录](../releases/2026-10-10-data-provider.md)；预览和生产读通道、官方 MCP 读取、390px 浏览器检查 | 本轮没有生产签名健康正向探测 |
+| R2 Git 与官网 | verified；已上线官网 | 官网发布时源码 `95c5f1b`、记录 `92f3229`（后续源码已推送 `6abe45d`）；生产 `e4d622fe-2405-4a4e-9abe-48f0a54d0975` | [发布记录](../releases/2026-10-10-data-provider.md)；预览和生产读通道、官方 MCP 读取、390px 浏览器检查 | 本轮没有生产签名健康正向探测 |
 | R3 npm 公开发布 | blocked_external；尚未发布 | 待发布 `@ai-slot/proxy@0.2.0` tgz | 2026-10-11 01:41 `npm whoami` 最新重试仍 E401（退出 1，控制器证据）；未执行 publish 或公网安装回读 | 本机 npm 登录及可能的 2FA |
-| L 可靠交付 | verified；仅本地分支 | `f7b85e6..ff1bb61` | 重连/补偿读取、卸载隔离、命名槽位、可选 `fresh-only` 到期兜底；单测与真实浏览器故障路径，四任务复审通过 | 未整合推送/发 SDK |
-| V 持久版本存储 | verified；仅本地私有包 | `81393ef..326ede4` | 单写者锁、状态校验、原子写与坏库拒绝的定向测试，两个任务复审通过 | 崩溃后旧锁需管理员确认原进程退出 |
-| G 治理与交付 | verified；仅本地私有包 | `70eaf15..2fe90a4`（含 `a7b9333`、`f943439`） | 来源身份绑定、不可变草稿、人工批准、幂等发布/回滚与公开只读交付；单测/build/typecheck及四任务复审 | 未部署管理服务 |
+| L 可靠交付 | verified；已合入并推送 master | `f7b85e6..ff1bb61` | 重连/补偿读取、卸载隔离、命名槽位、可选 `fresh-only` 到期兜底；单测与真实浏览器故障路径，四任务复审通过 | 未发新版 SDK |
+| V 持久版本存储 | verified；源码已推送，包仍 private | `81393ef..326ede4` | 单写者锁、状态校验、原子写与坏库拒绝的定向测试，两个任务复审通过 | 崩溃后旧锁需管理员确认原进程退出 |
+| G 治理与交付 | verified；源码已推送，包仍 private | `70eaf15..2fe90a4`（含 `a7b9333`、`f943439`） | 来源身份绑定、不可变草稿、人工批准、幂等发布/回滚与公开只读交付；单测/build/typecheck及四任务复审 | 未部署管理服务 |
 | M 本地管理 MCP | verified（协议）；外部 Agent 未验证 | `bca1d82..a9e1fc4`；`protocol_verified / agent_unverified` | [stdio/HTTP/浏览器验收](managed-slot-acceptance.md)：官方 SDK 真子进程、7 工具无 approve、回滚修订 3；全仓检查与 managed e2e 2/2 | 外部 AI 客户端真实连接、实际运营人员批准尚未发生 |
-| I 参考接入与试点准备 | verified（自有 WordPress 与准备）；仅本地 | `04790d3..5ea95fa` | [CMS 宿主证据](assets/cms-campaign/outside-dom-before-after.json)、[试点准备](pilot-readiness.md)、分析器合成测试；I1–I3 复审 | 未验证任意客户站或所有 WordPress 主题 |
+| I 参考接入与试点准备 | verified（自有 WordPress 与准备）；源码已推送 | `04790d3..5ea95fa` | [CMS 宿主证据](assets/cms-campaign/outside-dom-before-after.json)、[试点准备](pilot-readiness.md)、分析器合成测试；I1–I3 复审 | 未验证任意客户站或所有 WordPress 主题 |
 | I 真实客户试点 | blocked_external | 无客户部署或真实 CSV 数据 | [授权模板](pilot-consent-template.md)、[空数据表](slot-task-log.csv) | 客户站点、负责人授权、至少三项真实配对任务与访谈均未落实 |
 
 ## 可复核的发布与验收边界
@@ -55,10 +55,10 @@ L/V/G/M/I 的测试结果来自相应实施报告，不是本次状态整理重�
 
 ## 剩余审查点与事件
 
-最终广审在 `f455f1f` 上发现 F1（持久层误拒合法 props）和 F2（来源读取跨越审批到期仍提交）；两项均已在隔离分支修复。定向红测曾分别得到 `corrupt_state` 和 publish/rollback 误成功，修复后 operations 64/64、CMS 来源 7/7、单项 stdio Playwright 1/1 均通过；operations build 与 typecheck 通过。V 写侧合法超 64MiB 拒写、旧快照及重开可读已补测试。M1 清理链、M2 各阶段实际 DOM `browserText`、M3 英文 README 同波完成；新 stdio 日志只代表本次观测，不覆盖历史日志。具体文件及命令见[最终广审](next-delivery-final-review.md)与[最终修复报告](next-delivery-final-fixes.md)。
+最终广审在 `f455f1f` 上发现 F1（持久层误拒合法 props）和 F2（来源读取跨越审批到期仍提交）；两项均已修复、限定复审通过并推送 master。定向红测曾分别得到 `corrupt_state` 和 publish/rollback 误成功，修复后 operations 64/64、CMS 来源 7/7、单项 stdio Playwright 1/1 均通过；operations build 与 typecheck 通过。V 写侧合法超 64MiB 拒写、旧快照及重开可读已补测试。M1 清理链、M2 各阶段实际 DOM `browserText`、M3 英文 README 同波完成；新 stdio 日志只代表本次观测，不覆盖历史日志。具体文件及命令见[最终广审](next-delivery-final-review.md)与[最终修复报告](next-delivery-final-fixes.md)。
 
 其余 minor 裁决：R1 预期 stderr 噪声、M 固定 4194 端口碰撞、I `NO_COLOR`/`FORCE_COLOR` 提示可后续处理；G 幂等重试重复通知接受当前契约；M3 redirect 与批准后回滚已有补证，I1 来源注释已修。首次 WordPress raw 日志不补写假观测，已有 body 隔离证据仍只限所测主题，不覆盖 head 或完整 60 秒周期。
 
 R1 有一次已向用户披露的误操作：在 `/private/tmp` 执行了 `npm init -y`，输出称写入 `/private/tmp/package.json`，当时显示 `main=ifnil-task2-service-working.js`。该路径可能原已有内容；原始值和实际覆盖范围未知，未猜测恢复，也未删除文件。随后独立消费测试改在专用临时目录执行。此事不能记作已完全恢复。
 
-下一状态更新须以真实证据为准：隔离分支整合及推送；npm 认证后对精确包重新核对并公网回读；外部 AI 客户端和真实 Owner 运营验收；取得客户授权后才做客户站点试点与总人工劳动评估。
+下一状态更新须以真实证据为准：npm 认证后对精确包重新核对并公网回读；外部 AI 客户端和真实 Owner 运营验收；取得客户授权后才做客户站点试点与总人工劳动评估。

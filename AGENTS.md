@@ -11,7 +11,7 @@
 - `docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md` —— 总体设计（含技术选型与接入方式）
 - `docs/superpowers/plans/2026-09-24-ai-native-rendering-sdk.md` —— v1 实现计划（已执行完毕）
 
-v1/v1.1 的历史设计以该文档为准；后续交付另见[设计](docs/superpowers/specs/2026-10-10-ai-slot-next-delivery-design.md)与[当前验收状态](docs/validation/next-delivery-status.md)。官网质量与首轮数据交付准备已在 master；可靠重连、私有版本治理与本地管理 MCP、WordPress 参考接入在隔离分支，尚待总控最终整合及发布。proxy 0.2.0 本地制品尚未发布 npm；外部 Agent 和客户试点尚未验证。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟的 SSE 流式渲染（骨架→终树双帧）、失效推送（SSE 通道）、CI 构建时预生成工具和 React/Vue 渲染适配器已在 v1.1 完成；断线自动重连已在后续隔离分支实现，尚待整合与发布。剩余推迟项：token 级 LLM 增量流式、多实例限流/缓存存储抽象。
+v1/v1.1 的历史设计以该文档为准；后续交付另见[设计](docs/superpowers/specs/2026-10-10-ai-slot-next-delivery-design.md)与[当前验收状态](docs/validation/next-delivery-status.md)。官网质量与首轮数据交付准备已在 master；可靠重连、私有版本治理与本地管理 MCP、WordPress 参考接入已合入并推送 master，尚未发布后续 SDK，管理包仍为 private。proxy 0.2.0 本地制品尚未发布 npm；外部 Agent 和客户试点尚未验证。文档中明确列出的「暂不包含（YAGNI）」事项（AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地小模型推理、多租户/计费后台）不要主动实现。v1 刻意推迟的 SSE 流式渲染（骨架→终树双帧）、失效推送（SSE 通道）、CI 构建时预生成工具和 React/Vue 渲染适配器已在 v1.1 完成；断线自动重连已合入 master，尚未发布新版 SDK。剩余推迟项：token 级 LLM 增量流式、多实例限流/缓存存储抽象。
 
 ## 语言约定
 

@@ -254,7 +254,7 @@ node examples/plain-html/prewarm.mjs
 
 ## 项目状态
 
-v1 与 v1.1 已合入 master。官网质量与首轮数据交付版本准备也已进入 master；待发布的 `@ai-slot/proxy@0.2.0` 制品尚未上 npm。可靠重连、版本存储、治理、本地管理 MCP 和 WordPress 参考接入已在隔离分支实现，待最终整合与发布；详见[验收与外部阻塞](./docs/validation/next-delivery-status.md)。
+v1 与 v1.1 已合入 master。官网质量与首轮数据交付版本准备也已进入 master；待发布的 `@ai-slot/proxy@0.2.0` 制品尚未上 npm。可靠重连、版本存储、治理、本地管理 MCP 和 WordPress 参考接入已合入并推送 master；后续 SDK 改动尚未发布 npm，管理包仍为 private；详见[验收与外部阻塞](./docs/validation/next-delivery-status.md)。
 
 刻意推迟：token 级 LLM 增量流式、多实例限流/缓存存储抽象。明确不做（YAGNI）：AI 生成任意 HTML/CSS、客户端 DOM 补丁协议、浏览器本地推理、多租户/计费后台。
 
