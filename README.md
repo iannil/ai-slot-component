@@ -226,6 +226,9 @@ graph TD
 | [`@ai-slot/adapter-dom`](./packages/adapter-dom) | Maps component trees to plain DOM (`tag` / `class` / `applyProps`) — no framework needed |
 | [`@ai-slot/adapter-react`](./packages/adapter-react) | `treeToReact` + `<AiSlot>` component |
 | [`@ai-slot/adapter-vue`](./packages/adapter-vue) | `treeToVue` + `AiSlot` component |
+| [`@ai-slot/a2ui`](./packages/a2ui) | A2UI wire-format compatibility |
+| [`@ai-slot/operations`](./packages/operations) | Experimental local version store and approval/publish governance; Node >=22 |
+| [`@ai-slot/mcp`](./packages/mcp) | Experimental local stdio management client; Node >=22, separate HTTP service required |
 
 ## Development
 
@@ -255,7 +258,7 @@ The workspace uses type checking; the website also has an ESLint gate.
 
 ## Project status
 
-v1 and v1.1 are merged to master. The website quality and first data-delivery release preparation are also on master; `@ai-slot/proxy@0.2.0` is published on npm and verified through a clean registry installation. Reliable reconnect, version storage, governance, local management MCP, and a WordPress reference integration are merged and pushed to master; these later SDK changes are not yet published to npm, and the management packages remain private. See the [evidence and external blockers](./docs/validation/next-delivery-status.md).
+All nine packages are published on npm, including runtime 0.2.0, proxy 0.3.0 and the first public operations/mcp 0.1.0 releases. The management packages are experimental, require Node >=22, and support the local reference workflow. Clean npm installation, package integrity, rendering, storage restart and MCP CLI discovery are verified. External AI-client acceptance and customer pilots remain pending. See the [release record](./docs/releases/2026-10-11-all-packages.md) and [acceptance status](./docs/validation/next-delivery-status.md).
 
 Deliberately deferred: token-level LLM streaming and multi-instance rate-limit/cache stores. Explicitly out of scope: arbitrary HTML/CSS generation, client-side DOM patch protocols, in-browser inference, multi-tenant billing.
 

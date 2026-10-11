@@ -5,7 +5,10 @@
     "integrity": "sha512-CxibEUKwAbFhT4V9bWzkQ2wGpBj4afudOmryBKR7E/Kx3sLrYy88QNKANaATSDe2FsICYIemu/jWk0oZ/obMoQ==",
     "dependencies": {},
     "peerDependencies": {},
-    "previousLatest": "0.1.0"
+    "previousLatest": "0.1.0",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.1.1"
   },
   {
     "name": "@ai-slot/runtime",
@@ -15,7 +18,10 @@
       "@ai-slot/registry": "0.1.1"
     },
     "peerDependencies": {},
-    "previousLatest": "0.1.2"
+    "previousLatest": "0.1.2",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.2.0"
   },
   {
     "name": "@ai-slot/proxy",
@@ -25,7 +31,10 @@
       "@ai-slot/registry": "0.1.1"
     },
     "peerDependencies": {},
-    "previousLatest": "0.2.0"
+    "previousLatest": "0.2.0",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.3.0"
   },
   {
     "name": "@ai-slot/adapter-dom",
@@ -36,7 +45,10 @@
       "@ai-slot/runtime": "0.2.0"
     },
     "peerDependencies": {},
-    "previousLatest": "0.1.0"
+    "previousLatest": "0.1.0",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.2.0"
   },
   {
     "name": "@ai-slot/adapter-react",
@@ -50,7 +62,10 @@
       "react": ">=18",
       "react-dom": ">=18"
     },
-    "previousLatest": "0.1.0"
+    "previousLatest": "0.1.0",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.1.1"
   },
   {
     "name": "@ai-slot/adapter-vue",
@@ -63,7 +78,10 @@
     "peerDependencies": {
       "vue": ">=3.4"
     },
-    "previousLatest": "0.1.0"
+    "previousLatest": "0.1.0",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.1.1"
   },
   {
     "name": "@ai-slot/a2ui",
@@ -76,7 +94,10 @@
       "@ai-slot/adapter-dom": "^0.2.0",
       "@ai-slot/runtime": "^0.2.0"
     },
-    "previousLatest": "0.1.0"
+    "previousLatest": "0.1.0",
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.1.1"
   },
   {
     "name": "@ai-slot/operations",
@@ -86,7 +107,10 @@
       "@ai-slot/registry": "0.1.1"
     },
     "peerDependencies": {},
-    "previousLatest": null
+    "previousLatest": null,
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.1.0"
   },
   {
     "name": "@ai-slot/mcp",
@@ -97,6 +121,9 @@
       "zod": "^4.3.5"
     },
     "peerDependencies": {},
-    "previousLatest": null
+    "previousLatest": null,
+    "sourceCommit": "e43761db1971b917cec45bee8733f8abeb6654aa",
+    "published": true,
+    "latest": "0.1.0"
   }
 ]

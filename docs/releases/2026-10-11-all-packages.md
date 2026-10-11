@@ -28,4 +28,10 @@
 
 ## 公网验收
 
-准备已完成；各包发布和公网安装结果待实际操作后补记。本段不是发布成功声明。
+九个包均已于 2026-10-11 发布，`latest` 分别指向上表版本；发布源码为 `e43761db1971b917cec45bee8733f8abeb6654aa`。用户在本机浏览器完成各次 npm 授权。每个发布回执之后均等待公开索引更新，再核对 `dist.integrity` 与 `dist-tags.latest`，没有把回执当作公网可用，也没有在等待期间重复发布。
+
+在全新目录 `/private/tmp/ai-slot-all-public-consumer-84yt04h5` 使用九个明确的 npm 版本安装（不是本地 tgz），然后执行 `node smoke.mjs` 和 TypeScript NodeNext 检查，全部通过。`package-lock.json` 中九包 `resolved` 均来自 `https://registry.npmjs.org/`，版本和 integrity 逐一与制品清单匹配。安装共 183 个依赖，审计 0 漏洞；测试辅助依赖 whatwg-encoding 有已知废弃提示，不在核心包运行时依赖内。
+
+实际消费覆盖：无 LLM 的公开数据交付、DOM/React/Vue 渲染、A2UI 转换、Operations 真文件库建稿/批准/发布/重启读取、MCP 通过 npm 生成的符号链接启动真实 stdio 并发现七个工具。后者验证可安装与协议发现，不冒充外部 AI 客户端完成实际管理任务。
+
+此前“后续 SDK 未发布、管理包 private”的当前状态已被本次全包发布取代。历史验收记录中的原阶段状态保留。参考 HTTP 服务和 WordPress 插件仍通过仓库交付；本次不部署远程管理服务、不新增客户试点，也不因仅更新版本与文档重复部署官网。
