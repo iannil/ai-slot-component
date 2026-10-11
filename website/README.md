@@ -27,6 +27,8 @@ npx wrangler pages deploy dist --project-name=aislot --branch=main
 
 2026-10-10 数据交付入口发布：先部署预览 `release-data-provider-preview`（`8f41b6c9-d395-46af-a05e-7aa2a48ca23d`），再从同一份 `dist` 部署生产 `main`（`e4d622fe-2405-4a4e-9abe-48f0a54d0975`）。`aislot.dev` 与 `aislot.pages.dev` 的脚本/样式资源名均与本地产物一致；读通道与 MCP 公网烟测结果见[发布证据](../docs/releases/2026-10-10-data-provider.md)。
 
+最新部署：2026-10-11 九包公开发布后，官网已从 `898cbe3` 构建并发布生产；两个正式域名和公网文档 MCP 验收通过，见[本次部署记录](../docs/releases/2026-10-11-website.md)。
+
 ## 演示区（src/demo/）
 
 Demo 区不是录屏：页面内嵌真实的 `@ai-slot/runtime` 与 `@ai-slot/adapter-dom`，
