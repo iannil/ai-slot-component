@@ -5,9 +5,10 @@ const copy = {
     roles: [
       ['内容生成 · 已提供基础能力', 'AI 按提示词生成组件属性中的文案。'],
       ['组件组合 · 已提供基础能力', 'AI 组合已注册组件；新组件代码仍需审查与部署。'],
-      ['授权管理 · 规划中', '计划让外部 AI 经 MCP 创建草稿、预览、发布与回滚。'],
+      ['授权管理 · 实验性', 'AI 可经本地 MCP 创建和预览草稿，经负责人批准后发布或回滚。'],
     ],
     note: '也可接入符合组件树协议的数据端点。数据更新不必每次调用 AI。当前官网 MCP 只读文档。',
+    status: 'operations / mcp 已公开发布，需 Node ≥22 与独立本地服务。外部 AI 客户端与真实客户试点仍待验收。',
     setup: '首次接入需要注册组件、配置渲染器与端点；框架无关不代表所有平台和套餐均可直接安装。',
   },
   en: {
@@ -16,9 +17,10 @@ const copy = {
     roles: [
       ['Content generation · Foundation available', 'AI generates copy in component properties.'],
       ['Component composition · Foundation available', 'AI combines registered components. New component code still needs review and deployment.'],
-      ['Authorized management · Planned', 'External AI agents will be able to draft, preview, publish and roll back through MCP.'],
+      ['Authorized management · Experimental', 'AI can create and preview drafts through local MCP, then publish or roll back after owner approval.'],
     ],
     note: 'You can also connect an endpoint that returns the component-tree protocol. Data updates need not call AI. The current website MCP reads documentation only.',
+    status: 'operations / mcp are published and require Node ≥22 and a separate local service. External AI-client acceptance and customer pilots are still pending.',
     setup: 'Initial integration requires a registry, renderer and endpoint. Framework-agnostic does not mean every platform or plan permits installation.',
   },
 } as const
@@ -41,6 +43,7 @@ export default function SlotResponsibilities({ lang }: { lang: 'en' | 'zh' }) {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted-foreground">{t.note}</p>
+        <p className="mt-3 text-sm text-muted-foreground">{t.status}</p>
         <p className="mt-3 text-sm text-muted-foreground">{t.setup}</p>
       </div>
     </section>

@@ -113,7 +113,7 @@ curl 'https://aislot.dev/api/agent/content?id=adapter-react'</code></pre></div>
       <h2 id="boundaries-title" class="mt-3 text-3xl font-bold tracking-tight">明确能力，也保留边界</h2>
       <div class="mt-8 grid gap-8 text-sm leading-7 text-muted-foreground md:grid-cols-3">
         <div><h3 class="mb-2 font-semibold text-foreground">安全交付</h3><p>AI 只输出组件树 JSON，必须校验后渲染。密钥只在服务端，原始兜底始终保留。</p></div>
-        <div><h3 class="mb-2 font-semibold text-foreground">当前限制</h3><p>尚未提供 token 级流式、live 自动重连及多实例缓存/限流抽象。公开入口不保证被所有 Agent 自动发现。</p></div>
+        <div><h3 class="mb-2 font-semibold text-foreground">当前限制</h3><p>live 自动重连已发布；token 级流式与多实例缓存/限流抽象仍未提供。管理型 MCP 已作为实验性本地包发布，发布与回滚需负责人独立批准；本站 MCP 仅查询公开文档。外部 AI 客户端与真实客户试点仍待验收。</p></div>
         <div><h3 class="mb-2 font-semibold text-foreground">公开访问</h3><p>不提交私有代码或凭据。采集仅记录通道、状态、数量与耗时，不记录查询正文。平台可能施加流量防护。</p></div>
       </div>
       <p class="mt-8 text-sm leading-relaxed text-muted-foreground">可选来源头：<code class="break-all font-mono text-foreground">X-Iannil-Entry-Source: skill</code>。客户端不支持时可省略，不影响访问。</p>

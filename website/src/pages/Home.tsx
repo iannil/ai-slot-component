@@ -55,7 +55,7 @@ const dict = {
       {
         name: 'Live',
         trigger: 'a data-source change',
-        body: 'Data changes can trigger invalidation so connected pages reload the slot. Initial installation and new component code may still require a host release.',
+        body: 'Data changes can trigger invalidation so connected pages reload the slot. Live connections automatically reconnect after interruption. Initial installation and new component code may still require a host release.',
         tag: 'update content, not code',
       },
       {
@@ -91,10 +91,10 @@ const dict = {
     qsTitle: 'Run the example without an API key.',
     qsSubBefore: 'The demo ships with a deterministic mock LLM. Set',
     qsSubAfter: 'to switch to any OpenAI-compatible endpoint.',
-    qsComment: '# Node ≥ 18, pnpm (corepack enable)',
+    qsComment: '# Node ≥ 22 for this workspace, pnpm (corepack enable)',
     qsOpen: '# → open https://demo.aislot.dev (hosted) or http://localhost:4173 (local)',
     stats: [
-      ['7 packages', 'registry · proxy · runtime · dom/react/vue adapters · a2ui'],
+      ['9 published packages', '7 SDK packages + experimental operations / mcp'],
       ['Zero deps', '<ai-slot> runtime is a dependency-free Web Component'],
       ['Tested', 'unit + Playwright e2e, adversarial validator fixtures'],
     ] as const,
@@ -135,7 +135,7 @@ const dict = {
       {
         name: '实时推送',
         trigger: '数据源变更',
-        body: '数据变更可触发失效通知，让连接正常的页面重新加载槽位。首次安装或新增组件代码仍可能需要宿主发布。',
+        body: '数据变更可触发失效通知，让连接正常的页面重新加载槽位；连接中断后自动重连。首次安装或新增组件代码仍可能需要宿主发布。',
         tag: '更新内容，而不是代码',
       },
       {
@@ -170,10 +170,10 @@ const dict = {
     qsTitle: '无需 API Key，运行完整示例。',
     qsSubBefore: '示例内置确定性 mock LLM。设置',
     qsSubAfter: '即可切换到任意 OpenAI 兼容端点。',
-    qsComment: '# Node ≥ 18，pnpm（corepack enable）',
+    qsComment: '# 本仓库使用 Node ≥ 22，pnpm（corepack enable）',
     qsOpen: '# → 打开 https://demo.aislot.dev（在线）或 http://localhost:4173（本地）',
     stats: [
-      ['7 个包', 'registry · proxy · runtime · dom/react/vue 适配器 · a2ui'],
+      ['9 个已发布包', '7 个 SDK 包 + 实验性 operations / mcp'],
       ['零依赖', '<ai-slot> 运行时是无依赖 Web Component'],
       ['全测试', '单测 + Playwright e2e，含对抗性校验样例'],
     ] as const,

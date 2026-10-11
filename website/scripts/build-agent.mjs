@@ -6,7 +6,7 @@ import postcss from 'postcss';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 const root = new URL('../../', import.meta.url);
-const sources = [['overview', 'AI Slot 使用指南', 'README.zh-CN.md', 'zh'], ['overview-en', 'AI Slot guide', 'README.md', 'en'], ...['registry','proxy','runtime','adapter-dom','adapter-react','adapter-vue','a2ui'].map(p => [p, `@ai-slot/${p}`, `packages/${p}/README.md`, 'en'])];
+const sources = [['overview', 'AI Slot 使用指南', 'README.zh-CN.md', 'zh'], ['overview-en', 'AI Slot guide', 'README.md', 'en'], ...['registry','proxy','runtime','adapter-dom','adapter-react','adapter-vue','a2ui'].map(p => [p, `@ai-slot/${p}`, `packages/${p}/README.md`, 'en']), ...['operations','mcp'].map(p => [p, `@ai-slot/${p}（实验性）`, `packages/${p}/README.md`, 'zh'])];
 const records = await Promise.all(sources.map(async ([id,title,path,locale]) => {
   const body = await readFile(new URL(path, root), 'utf8');
   const updatedAt = execFileSync('git', ['log','-1','--format=%cI','--',path], { cwd: root, encoding:'utf8' }).trim();

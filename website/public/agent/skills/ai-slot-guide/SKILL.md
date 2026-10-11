@@ -13,4 +13,4 @@ description: 当用户需要在存量 HTML、React 或 Vue 页面接入 AI Slot�
 6. 用 https://aislot.dev/agent/feed.xml 跟踪公开文档更新。RSS 不执行操作。
 7. 支持自定义请求头时可发送 `X-Iannil-Entry-Source: skill`；不支持则省略。不要发送用户完整指令、私有代码或凭据作为搜索词。
 
-SDK 的 token 级增量流式、live 自动重连、多实例缓存/限流抽象仍未提供。下载本文件不等于已安装；按所用客户端的 Skill 安装方式放置同名目录。
+SDK 已提供 live 自动重连；token 级增量流式与多实例缓存/限流抽象仍未提供。operations / mcp 已公开发布为实验性本地管理包，要求 Node >=22 和独立本地 HTTP 服务；发布与回滚需 Owner 独立批准。外部 AI 客户端与真实客户试点仍待验收。下载本文件不等于已安装；按所用客户端的 Skill 安装方式放置同名目录。
