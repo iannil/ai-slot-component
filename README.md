@@ -255,7 +255,7 @@ The workspace uses type checking; the website also has an ESLint gate.
 
 ## Project status
 
-v1 and v1.1 are merged to master. The website quality and first data-delivery release preparation are also on master; the prepared `@ai-slot/proxy@0.2.0` tarball has not been published to npm. Reliable reconnect, version storage, governance, local management MCP, and a WordPress reference integration are merged and pushed to master; these later SDK changes are not yet published to npm, and the management packages remain private. See the [evidence and external blockers](./docs/validation/next-delivery-status.md).
+v1 and v1.1 are merged to master. The website quality and first data-delivery release preparation are also on master; `@ai-slot/proxy@0.2.0` is published on npm and verified through a clean registry installation. Reliable reconnect, version storage, governance, local management MCP, and a WordPress reference integration are merged and pushed to master; these later SDK changes are not yet published to npm, and the management packages remain private. See the [evidence and external blockers](./docs/validation/next-delivery-status.md).
 
 Deliberately deferred: token-level LLM streaming and multi-instance rate-limit/cache stores. Explicitly out of scope: arbitrary HTML/CSS generation, client-side DOM patch protocols, in-browser inference, multi-tenant billing.
 

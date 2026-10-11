@@ -7,9 +7,9 @@
 | 项目 | 状态与范围 | 提交/部署/版本 | 验收证据 | 外部条件或未完成项 |
 | --- | --- | --- | --- | --- |
 | Q 官网质量 | verified；已进 master 并随官网部署 | `874b458`、`2fa58ab`；Pages 部署见 R | 官网 lint 从 8 项降至 0；`test:agent` 5/5、build、390px 英中首屏与演示浏览器检查通过 | 无 |
-| R1 数据交付包准备 | verified；仅本地制品 | `95c5f1b`；`@ai-slot/proxy@0.2.0` 待发布 | build/test/typecheck；真实 tgz 独立 npm 安装并无模型密钥返回 200；完整性见下 | npm 账号认证 |
+| R1 数据交付包准备 | verified；制品已由 R3 发布 | `95c5f1b`；`@ai-slot/proxy@0.2.0` | build/test/typecheck；真实 tgz 独立 npm 安装并无模型密钥返回 200；完整性见下 | 无 |
 | R2 Git 与官网 | verified；已上线官网 | 官网发布时源码 `95c5f1b`、记录 `92f3229`（后续源码已推送 `6abe45d`）；生产 `e4d622fe-2405-4a4e-9abe-48f0a54d0975` | [发布记录](../releases/2026-10-10-data-provider.md)；预览和生产读通道、官方 MCP 读取、390px 浏览器检查 | 本轮没有生产签名健康正向探测 |
-| R3 npm 公开发布 | blocked_external；尚未发布 | 待发布 `@ai-slot/proxy@0.2.0` tgz | 2026-10-11 01:41 `npm whoami` 最新重试仍 E401（退出 1，控制器证据）；未执行 publish 或公网安装回读 | 本机 npm 登录及可能的 2FA |
+| R3 npm 公开发布 | verified；2026-10-11 已公开 | `@ai-slot/proxy@0.2.0`，latest=0.2.0 | 用户完成浏览器鉴权；公网 integrity 与原制品一致，独立公网安装及交付烟测通过；见[发布记录](../releases/2026-10-10-data-provider.md) | 无 |
 | L 可靠交付 | verified；已合入并推送 master | `f7b85e6..ff1bb61` | 重连/补偿读取、卸载隔离、命名槽位、可选 `fresh-only` 到期兜底；单测与真实浏览器故障路径，四任务复审通过 | 未发新版 SDK |
 | V 持久版本存储 | verified；源码已推送，包仍 private | `81393ef..326ede4` | 单写者锁、状态校验、原子写与坏库拒绝的定向测试，两个任务复审通过 | 崩溃后旧锁需管理员确认原进程退出 |
 | G 治理与交付 | verified；源码已推送，包仍 private | `70eaf15..2fe90a4`（含 `a7b9333`、`f943439`） | 来源身份绑定、不可变草稿、人工批准、幂等发布/回滚与公开只读交付；单测/build/typecheck及四任务复审 | 未部署管理服务 |
@@ -19,7 +19,7 @@
 
 ## 可复核的发布与验收边界
 
-R1 的唯一待发布制品原路径为 `/tmp/ai-slot-release-pack.EmY239/ai-slot-proxy-0.2.0.tgz`，基于 `95c5f1b`，SHA512 integrity 为 `sha512-t6Uzyq72XbV+eNPfWf7+xCpb+4dv+kUFWqS6qkq5O+4wAFTYrw9q1J+5C0DzPdbp9tBrpxecf2o3T2IsyDe56A==`。原路径属于临时目录，持久证据是上述 hash、提交和[发布记录](../releases/2026-10-10-data-provider.md)。包内只有 dist、package.json、README、LICENSE；依赖转为已在 npm 的 `@ai-slot/registry@0.1.0`。这个制品不含之后的 L/M 等 SDK 改动；operations/mcp 始终 private。npm 的 `latest` 在准备时为 `0.1.0`，未核实认证前不能说 `0.2.0` 可从公网安装。后续 SDK 需要重新选版本、打包、验证与发布。
+R1 已发布的精确制品原路径为 `/tmp/ai-slot-release-pack.EmY239/ai-slot-proxy-0.2.0.tgz`，基于 `95c5f1b`，SHA512 integrity 为 `sha512-t6Uzyq72XbV+eNPfWf7+xCpb+4dv+kUFWqS6qkq5O+4wAFTYrw9q1J+5C0DzPdbp9tBrpxecf2o3T2IsyDe56A==`。原路径属于临时目录，持久证据是上述 hash、提交和[发布记录](../releases/2026-10-10-data-provider.md)。包内只有 dist、package.json、README、LICENSE；依赖转为已在 npm 的 `@ai-slot/registry@0.1.0`。这个制品不含之后的 L/M 等 SDK 改动；operations/mcp 始终 private。npm 的 `latest` 在准备时为 `0.1.0`；2026-10-11 完成用户浏览器鉴权后已发布，公开 `latest=0.2.0` 与独立安装均核对通过。此前 E401 阻塞已解除。后续 SDK 需要重新选版本、打包、验证与发布。
 
 R2 将 Q/R 准备代码正常快进推送到 master，官网 Pages 的预览 ID 为 `8f41b6c9-d395-46af-a05e-7aa2a48ca23d`，生产 ID 为 `e4d622fe-2405-4a4e-9abe-48f0a54d0975`，此前成功的生产恢复点为 `1f5fcca6-1709-4c40-8ae8-4f2da143b35d`。生产 `https://aislot.dev` 与 `https://aislot.pages.dev` 首页、公开文档/MCP 读通道经实际回读；匿名 health 返回 403，生产 Secret 存在，但本轮没有签名凭据，不能把这两项当正向签名健康通过。历史签名与心跳记录见[遥测接线记录](../operations/ai-slot-telemetry-rollout.md)。
 
@@ -61,4 +61,4 @@ L/V/G/M/I 的测试结果来自相应实施报告，不是本次状态整理重�
 
 R1 有一次已向用户披露的误操作：在 `/private/tmp` 执行了 `npm init -y`，输出称写入 `/private/tmp/package.json`，当时显示 `main=ifnil-task2-service-working.js`。该路径可能原已有内容；原始值和实际覆盖范围未知，未猜测恢复，也未删除文件。随后独立消费测试改在专用临时目录执行。此事不能记作已完全恢复。
 
-下一状态更新须以真实证据为准：npm 认证后对精确包重新核对并公网回读；外部 AI 客户端和真实 Owner 运营验收；取得客户授权后才做客户站点试点与总人工劳动评估。
+下一状态更新须以真实证据为准：后续 SDK 变更单独选版本打包发布；外部 AI 客户端和真实 Owner 运营验收；取得客户授权后才做客户站点试点与总人工劳动评估。
