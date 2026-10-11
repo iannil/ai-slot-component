@@ -1,1 +1,46 @@
-{"name":"@ai-slot/operations","version":"0.0.0","private":true,"type":"module","engines":{"node":">=22"},"exports":{".":{"types":"./dist/index.d.ts","import":"./dist/index.js"}},"scripts":{"build":"tsup src/index.ts --format esm --dts --clean","test":"vitest run","typecheck":"tsc --noEmit"},"dependencies":{"@ai-slot/registry":"workspace:*"},"devDependencies":{"@types/node":"^22.0.0","tsup":"^8.3.0","typescript":"^5.6.0","vitest":"^2.1.0"}}
+{
+  "name": "@ai-slot/operations",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-slot/registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iannil/ai-slot-component.git",
+    "directory": "packages/operations"
+  },
+  "bugs": {
+    "url": "https://github.com/iannil/ai-slot-component/issues"
+  },
+  "homepage": "https://github.com/iannil/ai-slot-component/tree/master/packages/operations#readme",
+  "description": "Experimental single-writer local version store and approval/publish governance for AI-SLOT."
+}

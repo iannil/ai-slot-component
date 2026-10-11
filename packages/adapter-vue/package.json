@@ -1,6 +1,6 @@
 {
   "name": "@ai-slot/adapter-vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Vue 3 renderer adapter for ai-slot: render validated component trees as real Vue components.",
   "keywords": [
@@ -50,5 +50,8 @@
     "typescript": "^5.6.0",
     "vitest": "^2.1.0",
     "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

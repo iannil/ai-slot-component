@@ -1,6 +1,6 @@
 {
   "name": "@ai-slot/proxy",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "Stateless AI render proxy: prompt compiler, LLM client with retry, output validator, and two-tier cache.",
   "keywords": [
@@ -46,5 +46,8 @@
     "tsup": "^8.3.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

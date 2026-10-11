@@ -1,0 +1,102 @@
+[
+  {
+    "name": "@ai-slot/registry",
+    "version": "0.1.1",
+    "integrity": "sha512-CxibEUKwAbFhT4V9bWzkQ2wGpBj4afudOmryBKR7E/Kx3sLrYy88QNKANaATSDe2FsICYIemu/jWk0oZ/obMoQ==",
+    "dependencies": {},
+    "peerDependencies": {},
+    "previousLatest": "0.1.0"
+  },
+  {
+    "name": "@ai-slot/runtime",
+    "version": "0.2.0",
+    "integrity": "sha512-SVV8dCzsmDrGVEOmHBINkW1taZbUnyuVA9SdCer+iJeeOUTGR24C1EuSh4leU6GB1Ndhg38yKE/UN5h6KtN3FQ==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1"
+    },
+    "peerDependencies": {},
+    "previousLatest": "0.1.2"
+  },
+  {
+    "name": "@ai-slot/proxy",
+    "version": "0.3.0",
+    "integrity": "sha512-bHDY45nQpEPk3HpmHzMkGvRu41FIqL5PswYQ7/i5SMTC6qCfA95S8OLwzt1OzJvG86sSlIhPnU8D9/r/y82GMQ==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1"
+    },
+    "peerDependencies": {},
+    "previousLatest": "0.2.0"
+  },
+  {
+    "name": "@ai-slot/adapter-dom",
+    "version": "0.2.0",
+    "integrity": "sha512-ZPy5a/Y8eK6bH0FqVcwrlH7qJFmwRIt7PtxgbOPF692uBhSUt2phVzDdzfigDcSmL/7spIDOd9bNJhdeZJ+Yug==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1",
+      "@ai-slot/runtime": "0.2.0"
+    },
+    "peerDependencies": {},
+    "previousLatest": "0.1.0"
+  },
+  {
+    "name": "@ai-slot/adapter-react",
+    "version": "0.1.1",
+    "integrity": "sha512-h4bQ6JAY4naYfD8R9/2qjrN9nqHbH/bxWUSIb+rDYkPfrnLEG4gGjArxl5CeG1zfe4BOzEU0fz7STIEm4Rw/IA==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1",
+      "@ai-slot/runtime": "0.2.0"
+    },
+    "peerDependencies": {
+      "react": ">=18",
+      "react-dom": ">=18"
+    },
+    "previousLatest": "0.1.0"
+  },
+  {
+    "name": "@ai-slot/adapter-vue",
+    "version": "0.1.1",
+    "integrity": "sha512-eAPPqkVoPU680Esic9XAYBjmLFE1G34dayyOHSWVDOFgs6gj3BILZHHsxeCC5ASDj0eqGMmeBsp2jJKeAgpymg==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1",
+      "@ai-slot/runtime": "0.2.0"
+    },
+    "peerDependencies": {
+      "vue": ">=3.4"
+    },
+    "previousLatest": "0.1.0"
+  },
+  {
+    "name": "@ai-slot/a2ui",
+    "version": "0.1.1",
+    "integrity": "sha512-25WIpIPbbHh1o2uQN+yjMRipUBPFUSZZEOiDZ9KYPQDxT5apXKehj46+0VH7BBIlI1wImoUxRXjR0zKsOWxOlA==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1"
+    },
+    "peerDependencies": {
+      "@ai-slot/adapter-dom": "^0.2.0",
+      "@ai-slot/runtime": "^0.2.0"
+    },
+    "previousLatest": "0.1.0"
+  },
+  {
+    "name": "@ai-slot/operations",
+    "version": "0.1.0",
+    "integrity": "sha512-LVpRBzcFg4Wx6c4orDVBFsefLXEyRh9QJrnfu4GDtY9JHnW4Ec4ffEQGz5+KA9BP9lN78/DwE4EWrh48FAsEGQ==",
+    "dependencies": {
+      "@ai-slot/registry": "0.1.1"
+    },
+    "peerDependencies": {},
+    "previousLatest": null
+  },
+  {
+    "name": "@ai-slot/mcp",
+    "version": "0.1.0",
+    "integrity": "sha512-svhPfNOvuNoqmCbO8iw29R17lpxCCakRINIOgyrTGxHCskhw5SY5kpDaiJwNt09LlyWWhlmESVFB5k+HQaQ4ZA==",
+    "dependencies": {
+      "@modelcontextprotocol/sdk": "1.32.1",
+      "zod": "^4.3.5"
+    },
+    "peerDependencies": {},
+    "previousLatest": null
+  }
+]

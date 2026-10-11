@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { resolve } from 'node:path';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createManagementClient } from './client.js';
@@ -13,6 +13,6 @@ export async function main(): Promise<void> {
   await createManagementServer(client).connect(new StdioServerTransport());
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch(error => { process.stderr.write(`${error instanceof Error ? error.message : 'MCP 启动失败'}\n`); process.exitCode = 1; });
 }

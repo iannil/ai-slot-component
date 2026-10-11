@@ -1,6 +1,6 @@
 # @ai-slot/operations
 
-服务端私有包，提供版本状态校验与本地单写者文件库。需要 Node.js 22 或更新版本。`openFileStore(directory)` 在目录中维护 `state.json` 和独占的 `writer.lock`，事务把草稿、审批、发布记录、指针及幂等回执作为一个快照提交。当前边界为 64 MiB 和 1000 条发布记录；只支持本地具备原子 rename 语义的文件系统，不支持 NFS、云同步目录或多个服务实例。
+实验性服务端公开包（0.x API 和持久格式尚不承诺跨版本兼容），提供版本状态校验与本地单写者文件库。需要 Node.js 22 或更新版本。`openFileStore(directory)` 在目录中维护 `state.json` 和独占的 `writer.lock`，事务把草稿、审批、发布记录、指针及幂等回执作为一个快照提交。当前边界为 64 MiB 和 1000 条发布记录；只支持本地具备原子 rename 语义的文件系统，不支持 NFS、云同步目录或多个服务实例。
 
 事务按调用顺序执行，读取也进入同一队列。提交先校验完整引用关系，再写同目录临时文件、同步文件、rename 到 `state.json`，最后同步目录。`beforeRename` 失败不会改变旧快照；rename 后失败返回 `commit_unknown`，该句柄停止后续写入。调用方应通过幂等回执核对提交结果，不能把该错误视为明确失败并盲目重试。
 
@@ -31,3 +31,11 @@
 `deliver` 返回版本 1 的 JSON：`{ version, slot, tree, meta: { revision, artifactHash, sourceVersion, expiresAt } }`。`expiresAt` 是 artifact 中的 Unix 毫秒时间。所有响应均使用 `Cache-Control: no-store`。已知槽位没有可读发布内容，或当前来源、组件契约、有效期校验失败时，返回 `503 { "error": "ai_unavailable" }`，由页面保留原始内容；未知槽位返回 404。来源读取抛出的异常会统一转成 `source_unavailable`，来源数据本身不合法仍是 `source_invalid`，公开响应不会暴露这些内部细节。
 
 `getStatus(actor, slotId)` 返回 `{ desiredRevision, readableRevision, browserObservation }`。`desiredRevision` 来自发布指针，即使当前来源失效也保留；`readableRevision` 只有通过同一实时可读性检查才有值；`browserObservation` 固定为 `null`，因为服务端没有浏览器渲染观测。每次交付都会重读外部来源，外部来源与文件事务不能跨系统原子锁定，因此不承诺来源在校验后永不变化。此包是单站点参考实现，不负责任意事实语义验证或金融促销自动审批。
+
+## 安装与验收边界
+
+```bash
+npm install @ai-slot/operations
+```
+
+可导入 `openFileStore`、`createOperations`，调用流程见上文。完整可运行参考服务位于仓库 `examples/managed-slot`；此包不自动启动 HTTP 服务，也不提供多实例或租户隔离。协议和脚本验收已通过，真实运营人员及客户试点尚未完成。升级前备份状态；不承诺自动迁移历史试验快照。

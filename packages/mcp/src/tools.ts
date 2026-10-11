@@ -22,7 +22,7 @@ function errorCode(error: unknown): string {
 }
 
 export function createManagementServer(client: ManagementClient): McpServer {
-  const server = new McpServer({ name: 'ai-slot-management', version: '0.0.0' });
+  const server = new McpServer({ name: 'ai-slot-management', version: '0.1.0' });
   async function run(path: string, input: unknown) {
     try { return reply(await client.call(path, input)); }
     catch (error) { return { isError: true, ...reply({ error: errorCode(error) }) }; }
