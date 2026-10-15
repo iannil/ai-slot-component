@@ -14,6 +14,10 @@ npm run preview    # 预览生产构建
 
 注意：`vite.config.ts` 把 `@ai-slot/*` 别名直接指向 `../packages/*/src`，构建官网无需先构建 monorepo 包。
 
+## 网站统计
+
+官网在 `index.html` 中接入 GA4，衡量 ID 为 `G-6YRQHNCGZL`，使用异步 Google tag 记录页面访问。部署后可在对应 GA4 属性的实时报告中验证访问数据。
+
 ## 部署
 
 Cloudflare Pages 项目 `aislot`，**生产分支是 `main`**（不是 master，写错会部署成预览环境）：
