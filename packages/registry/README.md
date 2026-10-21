@@ -1,5 +1,7 @@
 # @ai-slot/registry
 
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/registry/README.zh-CN.md)
+
 AI output protocol for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): declare the components a model may use, validate its component trees, and derive skeleton frames.
 
 The model never writes HTML — it returns component-tree JSON whose component names must exist in your registry, validated against prop schemas, slot rules, depth and node-count limits before anything renders.

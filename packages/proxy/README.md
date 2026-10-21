@@ -1,5 +1,7 @@
 # @ai-slot/proxy
 
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/proxy/README.zh-CN.md)
+
 > AI-rendered page content — without leaked API keys, invalid LLM output, or white screens.
 
 The server side of the **ai-slot-component** SDK ([on npm](https://www.npmjs.com/package/@ai-slot/proxy)): one stateless handler that turns a slot ID into a **validated component tree**. It speaks Web standard `Request → Response`, so it deploys unchanged to Cloudflare Workers, Deno, Bun, Vercel Edge, or a plain Node server.
@@ -8,44 +10,46 @@ The server side of the **ai-slot-component** SDK ([on npm](https://www.npmjs.com
 PromptCompiler → LLM Client (retry, 8s timeout) → OutputValidator → Cache (fresh → stale → 503)
 ```
 
-中文文档：[仓库 CLAUDE.md](../../CLAUDE.md) · [总体设计](../../docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md)
+Further docs: [repository CLAUDE.md](https://github.com/iannil/ai-slot-component/blob/master/CLAUDE.md) · [overall design spec](https://github.com/iannil/ai-slot-component/blob/master/docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md)
 
-## 公开数据交付（`createRenderHandler`）
-
-`createRenderHandler` 面向公开、确定性的 GET 内容交付，不调用模型，也不需要 LLM 配置。服务端先用 `resolveSlot` 读取带版本的数据快照，再由 `provider.produce` 将快照映射为组件树；代理校验组件树后才返回。以下 `cms.example.com` 是说明域名，请替换为你固定的服务端数据源；不要把来访者提供的 URL 当成数据源。
-
-```ts
-import { defineRegistry } from "@ai-slot/registry";
-import { createRenderHandler } from "@ai-slot/proxy";
-
-const registry = defineRegistry({ components: {
-  title: { description: "标题", props: { text: "string" }, required: ["text"] },
-} });
-export const handler = createRenderHandler({
-  registry, registryVersion: "1", namespace: "public-homepage",
-  resolveSlot: async (id, signal) => {
-    if (id !== "hero") return null;
-    const response = await fetch("https://cms.example.com/public/hero.json", { signal });
-    if (!response.ok) throw new Error("数据源不可用");
-    const data = await response.json();
-    if (typeof data.version !== "string" || typeof data.title !== "string") throw new Error("数据源格式错误");
-    return { slotId: id, originalContent: "原始标题", contentVersion: data.version, data: { title: data.title } };
-  },
-  provider: { id: "title-map-v1", produce: ({ slot }) => ({ component: "title", props: { text: slot.data?.title } }) },
-});
-```
-
-此入口只接受 GET，且只用于公开内容；`resolveSlot` 与 `produce` 共用 8000ms 请求预算，并可通过 `AbortSignal` 取消。默认缓存新鲜期为 60000ms，默认 stale 窗口为 0。源内容变化时必须更新 `contentVersion`；映射逻辑变化时必须更新 `provider.id`。只有显式配置 `staleMs` 才会在生产失败时使用同一源版本的旧结果。传入的 registry 与配置应视为初始化后不变；需要修改时创建新 handler 并递增相应版本。数据源密钥只能保留在服务端，返回的 `data` 只应包含渲染所需的展示字段。
-
-既有 `createAiRenderHandler`、LLM 调用、用户提示词和缓存行为保持原样；数据交付使用独立的 `createRenderHandler` 入口。
-
-## Quick start
+## Install
 
 ```bash
 npm install @ai-slot/proxy
 ```
 
 Hacking inside the monorepo instead? `pnpm install && pnpm build` at the repo root, then `import ... from "@ai-slot/proxy"` in any workspace package.
+
+## Public data delivery (`createRenderHandler`)
+
+`createRenderHandler` targets public, deterministic GET content delivery: it never calls a model and needs no LLM configuration. The server first reads a versioned data snapshot through `resolveSlot`, then `provider.produce` maps the snapshot into a component tree; the proxy validates the tree before returning it. `cms.example.com` below is an illustrative domain — replace it with your own fixed server-side data source, and never treat a visitor-supplied URL as the data source.
+
+```ts
+import { defineRegistry } from "@ai-slot/registry";
+import { createRenderHandler } from "@ai-slot/proxy";
+
+const registry = defineRegistry({ components: {
+  title: { description: "Title", props: { text: "string" }, required: ["text"] },
+} });
+export const handler = createRenderHandler({
+  registry, registryVersion: "1", namespace: "public-homepage",
+  resolveSlot: async (id, signal) => {
+    if (id !== "hero") return null;
+    const response = await fetch("https://cms.example.com/public/hero.json", { signal });
+    if (!response.ok) throw new Error("data source unavailable");
+    const data = await response.json();
+    if (typeof data.version !== "string" || typeof data.title !== "string") throw new Error("invalid data source format");
+    return { slotId: id, originalContent: "Original title", contentVersion: data.version, data: { title: data.title } };
+  },
+  provider: { id: "title-map-v1", produce: ({ slot }) => ({ component: "title", props: { text: slot.data?.title } }) },
+});
+```
+
+This entry point accepts GET only and is for public content only. `resolveSlot` and `produce` share an 8000 ms request budget and can be cancelled through the `AbortSignal`. The default cache fresh window is 60000 ms and the default stale window is 0. Bump `contentVersion` whenever the source content changes, and `provider.id` whenever the mapping logic changes. Old results of the same source version are only served as fallback after a produce failure when `staleMs` is explicitly configured. Treat the registry and configuration passed in as immutable after initialization; to change them, create a new handler and bump the corresponding version. Data source credentials must stay on the server, and the returned `data` should only contain the display fields needed for rendering.
+
+The existing `createAiRenderHandler`, LLM calls, user prompts, and caching behavior are unchanged; data delivery uses the separate `createRenderHandler` entry point.
+
+## Quick start
 
 ```ts
 import { createAiRenderHandler, createOpenAIClient } from "@ai-slot/proxy";
@@ -97,7 +101,7 @@ curl "http://localhost:8000/ai-render/hero"
 }
 ```
 
-That `tree` is what [`<ai-slot>` in packages/runtime](../runtime/) renders; the element's original content stays on the page as the fallback.
+That `tree` is what [`<ai-slot>` in packages/runtime](https://github.com/iannil/ai-slot-component/tree/master/packages/runtime) renders; the element's original content stays on the page as the fallback.
 
 ## Two paths, one endpoint
 
@@ -247,14 +251,14 @@ cd packages/proxy && npx vitest run src/handler.test.ts -t "降级"   # one file
 pnpm --filter @ai-slot/proxy typecheck   # run pnpm build first on a clean checkout
 ```
 
-Every LLM in the test suite is a fixture or a mock — nothing here calls a real API, so the package is safe to explore and modify with a coding agent. The spec of record is [`docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md`](../../docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md).
+Every LLM in the test suite is a fixture or a mock — nothing here calls a real API, so the package is safe to explore and modify with a coding agent. The spec of record is [`docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md`](https://github.com/iannil/ai-slot-component/blob/master/docs/superpowers/specs/2026-09-24-ai-native-rendering-sdk-design.md).
 
 ## The monorepo
 
 | Package | Role |
 |---|---|
-| [`@ai-slot/registry`](../registry/) | protocol + `OutputValidator` — the security boundary, consumed by proxy, runtime, and build tooling |
+| [`@ai-slot/registry`](https://github.com/iannil/ai-slot-component/tree/master/packages/registry) | protocol + `OutputValidator` — the security boundary, consumed by proxy, runtime, and build tooling |
 | **`@ai-slot/proxy`** | this package — stateless render proxy |
-| [`@ai-slot/runtime`](../runtime/) | zero-dependency `<ai-slot>` element (`stream`, `live`, `editable`) |
-| [`@ai-slot/adapter-dom`](../adapter-dom/) / [`adapter-react`](../adapter-react/) / [`adapter-vue`](../adapter-vue/) | map validated trees onto your real components |
-| [`examples/plain-html`](../../examples/plain-html/) | end-to-end demo: legacy page, editable + streaming + live slots, Playwright e2e |
+| [`@ai-slot/runtime`](https://github.com/iannil/ai-slot-component/tree/master/packages/runtime) | zero-dependency `<ai-slot>` element (`stream`, `live`, `editable`) |
+| [`@ai-slot/adapter-dom`](https://github.com/iannil/ai-slot-component/tree/master/packages/adapter-dom) / [`adapter-react`](https://github.com/iannil/ai-slot-component/tree/master/packages/adapter-react) / [`adapter-vue`](https://github.com/iannil/ai-slot-component/tree/master/packages/adapter-vue) | map validated trees onto your real components |
+| [`examples/plain-html`](https://github.com/iannil/ai-slot-component/tree/master/examples/plain-html) | end-to-end demo: legacy page, editable + streaming + live slots, Playwright e2e |

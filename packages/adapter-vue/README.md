@@ -1,5 +1,7 @@
 # @ai-slot/adapter-vue
 
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/adapter-vue/README.zh-CN.md)
+
 Vue 3 renderer adapter for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): render validated component trees as real Vue components, plus an `<AiSlot>` wrapper around the Web Component.
 
 ## Install

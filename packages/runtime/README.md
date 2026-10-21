@@ -1,5 +1,7 @@
 # @ai-slot/runtime
 
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/runtime/README.zh-CN.md)
+
 Zero-dependency `<ai-slot>` Web Component runtime for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): wrap existing markup, fetch a validated component tree from the proxy, and render it through a registered adapter — with a guaranteed fallback to your original content.
 
 ## Install
@@ -26,9 +28,9 @@ npm install @ai-slot/runtime
 
 Element attributes: `src`, `name`, `renderer` (default `dom`), `editable`, `stream` (SSE skeleton → tree), `live` + `live-src` (invalidation push), `refresh-interval`, `fresh-only`.
 
-卸载元素时，在途的加载结果会被忽略；同一实例重新挂载后会重新核对内容。`live` 通道每次成功连接也会核对一次，因此初次挂载的加载与连接后的核对可能并发读取，由最新一次加载结果决定显示内容。
+When the element is disconnected, in-flight load results are ignored. Reconnecting the same instance triggers a content check. Every successful `live` connection also triggers a check, so the initial load and the connection check may read concurrently; the latest load determines what is displayed.
 
-`fresh-only` 是挂载前配置的可选管理内容边界：需先通过 `configureAiSlot({ registry })` 配置注册表，且服务端必须在通过校验的最终树响应 `meta.expiresAt` 中提供可信的 Unix 毫秒截止时间。缺失、非法、已过期或后续更新失败时，槽位恢复原始兜底；当前显示的树到期也会恢复。运行时使用访客本机时钟，并在页面重新可见时复核。后台标签页的定时器节流或错误的系统时钟可能延迟撤回，不能保证所有访客在截止毫秒立即消失。普通槽位保持原有行为，不要求期限元数据。属性和 `live` 一样应在挂载前配置。
+`fresh-only` is an optional boundary for managed content, configured before mounting. First configure the registry with `configureAiSlot({ registry })`; the server must provide a trusted Unix millisecond deadline in `meta.expiresAt` of the validated final-tree response. Missing, invalid, or expired deadlines, and failed subsequent updates, restore the original fallback. The currently displayed tree also falls back when it expires. The runtime uses the visitor’s local clock and rechecks when the page becomes visible again. Background-tab timer throttling or an incorrect system clock may delay removal; immediate removal at the deadline millisecond cannot be guaranteed for every visitor. Ordinary slots retain their existing behavior and do not require expiry metadata. Like `live`, configure this attribute before mounting.
 
 Wire format APIs: `registerWireFormat(id, format)` / `unregisterWireFormat(id)` plug alternative wire formats into the fetch pipeline. Failures are observed via `onFailure` as `FetchFailure { stage: "http-non-ok" | "parse" | "validate" | "fetch-error", message }` — set it globally in `configureAiSlot` or per call on `fetchComponentTree`. The silent-fallback behavior never changes; the hook is observation only.
 

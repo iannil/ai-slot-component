@@ -1,8 +1,10 @@
 # @ai-slot/adapter-dom
 
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/adapter-dom/README.zh-CN.md)
+
 DOM renderer adapter for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): map validated component trees to plain HTML elements — no framework required.
 
-文本必须通过 `textContent` 写入，不要将 AI 内容交给 `innerHTML`；未注册组件会跳过并给出警告。命名槽位需要显式声明挂载点，未声明或指向组件外部时渲染会失败，运行时保留原始兜底内容。
+Write text through `textContent`; never pass AI content to `innerHTML`. Unregistered components are skipped with a warning. Named slots require explicit mount targets. If a target is missing or points outside the component, rendering fails and the runtime keeps the original fallback content.
 
 ## Install
 
@@ -40,7 +42,7 @@ registerRenderer(
 );
 ```
 
-`childrenTarget` 继续控制默认 `children` 的挂载位置；`slotTargets` 只处理对应的命名槽位。映射函数应返回组件元素本身或其后代。
+`childrenTarget` controls where default `children` mount; `slotTargets` handles the corresponding named slots only. Each target function must return the component element itself or one of its descendants.
 
 ## Docs
 
