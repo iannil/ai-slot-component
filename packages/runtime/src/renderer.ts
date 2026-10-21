@@ -15,9 +15,18 @@ export type Renderer = (
 
 const renderers = new Map<string, Renderer>();
 
-/** 注册渲染适配器，如 registerRenderer("dom", createDomRenderer(...))。渲染器必须与导入 runtime 的代码在同一 module graph 中同步注册（custom elements upgrade 是同步的，首个 load 只推迟到一个 microtask）。 */
+/** 渲染器注册回调：供 ai-slot 重触发因缺渲染器而搁置的首帧加载（异步注册场景）。 */
+let onRendererRegisteredListener: ((name: string) => void) | undefined;
+
+/** 订阅渲染器注册事件（runtime 内部使用）。 */
+export function onRendererRegistered(listener: ((name: string) => void) | undefined): void {
+  onRendererRegisteredListener = listener;
+}
+
+/** 注册渲染适配器，如 registerRenderer("dom", createDomRenderer(...))。渲染器应与导入 runtime 的代码同步注册；异步注册（顶层 await、动态 import）时，首帧 load 会因缺渲染器而搁置，registerRenderer 后自动重触发。 */
 export function registerRenderer(name: string, renderer: Renderer): void {
   renderers.set(name, renderer);
+  onRendererRegisteredListener?.(name);
 }
 
 export function getRenderer(name: string): Renderer | undefined {

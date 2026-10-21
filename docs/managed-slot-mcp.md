@@ -65,7 +65,7 @@ claude mcp list
 claude
 ```
 
-这里将配置限定在临时客户端目录，令牌经环境继承，不写进 MCP 配置或命令参数。以后重新启动 Claude Code 时，需要重新设置 Agent 令牌。在 Claude Code 中通过 `/mcp` 检查连接；工具权限提示按实际操作授权。
+这里将配置限定在临时客户端目录，令牌经环境继承，不写进 MCP 配置或命令参数。以后重新启动 Claude Code 时，需要重新设置 Agent 令牌；`claude mcp list` 的健康检查同样需要父进程环境中的 Agent 令牌。本轮已实测 add → list（Connected）→ remove，并清理临时客户端目录的 MCP 注册配置。在 Claude Code 中通过 `/mcp` 检查连接；工具权限提示按实际操作授权。
 
 ### 3. 给 Agent 明确的建稿任务
 
