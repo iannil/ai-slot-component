@@ -34,7 +34,17 @@
 - 实验 B（自然冷启动 ×3）：全部在 41–51ms 发起交付请求、63–73ms 渲染。自然路径实际依赖 `live` 订阅的 `onConnect` 补偿 load（`packages/runtime/src/live.ts:75`）恰好晚于 registerRenderer 完成才成功；warm 缓存让 `/registry.json` 更快，因此重开页面通常正常。
 - 服务端心跳 25 秒（`packages/proxy/src/invalidate.ts:27`）会不断重置客户端 60 秒空闲计时（`live.ts:81-83`），SSE 健康时卡死状态不会被断线重连救回。
 
-影响面：任何 registerRenderer/configureAiSlot 晚于首个 microtask 完成的接入（动态 import、顶层 await、异步 fetch 配置）都会静默丢失首帧；无 `live` 属性的页面没有补偿路径。这属于 runtime 对「同步注册」契约缺少容错的行为缺陷，修复决策另行记录。
+影响面：任何 registerRenderer/configureAiSlot 晚于首个 microtask 完成的接入（动态 import、顶层 await、异步 fetch 配置）都会静默丢失首帧；无 `live` 属性的页面没有补偿路径。这属于 runtime 对「同步注册」契约缺少容错的行为缺陷。上述代码位置与行为描述对应修复前版本。
+
+### runtime 0.2.3 修复验证
+
+缺渲染器的已连接槽位现在会等待注册事件，注册后自动重新加载；卸载时清理等待项。异步接入应先 `configureAiSlot` 再 `registerRenderer`，此修复不补偿独立晚到的 registry 或编辑条文案配置。
+
+- 三个回归用例覆盖默认渲染器晚注册、注册前卸载以及渲染器名称不匹配；测试显式导入自定义元素模块，各用例隔离渲染器名称。临时关闭注册通知时两个关键用例失败，恢复后通过。
+- runtime 全部 110 个测试通过，runtime 构建与全仓类型检查通过。
+- 因 4194 已有服务，复测使用临时服务副本，将监听端口与两处本机 Host 白名单统一改为 4195，业务路由和浏览器产物保持相同；使用独立 Store、来源与临时令牌。
+- 实验 A：434ms 发起交付请求，914ms 观察到内容；实验 A2：1041ms 发起请求，1339ms 观察到内容。两者均自动显示，无手动 load。
+- 自然冷启动三次在 66–76ms 观察到内容；首次加载与 live onConnect 各触发一次请求，现有序号保护保证只应用最新结果。上述显示时间为 Playwright 观察值，不是精确绘制时间。
 
 ## 首次使用需要明确的上下文
 

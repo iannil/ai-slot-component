@@ -1,7 +1,7 @@
 import type { Registry } from "@ai-slot/registry";
 import { fetchComponentTree, type FetchFailure } from "./fetch-tree.js";
 import { subscribeInvalidation, type InvalidationSubscription } from "./live.js";
-import { getRenderer, renderTree } from "./renderer.js";
+import { getRenderer, onRendererRegistered, renderTree } from "./renderer.js";
 
 let globalRegistry: Registry | undefined;
 let globalOnFailure: ((failure: FetchFailure) => void) | undefined;
@@ -20,6 +20,16 @@ const defaultEditorLabels: EditorLabels = {
 };
 
 let globalEditorLabels: EditorLabels = { ...defaultEditorLabels };
+
+/** 首帧因缺渲染器而搁置的已挂载槽位；任意 registerRenderer 时统一重触发。 */
+const pendingFirstLoads = new Set<AiSlotElement>();
+
+onRendererRegistered(() => {
+  for (const el of [...pendingFirstLoads]) {
+    pendingFirstLoads.delete(el);
+    if (el.isConnected) void el.load();
+  }
+});
 
 /** 全局配置：registry 供渲染前二次校验；onFailure 为可选失败观测（load 时透传给 fetchComponentTree）；editorLabels 覆盖编辑条文案。 */
 export function configureAiSlot(opts: {
@@ -80,6 +90,7 @@ export class AiSlotElement extends HTMLElement {
   disconnectedCallback(): void {
     this.mountSeq++;
     this.loadSeq++;
+    pendingFirstLoads.delete(this);
     clearInterval(this.timer);
     this.liveSub?.close();
     this.liveSub = null;
@@ -101,8 +112,11 @@ export class AiSlotElement extends HTMLElement {
     const renderer = getRenderer(this.getAttribute("renderer") ?? "dom");
     if (!src || !renderer) {
       if (freshOnly && this.isConnected && seq === this.loadSeq) this.restore();
+      // 渲染器尚未注册（异步注册场景）：挂起等待 registerRenderer 重触发，而非静默放弃
+      if (src && this.isConnected) pendingFirstLoads.add(this);
       return;
     }
+    pendingFirstLoads.delete(this);
     const tree = await fetchComponentTree({
       src,
       userPrompt,
