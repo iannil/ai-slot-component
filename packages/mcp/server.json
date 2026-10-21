@@ -1,0 +1,31 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.iannil/ai-slot-management-mcp",
+  "title": "AI-SLOT Management",
+  "description": "实验性本地 stdio 管理服务；需先启动 127.0.0.1:4194 管理端，内容发布仍需人工审批。",
+  "repository": {
+    "url": "https://github.com/iannil/ai-slot-component",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
+  "version": "0.1.3",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@ai-slot/mcp",
+      "version": "0.1.3",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "AI_SLOT_AGENT_TOKEN",
+          "description": "本地管理服务配置的 Agent 令牌；不得使用 Owner 令牌。",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
