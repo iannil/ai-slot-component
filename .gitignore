@@ -18,3 +18,8 @@ website/server/generated-agent-style.mjs
 
 # CMS 参考插件的浏览器构建产物
 examples/cms-campaign-slot/wordpress/assets/
+
+report-assets/
+docs/research/
+
+.DS_Store
