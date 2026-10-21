@@ -1,6 +1,6 @@
 # @ai-slot/operations
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/operations/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/operations/README_zh-CN.md)
 
 An experimental public server-side package that provides version-state validation and a local single-writer file store. The 0.x API and persisted format do not yet guarantee compatibility across versions. Requires Node.js 22 or later. `openFileStore(directory)` maintains `state.json` and an exclusive `writer.lock` in the directory. Transactions commit drafts, approvals, publication records, pointers, and idempotency receipts as a single snapshot. The current limits are 64 MiB and 1,000 publication records. Only local filesystems with atomic rename semantics are supported; NFS, cloud-synced directories, and multiple service instances are not supported.
 

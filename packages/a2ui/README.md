@@ -1,6 +1,6 @@
 # @ai-slot/a2ui
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/a2ui/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/a2ui/README_zh-CN.md)
 
 [A2UI](https://github.com/a2ui-project/a2ui) wire-format compatibility for ai-slot.
 

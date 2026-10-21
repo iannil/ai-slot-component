@@ -1,6 +1,6 @@
 # @ai-slot/adapter-dom
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/adapter-dom/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/adapter-dom/README_zh-CN.md)
 
 DOM renderer adapter for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): map validated component trees to plain HTML elements — no framework required.
 

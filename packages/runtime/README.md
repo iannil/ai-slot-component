@@ -1,6 +1,6 @@
 # @ai-slot/runtime
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/runtime/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/runtime/README_zh-CN.md)
 
 Zero-dependency `<ai-slot>` Web Component runtime for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): wrap existing markup, fetch a validated component tree from the proxy, and render it through a registered adapter — with a guaranteed fallback to your original content.
 

@@ -1,6 +1,6 @@
 # @ai-slot/mcp
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/mcp/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/mcp/README_zh-CN.md)
 
 An experimental AI-SLOT management MCP package requiring Node.js 22 or later. It exposes tools over local stdio and forwards requests to a fixed management service at `http://127.0.0.1:4194`. It does not start that service, open the version store, or grant approval permissions. Compatibility across versions is not yet guaranteed for the 0.x interface.
 

@@ -1,6 +1,6 @@
 # @ai-slot/proxy
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/proxy/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/proxy/README_zh-CN.md)
 
 > AI-rendered page content — without leaked API keys, invalid LLM output, or white screens.
 

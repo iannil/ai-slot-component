@@ -1,6 +1,6 @@
 # @ai-slot/adapter-react
 
-**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/adapter-react/README.zh-CN.md)
+**English** | [简体中文](https://github.com/iannil/ai-slot-component/blob/master/packages/adapter-react/README_zh-CN.md)
 
 React renderer adapter for [ai-slot-component](https://github.com/iannil/ai-slot-component#readme): render validated component trees as real React components, plus an `<AiSlot>` wrapper around the Web Component.
 
