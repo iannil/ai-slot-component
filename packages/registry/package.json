@@ -1,6 +1,6 @@
 {
   "name": "@ai-slot/registry",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "description": "AI output protocol for ai-slot: registry definition, validated component trees, and skeleton derivation.",
   "keywords": [

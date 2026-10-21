@@ -1,6 +1,6 @@
 {
   "name": "@ai-slot/adapter-dom",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "description": "DOM renderer adapter for ai-slot: map validated component trees to plain HTML elements.",
   "keywords": [
