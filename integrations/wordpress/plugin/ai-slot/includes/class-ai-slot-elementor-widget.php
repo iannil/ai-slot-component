@@ -72,6 +72,7 @@ class AI_Slot_Elementor_Widget extends \Elementor\Widget_Base {
 
     protected function render(): void {
         $settings = $this->get_settings_for_display();
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- ai_slot_render() 内部对所有属性与内容统一完成转义（esc_attr/esc_url/wp_kses_post），并输出 <ai-slot> 自定义元素，不能再经 wp_kses 过滤。
         echo ai_slot_render([
             'name'             => $settings['name'] ?? 'hero',
             'src'              => $settings['src'] ?? '',

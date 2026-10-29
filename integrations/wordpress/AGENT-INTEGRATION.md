@@ -12,6 +12,7 @@
 
 - 插件安装：后台「插件 → 安装插件 → 上传插件」，或把 `integrations/wordpress/plugin/ai-slot/` 整个目录复制到 `wp-content/plugins/ai-slot/`
 - 插件依赖 `assets/ai-slot-embed.js`（由 `pnpm --filter example-ai-slot-embed-starter build` 生成并自动同步；缺失时先构建）
+- 上架 wordpress.org 目录（可被搜索安装）的打包与提交流程：见 `integrations/wordpress/SUBMISSION.md`
 
 ## patch
 

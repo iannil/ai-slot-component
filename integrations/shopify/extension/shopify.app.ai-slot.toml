@@ -5,7 +5,7 @@ name = "ai-slot"
 handle = "ai-slot"
 client_id = "8b9a9d4086826a13e5fe549e9351f237"
 # Theme App Extension 无后台页面：embedded 必须为 false。
-# application_url 是占位地址；上架 App Store 前需替换为真实落地页。
+# application_url 为官网落地页。
 application_url = "https://aislot.dev"
 embedded = false
 
