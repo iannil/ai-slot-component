@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin version="php">
+  <id>AiSlot</id>
+  <name>ai-slot</name>
+  <url>https://github.com/iannil/ai-slot-component</url>
+  <note>把存量页面区域变成 AI 内容的安全上线通道：AI 返回结构化组件树 JSON（绝不返回 HTML），校验通过后渲染；失败、超时或校验不过时静默回退原始内容。</note>
+  <description>&lt;p&gt;ai-slot 把页面中的指定区域交给 AI 内容通道。启用后在「插件管理 → ai-slot → 配置」填写默认交付端点（HTTPS），并在主题模板需要的位置调用：&lt;/p&gt;&lt;pre&gt;{AiSlot_Slot('hero', '', '&amp;lt;h2&amp;gt;原始兜底内容&amp;lt;/h2&amp;gt;')}&lt;/pre&gt;&lt;p&gt;或直接在模板 PHP 中调用 &lt;code&gt;AiSlot_Slot('hero', '', '...')&lt;/code&gt;。&lt;/p&gt;</description>
+  <path>main.php</path>
+  <include>include.php</include>
+  <level>1</level>
+  <author>
+    <name>ai-slot</name>
+    <url>https://aislot.dev</url>
+    <email></email>
+  </author>
+  <source>
+    <name>ai-slot</name>
+    <url>https://github.com/iannil/ai-slot-component</url>
+  </source>
+  <adapted>172000</adapted>
+  <version>0.1.0</version>
+  <pubdate>2026-10-29</pubdate>
+  <modified>2026-10-29</modified>
+  <price>0</price>
+  <advanced>
+    <rewritefunctions>0</rewritefunctions>
+    <conflict></conflict>
+  </advanced>
+  <sidebars></sidebars>
+</plugin>

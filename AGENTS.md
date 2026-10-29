@@ -36,7 +36,7 @@ v1/v1.1 的历史设计以该文档为准；后续交付另见[设计](docs/supe
 | 渲染代理（Edge/Serverless） | 无状态函数，暴露 `GET/POST /ai-render/:slotId` 两个端点，含双层缓存、限流、降级链 |
 | 客户端运行时 | 无依赖 Web Components 库，核心是 `<ai-slot>` 自定义元素，目标体积几 KB |
 | 渲染适配器 | `registerRenderer("react" | "vue" | "dom", ...)`，把组件树映射到各框架真实组件 |
-| 建站程序集成（integrations/） | 面向存量站点的适配层：`embed/` 通用嵌入包（起步组件集 + 一行接入代码）、`wordpress/plugin/` 通用 WordPress 插件（简码 + Gutenberg 区块 + Elementor 小组件）、各平台 `AGENT-INTEGRATION.md` recipe（六段式，同时面向人类与 AI 助手执行）。编写规范见 `integrations/AGENT-INTEGRATION.schema.md`，平台全景见 `docs/research/2026-10-29-site-builder-coverage-research.md` |
+| 建站程序集成（integrations/） | 面向存量站点的适配层：`embed/` 通用嵌入包（起步组件集 + 一行接入代码，构建后同步到各插件资产目录）、`wordpress/plugin/` 通用 WordPress 插件（简码 + Gutenberg 区块 + Elementor 小组件）、`typecho/plugin/` 与 `zblogphp/plugin/` 官方插件、`shopify/extension/` Theme App Extension、各平台 `AGENT-INTEGRATION.md` recipe（六段式，同时面向人类与 AI 助手执行）。编写规范见 `integrations/AGENT-INTEGRATION.schema.md`，平台全景见 `docs/research/2026-10-29-site-builder-coverage-research.md` |
 
 ## 构建与测试命令
 

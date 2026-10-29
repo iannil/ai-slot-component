@@ -30,10 +30,13 @@ ai-slot 把存量页面的指定区域变成 AI 内容的安全上线通道：AI
 | Squarespace | [squarespace/AGENT-INTEGRATION.md](squarespace/AGENT-INTEGRATION.md) | Code Block / Code Injection | ✅ 可用（需 Business 档以上） |
 | Webflow | [webflow/AGENT-INTEGRATION.md](webflow/AGENT-INTEGRATION.md) | Embed 元素 | ✅ 可用（需付费站点计划） |
 | Shopify | [shopify/AGENT-INTEGRATION.md](shopify/AGENT-INTEGRATION.md) | Theme App Extension + 主题代码注入过渡方案 | ✅ 开发商店实测通过 |
+| Typecho | [typecho/AGENT-INTEGRATION.md](typecho/AGENT-INTEGRATION.md) | 官方插件（主题模板 `AiSlot_Plugin::slot()` + 设置页） | ✅ 可用（静态契约校验） |
+| Z-BlogPHP | [zblogphp/AGENT-INTEGRATION.md](zblogphp/AGENT-INTEGRATION.md) | 官方插件（模板函数 `AiSlot_Slot()` + 配置页） | ✅ 可用（静态契约校验） |
+| Halo | [halo/AGENT-INTEGRATION.md](halo/AGENT-INTEGRATION.md) | 主题模板注入（Java 插件推迟） | ✅ 可用（模板注入） |
 
 其余支持「自定义 HTML/JS」的平台（Tilda T123、Duda HTML 组件、GoDaddy、Weebly Embed Code、Framer、HubSpot 自定义模块、BigCommerce Script Manager、凡科代码嵌入、建站之星 HTML 组件、上线了 Custom Code、店匠/SHOPLINE 主题代码等）均适用上方 60 秒接入片段，逐平台图文步骤随 recipe 补全。
 
-服务端模板系 CMS（帝国 CMS、织梦、PageAdmin、MetInfo、PbootCMS、迅睿、Typecho、Z-Blog、Halo、Discuz! 等）：在页面模板需要的位置粘贴同一 `<ai-slot>` 片段即可，无需插件。
+服务端模板系 CMS（帝国 CMS、织梦、PageAdmin、MetInfo、PbootCMS、迅睿、Discuz! 等）：在页面模板需要的位置粘贴同一 `<ai-slot>` 片段即可，无需插件。
 
 ## 规范与约定
 
