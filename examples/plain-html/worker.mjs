@@ -52,6 +52,12 @@ function withPublicCors(res) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Shopify 强制合规 Webhook（customers/data_request、customers/redact、shop/redact）：
+    // 应用零权限、不存储任何店铺或客户数据，仅需确认收到并应答 200。
+    if (url.pathname === "/webhooks/shopify/compliance" && request.method === "POST") {
+      console.log(`[shopify-compliance] topic=${request.headers.get("x-shopify-topic") ?? "unknown"}`);
+      return new Response(null, { status: 200 });
+    }
     // 公开通道的预检请求；admin 系列始终不开放跨源
     if (request.method === "OPTIONS" && isPublicApi(url.pathname)) {
       return new Response(null, {

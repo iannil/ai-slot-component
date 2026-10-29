@@ -55,7 +55,8 @@ AI 必须逐条执行并全部通过：
 1. 前台页面控制台 `customElements.get('ai-slot')` 返回函数。
 2. `document.querySelector('ai-slot')` 存在且初始含兜底文本。
 3. 交付端点不可达时页面正常显示兜底内容。
-4. 切换商品页/集合页（SPA 感知的主题会重渲染 section）：`<ai-slot>` 重挂载后重新拉取，无报错。
+4. 交付端点返回伪造组件名（如 `{"component":"script-tag"}`）时：校验不通过，静默回退兜底，不渲染任何 AI 输出。
+5. 切换商品页/集合页（SPA 感知的主题会重渲染 section）：`<ai-slot>` 重挂载后重新拉取，无报错。
 
 ## rollback
 

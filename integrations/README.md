@@ -33,10 +33,15 @@ ai-slot 把存量页面的指定区域变成 AI 内容的安全上线通道：AI
 | Typecho | [typecho/AGENT-INTEGRATION.md](typecho/AGENT-INTEGRATION.md) | 官方插件（主题模板 `AiSlot_Plugin::slot()` + 设置页） | ✅ 可用（静态契约校验） |
 | Z-BlogPHP | [zblogphp/AGENT-INTEGRATION.md](zblogphp/AGENT-INTEGRATION.md) | 官方插件（模板函数 `AiSlot_Slot()` + 配置页） | ✅ 可用（静态契约校验） |
 | Halo | [halo/AGENT-INTEGRATION.md](halo/AGENT-INTEGRATION.md) | 主题模板注入（Java 插件推迟） | ✅ 可用（模板注入） |
+| 帝国 CMS（EmpireCMS） | [empirecms/AGENT-INTEGRATION.md](empirecms/AGENT-INTEGRATION.md) | 后台模板管理在线编辑（模板存数据库） | ✅ 可用（模板注入） |
+| 织梦 CMS（DedeCMS） | [dedecms/AGENT-INTEGRATION.md](dedecms/AGENT-INTEGRATION.md) | 模板文件/后台模板管理 + 重新生成静态页 | ✅ 可用（模板注入） |
+| PageAdmin | [pageadmin/AGENT-INTEGRATION.md](pageadmin/AGENT-INTEGRATION.md) | 后台模板管理在线编辑 | ✅ 可用（模板注入） |
+| MetInfo | [metinfo/AGENT-INTEGRATION.md](metinfo/AGENT-INTEGRATION.md) | 模板文件/后台编辑代码 | ✅ 可用（模板注入） |
+| PbootCMS | [pbootcms/AGENT-INTEGRATION.md](pbootcms/AGENT-INTEGRATION.md) | 模板文件 `template/风格/html/` | ✅ 可用（模板注入） |
+| 迅睿 CMS（XunRuiCMS） | [xunruicms/AGENT-INTEGRATION.md](xunruicms/AGENT-INTEGRATION.md) | 模板文件 `template/pc/目录/home/` + 更新缓存 | ✅ 可用（模板注入） |
+| Discuz! | [discuz/AGENT-INTEGRATION.md](discuz/AGENT-INTEGRATION.md) | 广告位免改代码注入（推荐）/ 模板注入 | ✅ 可用（模板注入） |
 
 其余支持「自定义 HTML/JS」的平台（Tilda T123、Duda HTML 组件、GoDaddy、Weebly Embed Code、Framer、HubSpot 自定义模块、BigCommerce Script Manager、凡科代码嵌入、建站之星 HTML 组件、上线了 Custom Code、店匠/SHOPLINE 主题代码等）均适用上方 60 秒接入片段，逐平台图文步骤随 recipe 补全。
-
-服务端模板系 CMS（帝国 CMS、织梦、PageAdmin、MetInfo、PbootCMS、迅睿、Discuz! 等）：在页面模板需要的位置粘贴同一 `<ai-slot>` 片段即可，无需插件。
 
 ## 规范与约定
 

@@ -41,7 +41,8 @@ AI 必须逐条执行并全部通过：
 2. `customElements.get('ai-slot')` 返回函数。
 3. 交付端点正常时槽位区域渲染出起步组件（如 `.ai-slot-hero-title`）。
 4. 交付端点不可达时：仍显示兜底内容，无白屏。
-5. Embed 元素在 Designer 画布中不执行脚本，**必须在已发布站点验证**。
+5. 交付端点返回伪造组件名（如 `{"component":"script-tag"}`）时：校验不通过，静默回退兜底，不渲染任何 AI 输出。
+6. Embed 元素在 Designer 画布中不执行脚本，**必须在已发布站点验证**。
 
 ## rollback
 

@@ -24,7 +24,7 @@ type Lang = 'en' | 'zh'
 const dict = {
   en: {
     badge: 'Open source · MIT · framework-agnostic',
-    nav: { delivery: 'Delivery', safety: 'Safety', quickstart: 'Quick start', star: 'Star' },
+    nav: { delivery: 'Delivery', safety: 'Safety', platforms: 'Platforms', quickstart: 'Quick start', star: 'Star' },
     heroTitle: 'Bring AI-generated content and component layouts to your existing site.',
     heroSubBefore: 'Keep your CMS and site builder. Add',
     heroSubMid: 'to a region of your page. AI returns validated component-tree JSON — ',
@@ -93,6 +93,179 @@ const dict = {
     qsSubAfter: 'to switch to any OpenAI-compatible endpoint.',
     qsComment: '# Node ≥ 22 for this workspace, pnpm (corepack enable)',
     qsOpen: '# → open https://demo.aislot.dev (hosted) or http://localhost:4173 (local)',
+    platformsKicker: 'integrations',
+    platformsTitle: 'Works with the site builders people actually use.',
+    platformsSub:
+      'Official plugins, a Shopify theme app extension, and copy-paste recipes — every integration keeps your original content as fallback, and every step can be executed by a human or delegated to an AI assistant.',
+    platformGroups: [
+      {
+        label: 'Official plugin / extension',
+        note: 'install & configure',
+        items: ['wordpress', 'typecho', 'zblogphp', 'shopify'],
+      },
+      {
+        label: 'Hosted builder recipes',
+        note: 'paste the embed snippet',
+        items: ['wix', 'squarespace', 'webflow', 'halo'],
+      },
+      {
+        label: 'Template-injection recipes',
+        note: 'one line in the theme template',
+        items: ['empirecms', 'dedecms', 'pageadmin', 'metinfo', 'pbootcms', 'xunruicms', 'discuz'],
+      },
+    ] as const,
+    platformDetails: {
+      wordpress: {
+        name: 'WordPress',
+        recipe: 'integrations/wordpress/AGENT-INTEGRATION.md',
+        steps: [
+          'Upload and activate the ai-slot plugin (shortcode + Gutenberg block + Elementor widget included).',
+          'Settings → ai-slot: set your HTTPS delivery endpoint.',
+          'Insert a slot via [ai_slot] shortcode, the block editor, or Elementor.',
+        ],
+      },
+      typecho: {
+        name: 'Typecho',
+        recipe: 'integrations/typecho/AGENT-INTEGRATION.md',
+        steps: [
+          'Copy the AiSlot folder into usr/plugins/ and enable it.',
+          'Set the default endpoint in the plugin settings.',
+          'Call AiSlot_Plugin::slot(\'hero\', \'\', \'fallback\') in the theme template.',
+        ],
+      },
+      zblogphp: {
+        name: 'Z-BlogPHP',
+        recipe: 'integrations/zblogphp/AGENT-INTEGRATION.md',
+        steps: [
+          'Copy the AiSlot folder into zb_users/plugin/ and enable it.',
+          'Set the default endpoint on the plugin admin page.',
+          'Call {AiSlot_Slot(\'hero\', \'\', \'fallback\')} in the theme template.',
+        ],
+      },
+      shopify: {
+        name: 'Shopify',
+        recipe: 'integrations/shopify/AGENT-INTEGRATION.md',
+        steps: [
+          'Deploy the Theme App Extension with the Shopify CLI (theme-code injection works meanwhile).',
+          'Enable the app embed in the theme editor.',
+          'Drag the ai-slot block into any section.',
+        ],
+      },
+      wix: {
+        name: 'Wix',
+        recipe: 'integrations/wix/AGENT-INTEGRATION.md',
+        steps: [
+          'Host ai-slot-embed.js on your own HTTPS location.',
+          'Add a Custom Element with tag ai-slot and name/src attributes.',
+          'Publish and verify on the live site (paid plan required).',
+        ],
+      },
+      squarespace: {
+        name: 'Squarespace',
+        recipe: 'integrations/squarespace/AGENT-INTEGRATION.md',
+        steps: [
+          'Code Injection → Header: add the module script.',
+          'Add a Code Block containing the <ai-slot> element.',
+          'Verify in visitor view (Business plan or above).',
+        ],
+      },
+      webflow: {
+        name: 'Webflow',
+        recipe: 'integrations/webflow/AGENT-INTEGRATION.md',
+        steps: [
+          'Page settings → Custom Code: add the module script.',
+          'Drag in an Embed element with the <ai-slot> markup.',
+          'Publish the site (paid site plan required).',
+        ],
+      },
+      halo: {
+        name: 'Halo',
+        recipe: 'integrations/halo/AGENT-INTEGRATION.md',
+        steps: [
+          'Host ai-slot-embed.js on your own HTTPS location.',
+          'Paste the script and the <ai-slot> element into the theme template.',
+          'No plugin needed; a Java plugin is deliberately deferred.',
+        ],
+      },
+      empirecms: {
+        name: 'EmpireCMS 帝国',
+        recipe: 'integrations/empirecms/AGENT-INTEGRATION.md',
+        steps: [
+          'Admin → template manager (templates live in the database).',
+          'Paste the script and the <ai-slot> element into the target template.',
+          'Changes apply immediately.',
+        ],
+      },
+      dedecms: {
+        name: 'DedeCMS 织梦',
+        recipe: 'integrations/dedecms/AGENT-INTEGRATION.md',
+        steps: [
+          'Edit templets/<style>/*.htm (back up first).',
+          'Paste the script and the <ai-slot> element.',
+          'Regenerate static pages via the update tool, or nothing changes.',
+        ],
+      },
+      pageadmin: {
+        name: 'PageAdmin',
+        recipe: 'integrations/pageadmin/AGENT-INTEGRATION.md',
+        steps: [
+          'Admin → template management, online editor.',
+          'Paste the script and the <ai-slot> element.',
+          'Clear the cache if page caching is enabled.',
+        ],
+      },
+      metinfo: {
+        name: 'MetInfo',
+        recipe: 'integrations/metinfo/AGENT-INTEGRATION.md',
+        steps: [
+          'Edit templates/<theme>/ files or use the admin code editor.',
+          'Paste the script and the <ai-slot> element.',
+          'Clear the site cache.',
+        ],
+      },
+      pbootcms: {
+        name: 'PbootCMS',
+        recipe: 'integrations/pbootcms/AGENT-INTEGRATION.md',
+        steps: [
+          'Edit template/<style>/html/*.html.',
+          'Paste the script and the <ai-slot> element.',
+          'Clear the cache if changes do not appear.',
+        ],
+      },
+      xunruicms: {
+        name: 'XunRuiCMS 迅睿',
+        recipe: 'integrations/xunruicms/AGENT-INTEGRATION.md',
+        steps: [
+          'Edit template/pc/<dir>/home/*.html.',
+          'Paste the script and the <ai-slot> element.',
+          'Refresh the compiled template cache in admin.',
+        ],
+      },
+      discuz: {
+        name: 'Discuz!',
+        recipe: 'integrations/discuz/AGENT-INTEGRATION.md',
+        steps: [
+          'Admin → ads: add a "code" ad slot and paste the snippet — no code edit.',
+          'Or inject into template/default/ templates directly.',
+          'Update the cache after either path.',
+        ],
+      },
+    } as const,
+    genericPlatforms: {
+      label: 'Any custom-HTML platform',
+      note: 'the same 60-second snippet',
+      items: ['Tilda', 'Duda', 'GoDaddy', 'Weebly', 'Framer', 'HubSpot', 'BigCommerce', 'SHOPLINE 店匠', '凡科', '建站之星', '上线了', '…'],
+      steps: [
+        'Host ai-slot-embed.js on any HTTPS static location.',
+        'Add the module script and the <ai-slot> element where the platform allows custom HTML.',
+        'Keep your original content inside the element as fallback.',
+      ],
+    },
+    recipeLink: 'Full recipe →',
+    genericSnippet:
+      '<script type="module" src="https://your-domain/ai-slot-embed.js"></script>\n\n<ai-slot name="hero" src="https://delivery.example/ai-render/hero" fresh-only>\n  <h2>Original fallback content</h2>\n</ai-slot>',
+    platformsFoot:
+      'Each platform ships a detect → patch → verify → rollback recipe in integrations/, written for humans and AI assistants alike.',
     stats: [
       ['9 published packages', '7 SDK packages + experimental operations / mcp'],
       ['Zero deps', '<ai-slot> runtime is a dependency-free Web Component'],
@@ -105,7 +278,7 @@ const dict = {
   },
   zh: {
     badge: '开源 · MIT · 框架无关',
-    nav: { delivery: '交付模式', safety: '安全性', quickstart: '快速上手', star: 'Star' },
+    nav: { delivery: '交付模式', safety: '安全性', platforms: '支持平台', quickstart: '快速上手', star: 'Star' },
     heroTitle: '为已有网站接入 AI 内容与组件布局更新。',
     heroSubBefore: '保留你的 CMS 与建站工具，为页面局部接入',
     heroSubMid: '。AI 返回经过校验的组件树 JSON——',
@@ -172,6 +345,179 @@ const dict = {
     qsSubAfter: '即可切换到任意 OpenAI 兼容端点。',
     qsComment: '# 本仓库使用 Node ≥ 22，pnpm（corepack enable）',
     qsOpen: '# → 打开 https://demo.aislot.dev（在线）或 http://localhost:4173（本地）',
+    platformsKicker: '集成',
+    platformsTitle: '适配你正在用的建站程序。',
+    platformsSub:
+      '官方插件、Shopify 主题应用扩展与可粘贴的接入 recipe——每种集成都保留原始内容作为兜底，每一步既可以由站长手动完成，也可以交给 AI 助手执行。',
+    platformGroups: [
+      {
+        label: '官方插件 / 扩展',
+        note: '安装后配置即可',
+        items: ['wordpress', 'typecho', 'zblogphp', 'shopify'],
+      },
+      {
+        label: '托管建站平台 recipe',
+        note: '粘贴嵌入片段',
+        items: ['wix', 'squarespace', 'webflow', 'halo'],
+      },
+      {
+        label: '模板注入 recipe',
+        note: '主题模板加一行',
+        items: ['empirecms', 'dedecms', 'pageadmin', 'metinfo', 'pbootcms', 'xunruicms', 'discuz'],
+      },
+    ] as const,
+    platformDetails: {
+      wordpress: {
+        name: 'WordPress',
+        recipe: 'integrations/wordpress/AGENT-INTEGRATION.md',
+        steps: [
+          '上传并启用 ai-slot 插件（含简码 + Gutenberg 区块 + Elementor 小组件）。',
+          '「设置 → ai-slot」填写 HTTPS 交付端点。',
+          '用简码 [ai_slot]、区块编辑器或 Elementor 插入槽位。',
+        ],
+      },
+      typecho: {
+        name: 'Typecho',
+        recipe: 'integrations/typecho/AGENT-INTEGRATION.md',
+        steps: [
+          '把 AiSlot 目录复制到 usr/plugins/ 并启用。',
+          '插件设置中填写默认交付端点。',
+          '主题模板中调用 AiSlot_Plugin::slot(\'hero\', \'\', \'兜底内容\')。',
+        ],
+      },
+      zblogphp: {
+        name: 'Z-BlogPHP',
+        recipe: 'integrations/zblogphp/AGENT-INTEGRATION.md',
+        steps: [
+          '把 AiSlot 目录复制到 zb_users/plugin/ 并启用。',
+          '插件配置页填写默认交付端点。',
+          '主题模板中调用 {AiSlot_Slot(\'hero\', \'\', \'兜底内容\')}。',
+        ],
+      },
+      shopify: {
+        name: 'Shopify',
+        recipe: 'integrations/shopify/AGENT-INTEGRATION.md',
+        steps: [
+          '用 Shopify CLI 部署 Theme App Extension（过渡期可用主题代码注入）。',
+          '主题编辑器中开启「ai-slot 运行时」应用嵌入。',
+          '把「ai-slot 槽位」块拖入任意 section。',
+        ],
+      },
+      wix: {
+        name: 'Wix',
+        recipe: 'integrations/wix/AGENT-INTEGRATION.md',
+        steps: [
+          '把 ai-slot-embed.js 托管到自己的 HTTPS 位置。',
+          '添加 Custom Element：标签 ai-slot，配置 name/src 属性。',
+          '发布后在正式站点验证（需付费套餐）。',
+        ],
+      },
+      squarespace: {
+        name: 'Squarespace',
+        recipe: 'integrations/squarespace/AGENT-INTEGRATION.md',
+        steps: [
+          'Code Injection → Header 粘贴 module 脚本。',
+          '页面添加 Code Block，放入 <ai-slot> 元素。',
+          '退出编辑模式在访客视图验证（需 Business 档以上）。',
+        ],
+      },
+      webflow: {
+        name: 'Webflow',
+        recipe: 'integrations/webflow/AGENT-INTEGRATION.md',
+        steps: [
+          'Page settings → Custom Code 粘贴 module 脚本。',
+          'Designer 中拖入 Embed 元素，放入 <ai-slot> 标记。',
+          '发布站点（需付费站点计划）。',
+        ],
+      },
+      halo: {
+        name: 'Halo',
+        recipe: 'integrations/halo/AGENT-INTEGRATION.md',
+        steps: [
+          '把 ai-slot-embed.js 托管到自己的 HTTPS 位置。',
+          '主题模板中粘贴脚本与 <ai-slot> 元素。',
+          '无需插件；Java 插件刻意推迟。',
+        ],
+      },
+      empirecms: {
+        name: '帝国 CMS',
+        recipe: 'integrations/empirecms/AGENT-INTEGRATION.md',
+        steps: [
+          '后台「模板管理」在线编辑（模板存数据库，改文件无效）。',
+          '向目标模板粘贴脚本与 <ai-slot> 元素。',
+          '保存即时生效。',
+        ],
+      },
+      dedecms: {
+        name: '织梦 DedeCMS',
+        recipe: 'integrations/dedecms/AGENT-INTEGRATION.md',
+        steps: [
+          '编辑 templets/当前风格/ 下模板（先备份）。',
+          '粘贴脚本与 <ai-slot> 元素。',
+          '「生成 → 一键更新网站」重新生成静态页，否则前台不变。',
+        ],
+      },
+      pageadmin: {
+        name: 'PageAdmin',
+        recipe: 'integrations/pageadmin/AGENT-INTEGRATION.md',
+        steps: [
+          '后台「模板管理」在线编辑。',
+          '粘贴脚本与 <ai-slot> 元素。',
+          '开启页面缓存时清空缓存。',
+        ],
+      },
+      metinfo: {
+        name: 'MetInfo',
+        recipe: 'integrations/metinfo/AGENT-INTEGRATION.md',
+        steps: [
+          '编辑 templates/当前模板/ 文件或用后台「编辑代码」。',
+          '粘贴脚本与 <ai-slot> 元素。',
+          '清空站点缓存。',
+        ],
+      },
+      pbootcms: {
+        name: 'PbootCMS',
+        recipe: 'integrations/pbootcms/AGENT-INTEGRATION.md',
+        steps: [
+          '编辑 template/当前风格/html/ 下模板。',
+          '粘贴脚本与 <ai-slot> 元素。',
+          '未即时生效时清理缓存。',
+        ],
+      },
+      xunruicms: {
+        name: '迅睿 XunRuiCMS',
+        recipe: 'integrations/xunruicms/AGENT-INTEGRATION.md',
+        steps: [
+          '编辑 template/pc/当前目录/home/ 下模板。',
+          '粘贴脚本与 <ai-slot> 元素。',
+          '后台「更新缓存」（模板有编译缓存，必做）。',
+        ],
+      },
+      discuz: {
+        name: 'Discuz!',
+        recipe: 'integrations/discuz/AGENT-INTEGRATION.md',
+        steps: [
+          '后台「运营 → 广告」添加「代码」类型广告位，粘贴片段——免改代码。',
+          '或直接注入 template/default/ 模板。',
+          '任一路径完成后「工具 → 更新缓存」。',
+        ],
+      },
+    } as const,
+    genericPlatforms: {
+      label: '任何支持自定义 HTML 的平台',
+      note: '同一段 60 秒片段',
+      items: ['Tilda', 'Duda', 'GoDaddy', 'Weebly', 'Framer', 'HubSpot', 'BigCommerce', '凡科', '建站之星', '上线了', '店匠 SHOPLINE', '…'],
+      steps: [
+        '把 ai-slot-embed.js 托管到任意 HTTPS 静态位置。',
+        '在平台允许自定义 HTML 的位置粘贴 module 脚本与 <ai-slot> 元素。',
+        '原始内容留在元素内部作为兜底。',
+      ],
+    },
+    recipeLink: '完整 recipe →',
+    genericSnippet:
+      '<script type="module" src="https://你的域名/ai-slot-embed.js"></script>\n\n<ai-slot name="hero" src="https://delivery.example/ai-render/hero" fresh-only>\n  <h2>原始兜底内容</h2>\n</ai-slot>',
+    platformsFoot:
+      '每个平台在 integrations/ 下都有 detect → patch → verify → rollback 六段式 recipe，同时面向人类站长与 AI 编程助手。',
     stats: [
       ['9 个已发布包', '7 个 SDK 包 + 实验性 operations / mcp'],
       ['零依赖', '<ai-slot> 运行时是无依赖 Web Component'],
@@ -238,6 +584,9 @@ function Nav({ t, lang, toggle }: { t: Dict; lang: Lang; toggle: () => void }) {
           </a>
           <a href="#safety" className="hidden transition-colors hover:text-foreground sm:block">
             {t.nav.safety}
+          </a>
+          <a href="#platforms" className="hidden transition-colors hover:text-foreground sm:block">
+            {t.nav.platforms}
           </a>
           <a href="#quickstart" className="hidden transition-colors hover:text-foreground sm:block">
             {t.nav.quickstart}
@@ -437,6 +786,95 @@ function Safety({ t }: { t: Dict }) {
   )
 }
 
+function PlatformDetail({
+  d,
+}: {
+  d: Dict['platformDetails'][keyof Dict['platformDetails']] & { recipeLabel: string }
+}) {
+  return (
+    <details className="group rounded-md border border-border bg-secondary/40 px-3 py-2">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-mono text-xs text-foreground">
+        <span>{d.name}</span>
+        <span className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
+      </summary>
+      <ol className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-xs leading-relaxed text-muted-foreground">
+        {d.steps.map((s, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="font-mono text-primary">{i + 1}.</span>
+            <span>{s}</span>
+          </li>
+        ))}
+      </ol>
+      <a
+        href={`${GITHUB}/blob/master/${d.recipe}`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 inline-block font-mono text-xs text-primary hover:underline"
+      >
+        {d.recipeLabel}
+      </a>
+    </details>
+  )
+}
+
+function Platforms({ t }: { t: Dict }) {
+  return (
+    <section id="platforms" className="border-t border-border/60 bg-card/40">
+      <div className="mx-auto max-w-6xl px-6 py-24">
+        <p className="font-mono text-sm text-primary">{t.platformsKicker}</p>
+        <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
+          {t.platformsTitle}
+        </h2>
+        <p className="mt-4 max-w-2xl text-muted-foreground">{t.platformsSub}</p>
+        <div className="mt-12 grid items-start gap-5 sm:grid-cols-2">
+          {t.platformGroups.map((g) => (
+            <div key={g.label} className="rounded-xl border border-border bg-card p-6">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="font-semibold">{g.label}</h3>
+                <span className="font-mono text-xs text-muted-foreground">{g.note}</span>
+              </div>
+              <div className="mt-4 space-y-2">
+                {g.items.map((key) => {
+                  const d = t.platformDetails[key as keyof Dict['platformDetails']]
+                  return <PlatformDetail key={key} d={{ ...d, recipeLabel: t.recipeLink }} />
+                })}
+              </div>
+            </div>
+          ))}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="font-semibold">{t.genericPlatforms.label}</h3>
+              <span className="font-mono text-xs text-muted-foreground">{t.genericPlatforms.note}</span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {t.genericPlatforms.items.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-md border border-border bg-secondary/60 px-2.5 py-1 font-mono text-xs text-foreground"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+            <ol className="mt-4 space-y-1.5 border-t border-border/60 pt-4 text-xs leading-relaxed text-muted-foreground">
+              {t.genericPlatforms.steps.map((s, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="font-mono text-primary">{i + 1}.</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+            <pre className="mt-4 overflow-x-auto rounded-md border border-border bg-background/60 p-3 font-mono text-[11px] leading-relaxed text-zinc-300">
+              <code>{t.genericSnippet}</code>
+            </pre>
+          </div>
+        </div>
+        <p className="mt-8 font-mono text-xs text-muted-foreground">{t.platformsFoot}</p>
+      </div>
+    </section>
+  )
+}
+
 function QuickStart({ t }: { t: Dict }) {
   return (
     <section id="quickstart" className="border-t border-border/60 bg-card/40">
@@ -582,6 +1020,7 @@ export default function Home() {
       <SlotResponsibilities lang={lang} />
       <Modes t={t} />
       <Safety t={t} />
+      <Platforms t={t} />
       <QuickStart t={t} />
       <CTA t={t} />
       <Footer t={t} />

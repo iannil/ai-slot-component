@@ -17,7 +17,12 @@
 
 ## patch
 
-1. 先把 `ai-slot-embed.js` 放到一个 HTTPS 可公开访问的位置（站长自己的静态托管 / CDN）。构建：`pnpm --filter example-ai-slot-embed-starter build`，产物 `integrations/embed/assets/ai-slot-embed.js`。
+1. 先把 `ai-slot-embed.js` 放到一个 HTTPS 可公开访问的位置（站长自己的静态托管 / CDN）。构建：`pnpm --filter example-ai-slot-embed-starter build`，产物 `integrations/embed/assets/ai-slot-embed.js`。脚本必须以 `type="module"` 方式加载：
+
+   ```html
+   <script type="module" src="https://你的域名/ai-slot-embed.js"></script>
+   ```
+
 2. 在 Wix 编辑器目标页面：Add Elements → Embed Code → **Custom Element**。
 3. 在该元素的设置中：
    - Server URL / 脚本地址填 `https://你的域名/ai-slot-embed.js`；
@@ -32,7 +37,8 @@ AI 必须逐条执行并全部通过：
 1. 发布后访问页面，浏览器控制台执行 `customElements.get('ai-slot')` 返回函数（元素已定义）。
 2. `document.querySelector('ai-slot')?.getAttribute('src')` 返回配置的交付端点。
 3. 交付端点不可达时：页面其余内容正常显示，槽位区域为空或保留占位，无白屏、无整页报错。
-4. 注意：Wix 编辑器内预览不一定加载自定义元素脚本，**必须在已发布站点上验证**。
+4. 交付端点返回伪造组件名（如 `{"component":"script-tag"}`）时：校验不通过，静默回退兜底，不渲染任何 AI 输出。
+5. 注意：Wix 编辑器内预览不一定加载自定义元素脚本，**必须在已发布站点上验证**。
 
 ## rollback
 

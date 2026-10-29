@@ -42,7 +42,8 @@ AI 必须逐条执行并全部通过：
 2. `document.querySelector('ai-slot').textContent` 初始包含原始兜底文本。
 3. 交付端点正常时：`document.querySelector('ai-slot .ai-slot-hero-title')` 出现（或对应组件 class）。
 4. 交付端点 503 时：仍显示兜底内容，无白屏。
-5. Code Block 在编辑模式下显示占位符，**必须在退出编辑模式的访客视图验证**。
+5. 交付端点返回伪造组件名（如 `{"component":"script-tag"}`）时：校验不通过，静默回退兜底，不渲染任何 AI 输出。
+6. Code Block 在编辑模式下显示占位符，**必须在退出编辑模式的访客视图验证**。
 
 ## rollback
 
