@@ -1,0 +1,24 @@
+# ai-slot Shopify 应用配置（由 shopify app config link 生成并关联）
+# 文档：https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "ai-slot"
+handle = "ai-slot"
+client_id = "8b9a9d4086826a13e5fe549e9351f237"
+# Theme App Extension 无后台页面：embedded 必须为 false。
+# application_url 是占位地址；上架 App Store 前需替换为真实落地页。
+application_url = "https://aislot.dev"
+embedded = false
+
+[access_scopes]
+# 主题扩展无需 Admin API 权限。
+scopes = ""
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [ ]
+
+[build]
+
+[webhooks]
+api_version = "2026-10"

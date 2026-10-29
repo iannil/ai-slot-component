@@ -1,0 +1,12 @@
+<!-- ai-slot 通用嵌入片段模板
+     使用方式：把 {{AI_SLOT_EMBED_URL}} 替换为你自托管的 ai-slot-embed.js 地址，
+     把 {{DELIVERY_ENDPOINT}} 替换为你的交付端点（如 https://delivery.example/ai-render/hero）。
+     name 为槽位标识，同一页面内唯一。详细说明见 ../README.md。 -->
+
+<script type="module" src="{{AI_SLOT_EMBED_URL}}"></script>
+
+<ai-slot name="{{SLOT_NAME}}" src="{{DELIVERY_ENDPOINT}}" fresh-only refresh-interval="60">
+  <!-- 原始兜底内容：AI 失败/超时/校验不过时页面保持原样，SEO 与无障碍不受影响 -->
+  <h2>欢迎来到本站</h2>
+  <p>这里是页面原有内容。</p>
+</ai-slot>

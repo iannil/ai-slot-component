@@ -1,0 +1,68 @@
+{% comment %}
+  ai-slot 槽位（App Block）。
+  商家在主题编辑器中把本块拖入任意 section，填写交付端点与兜底内容。
+  安全纪律：端点仅接受 HTTPS；设置值一律 escape 输出；
+  兜底内容为商家自填的 richtext（商家可信输入）。
+{% endcomment %}
+{% liquid
+  assign slot_name = block.settings.name | default: 'hero'
+  assign slot_src = block.settings.src | default: ''
+%}
+
+{% if slot_src contains 'https://' %}
+<ai-slot
+  name="{{ slot_name | escape }}"
+  src="{{ slot_src | escape }}"
+  {% if block.settings.fresh_only %}fresh-only{% endif %}
+  {% if block.settings.refresh_interval > 0 %}refresh-interval="{{ block.settings.refresh_interval }}"{% endif %}
+>
+  {{ block.settings.fallback }}
+</ai-slot>
+{% else %}
+  {% comment %} 未配置合法 HTTPS 端点：原样输出兜底内容，与不装本应用一致 {% endcomment %}
+  {{ block.settings.fallback }}
+{% endif %}
+
+{% schema %}
+{
+  "name": "ai-slot 槽位",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "name",
+      "label": "槽位标识",
+      "default": "hero",
+      "info": "同一页面内唯一"
+    },
+    {
+      "type": "url",
+      "id": "src",
+      "label": "交付端点",
+      "info": "你的 ai-slot 渲染代理地址，必须是 HTTPS"
+    },
+    {
+      "type": "richtext",
+      "id": "fallback",
+      "label": "原始兜底内容",
+      "default": "<p>欢迎来到本站</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "fresh_only",
+      "label": "fresh-only：失败或过期时回退原始内容",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "refresh_interval",
+      "label": "轮询间隔（秒）",
+      "min": 0,
+      "max": 3600,
+      "step": 60,
+      "default": 60,
+      "info": "0 表示不轮询"
+    }
+  ]
+}
+{% endschema %}

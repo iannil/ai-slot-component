@@ -1,0 +1,7 @@
+api_version = "2025-10"
+
+[[extensions]]
+type = "theme_app_extension"
+name = "ai-slot"
+handle = "ai-slot"
+uid = "2fc0e958-b811-514c-9581-87beb6b485f9f4f05f81"

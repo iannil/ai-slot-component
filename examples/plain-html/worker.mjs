@@ -40,9 +40,29 @@ export class DemoRoom {
   }
 }
 
+/** 公开只读通道（内容拉取 + 失效推送）：允许跨源，供外部站点（如 Shopify 店）嵌入演示。 */
+const isPublicApi = (pathname) => pathname.startsWith("/ai-render/") || pathname === "/ai-invalidate";
+
+function withPublicCors(res) {
+  const out = new Response(res.body, res);
+  out.headers.set("Access-Control-Allow-Origin", "*");
+  return out;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // 公开通道的预检请求；admin 系列始终不开放跨源
+    if (request.method === "OPTIONS" && isPublicApi(url.pathname)) {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }
     const isApi =
       url.pathname === "/ai-invalidate" ||
       url.pathname === "/admin/state" ||
@@ -50,7 +70,8 @@ export default {
       url.pathname.startsWith("/ai-render/");
     if (isApi) {
       const stub = env.DEMO.get(env.DEMO.idFromName("global"));
-      return stub.fetch(request);
+      const res = await stub.fetch(request);
+      return isPublicApi(url.pathname) ? withPublicCors(res) : res;
     }
     return env.ASSETS.fetch(request);
   },

@@ -1,0 +1,21 @@
+{
+  "name": "example-ai-slot-embed-starter",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node build-embed.mjs",
+    "test": "node build-embed.mjs && vitest run",
+    "typecheck": "echo 无需类型检查"
+  },
+  "dependencies": {
+    "@ai-slot/adapter-dom": "workspace:*",
+    "@ai-slot/registry": "workspace:*",
+    "@ai-slot/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0",
+    "esbuild": "0.27.7",
+    "@playwright/test": "1.63.0"
+  }
+}

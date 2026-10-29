@@ -28,9 +28,20 @@ async function toWebRequest(req) {
 
 export const server = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
+  // 公开只读通道（/ai-render/*、/ai-invalidate）允许跨源，供外部站点嵌入演示；admin 系列不开放跨源
+  const publicApi = url.pathname.startsWith("/ai-render/") || url.pathname === "/ai-invalidate";
+  if (req.method === "OPTIONS" && publicApi) {
+    res.writeHead(204, {
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET",
+      "access-control-max-age": "86400",
+    }).end();
+    return;
+  }
+  const cors = publicApi ? { "access-control-allow-origin": "*" } : {};
   if (url.pathname === "/ai-invalidate") {
     const webRes = invalidation.handler(await toWebRequest(req));
-    res.writeHead(webRes.status, Object.fromEntries(webRes.headers));
+    res.writeHead(webRes.status, { ...Object.fromEntries(webRes.headers), ...cors });
     // 立即刷新响应头，让浏览器在首个心跳前确认连接并执行重连补偿核对。
     if (webRes.headers.get("content-type")?.startsWith("text/event-stream")) res.flushHeaders();
     // SSE body 是长连接流：管道转发，不能 await text()
@@ -73,6 +84,7 @@ export const server = createServer(async (req, res) => {
     // 透传 handler 的 content-type：SSE 协商成功时是 text/event-stream，错误路径仍是 JSON
     res.writeHead(webRes.status, {
       "content-type": webRes.headers.get("content-type") ?? "application/json; charset=utf-8",
+      ...cors,
     });
     res.end(await webRes.text());
     return;

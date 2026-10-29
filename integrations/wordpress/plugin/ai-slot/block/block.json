@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "ai-slot/slot",
+  "title": "ai-slot 槽位",
+  "category": "widgets",
+  "icon": "code-standards",
+  "description": "AI 内容通道槽位：AI 校验通过后渲染，失败时静默回退原始内容。",
+  "supports": { "html": false },
+  "attributes": {
+    "name": { "type": "string", "default": "hero" },
+    "src": { "type": "string", "default": "" },
+    "fallback": { "type": "string", "default": "" },
+    "refreshInterval": { "type": "number", "default": -1 },
+    "freshOnly": { "type": "boolean", "default": true }
+  },
+  "editorScript": "file:./editor.js"
+}

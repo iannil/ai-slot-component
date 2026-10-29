@@ -1,0 +1,14 @@
+{% comment %}
+  ai-slot 运行时加载器（App Embed Block）。
+  商家在主题编辑器「应用嵌入」中开启后，向 <head> 注入 ai-slot-embed.js。
+  脚本为 type=module（天然 defer），加载失败不影响页面任何既有内容。
+{% endcomment %}
+<script type="module" src="{{ 'ai-slot-embed.js' | asset_url }}"></script>
+
+{% schema %}
+{
+  "name": "ai-slot 运行时",
+  "target": "head",
+  "settings": []
+}
+{% endschema %}

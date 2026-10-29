@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ai-slot 接入代码生成向导</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 20px;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f6f7f9; color: #1d2129;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  .desc { color: #4e5969; font-size: 14px; margin: 0 0 28px; line-height: 1.7; }
+  .card {
+    background: #fff; border: 1px solid #e5e6eb; border-radius: 12px;
+    padding: 24px; margin-bottom: 20px;
+  }
+  label { display: block; font-size: 14px; font-weight: 600; margin: 16px 0 6px; }
+  label:first-child { margin-top: 0; }
+  .hint { font-weight: 400; color: #86909c; font-size: 12px; }
+  input[type="text"], input[type="url"], input[type="number"], textarea {
+    width: 100%; padding: 9px 12px; font-size: 14px;
+    border: 1px solid #c9cdd4; border-radius: 8px; background: #fff;
+  }
+  input:focus, textarea:focus { outline: 2px solid #165dff33; border-color: #165dff; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 180px; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 14px; }
+  pre {
+    background: #1d2129; color: #f2f3f5; border-radius: 8px;
+    padding: 16px; font-size: 13px; line-height: 1.6;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+  }
+  button {
+    margin-top: 12px; padding: 9px 20px; font-size: 14px; cursor: pointer;
+    border: none; border-radius: 8px; background: #165dff; color: #fff;
+  }
+  button:active { opacity: .85; }
+  .copied { color: #00b42a; font-size: 13px; margin-left: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ai-slot 接入代码生成向导</h1>
+  <p class="desc">填写你的交付端点与槽位信息，生成可直接粘贴到任意建站平台「自定义 HTML / 代码嵌入」入口的接入片段。AI 失败、超时或校验不通过时，页面会静默回退到你填写的原始兜底内容。</p>
+
+  <div class="card">
+    <label for="embedUrl">嵌入脚本地址 <span class="hint">自托管的 ai-slot-embed.js，HTTPS</span></label>
+    <input type="url" id="embedUrl" placeholder="https://你的域名/ai-slot-embed.js">
+
+    <div class="row">
+      <div>
+        <label for="slotName">槽位标识 <span class="hint">同一页面内唯一，如 hero</span></label>
+        <input type="text" id="slotName" value="hero">
+      </div>
+      <div>
+        <label for="refresh">轮询间隔（秒） <span class="hint">0 表示不轮询</span></label>
+        <input type="number" id="refresh" value="60" min="0">
+      </div>
+    </div>
+
+    <label for="endpoint">交付端点 <span class="hint">你的渲染代理地址，HTTPS</span></label>
+    <input type="url" id="endpoint" placeholder="https://delivery.example/ai-render/hero">
+
+    <label for="fallback">原始兜底内容 <span class="hint">AI 不可用时显示的 HTML</span></label>
+    <textarea id="fallback" rows="3"><h2>欢迎来到本站</h2></textarea>
+
+    <label class="check"><input type="checkbox" id="freshOnly" checked> fresh-only：内容过期或拉取失败时回退兜底（推荐开启）</label>
+  </div>
+
+  <div class="card">
+    <label>生成的接入片段</label>
+    <pre id="output"></pre>
+    <button id="copy">复制代码</button><span class="copied" id="copiedTip"></span>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function render() {
+  const embedUrl = $('embedUrl').value.trim() || 'https://你的域名/ai-slot-embed.js';
+  const name = $('slotName').value.trim() || 'hero';
+  const src = $('endpoint').value.trim() || 'https://delivery.example/ai-render/' + name;
+  const refresh = Math.max(0, Number($('refresh').value) || 0);
+  const attrs = [`name="${esc(name)}"`, `src="${esc(src)}"`];
+  if ($('freshOnly').checked) attrs.push('fresh-only');
+  if (refresh > 0) attrs.push(`refresh-interval="${refresh}"`);
+  const fallback = $('fallback').value.trim() || '<h2>欢迎来到本站</h2>';
+  $('output').textContent =
+`<script type="module" src="${esc(embedUrl)}"><\/script>
+
+<ai-slot ${attrs.join(' ')}>
+${fallback.split('\n').map(l => '  ' + l).join('\n')}
+</ai-slot>`;
+}
+
+for (const el of document.querySelectorAll('input, textarea')) el.addEventListener('input', render);
+$('copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('output').textContent);
+  $('copiedTip').textContent = '已复制';
+  setTimeout(() => { $('copiedTip').textContent = ''; }, 2000);
+});
+render();
+</script>
+</body>
+</html>
